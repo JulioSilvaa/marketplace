@@ -11,7 +11,8 @@
     "test:dev": "vitest",
     "test:ui": "npx vitest --ui",
     "build": "rimraf ./dist && npx prisma generate && tsc",
-    "lint": "lint-staged"
+    "lint": "lint-staged",
+    "prepare": "husky"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
