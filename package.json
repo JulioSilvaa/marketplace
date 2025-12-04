@@ -1,0 +1,55 @@
+{
+  "name": "lazer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "prod": "node --env-file=.env dist/src/index.js",
+    "test:coverage": "vitest run --coverage",
+    "test:dev": "vitest",
+    "test:ui": "npx vitest --ui",
+    "build": "rimraf ./dist && npx prisma generate && tsc",
+    "lint": "lint-staged"
+  },
+  "lint-staged": {
+    "**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "**/*.{json,css,md}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@eslint/js": "^9.39.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.5",
+    "@vitest/coverage-v8": "4.0.14",
+    "@vitest/ui": "^4.0.14",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "globals": "^16.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.7.1",
+    "rimraf": "^6.1.2",
+    "tsc": "^2.0.4",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.0",
+    "vitest": "^4.0.14"
+  },
+  "dependencies": {
+    "@types/node": "^24.10.1",
+    "@types/pg": "^8.15.6",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5"
+  }
+}
