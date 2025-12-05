@@ -1,24 +1,24 @@
-import { IUser, UserRole } from "../../types/user";
+import { IUser, UserIsActive, UserRole } from "../../types/user";
 
 export class UserEntity {
   private readonly _id?: string;
   private readonly _email: string;
-  private readonly _nome: string;
-  private readonly _telefone: string;
-  private readonly _tipo: UserRole;
-  private readonly _verificado: boolean;
+  private readonly _name: string;
+  private readonly _phone: string;
+  private readonly _role: UserRole;
+  private readonly _checked: boolean;
   private readonly _password: string;
-  private readonly _isActive: boolean;
+  private readonly _status: UserIsActive;
 
   constructor(private props: IUser) {
     this._id = props.id;
     this._email = props.email;
-    this._nome = props.nome;
-    this._telefone = props.telefone;
-    this._tipo = props.tipo;
-    this._verificado = props.verificado;
+    this._name = props.name;
+    this._phone = props.phone;
+    this._role = props.role;
+    this._checked = props.checked;
     this._password = props.password;
-    this._isActive = props.isActive;
+    this._status = props.status;
     this.validate();
   }
 
@@ -31,15 +31,30 @@ export class UserEntity {
     this.validateEmail();
     this.validatePassword();
     this.validateRole();
+    this.validatePhone();
   }
 
   private validateName(): void {
-    if (!this._nome || this._nome.trim().length === 0) {
+    if (!this._name || this._name.trim().length === 0) {
       throw new Error("Nome é Obrigatorio");
     }
 
-    if (this._nome.trim().length < 3) {
+    if (this.name.trim().length < 3) {
       throw new Error("Nome deve ter pelo menos 3 caracteres");
+    }
+  }
+
+  private validatePhone(): void {
+    if (!this._phone || this._phone.trim().length === 0) {
+      throw new Error("Telefone é obrigatório");
+    }
+
+    const digits = this._phone.replace(/\D/g, "");
+
+    const phoneRegex = /^(\d{10,11})$/;
+
+    if (!phoneRegex.test(digits)) {
+      throw new Error("Telefone inválido");
     }
   }
 
@@ -65,17 +80,25 @@ export class UserEntity {
   }
 
   private validateRole(): void {
-    if (!Object.values(UserRole).includes(this._tipo)) {
+    if (!Object.values(UserRole).includes(this._role)) {
       throw new Error("Role inválida");
     }
   }
 
   isAdmin(): boolean {
-    return this._tipo === UserRole.proprietario;
+    return this._role === UserRole.PROPRIETARIO;
   }
 
   isClient(): boolean {
-    return this._tipo === UserRole.cliente;
+    return this._role === UserRole.CLIENTE;
+  }
+
+  isActive(): boolean {
+    return this._status === UserIsActive.ATIVO;
+  }
+
+  isInactive(): boolean {
+    return this._status === UserIsActive.INATIVO;
   }
 
   get id(): string | undefined {
@@ -83,7 +106,7 @@ export class UserEntity {
   }
 
   get name(): string {
-    return this._nome;
+    return this._name;
   }
 
   get email(): string {
@@ -95,11 +118,11 @@ export class UserEntity {
   }
 
   get role(): UserRole {
-    return this._tipo;
+    return this._role;
   }
 
-  get isActive(): boolean {
-    return this._isActive;
+  get status(): UserIsActive {
+    return this._status;
   }
 
   public setPassword(hashedPassword: string): void {
