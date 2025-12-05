@@ -1,15 +1,20 @@
 export enum UserRole {
-  proprietario,
-  cliente,
+  PROPRIETARIO,
+  CLIENTE,
+}
+
+export enum UserIsActive {
+  ATIVO,
+  INATIVO,
 }
 
 export type IUser = {
   id: string;
   email: string;
-  nome: string;
-  telefone: string;
-  tipo: UserRole;
-  verificado: boolean;
+  name: string;
+  phone: string;
+  role: UserRole;
+  checked: boolean;
   password: string;
-  isActive: boolean;
+  status: UserIsActive;
 };
