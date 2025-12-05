@@ -25,15 +25,27 @@ export class SpaceEntity {
     this._comfort = props.comfort;
     this._images = props.images;
     this._status = props.status;
+    this.validate();
   }
 
   static create(props: IEspace): SpaceEntity {
     return new SpaceEntity(props);
   }
 
+  private validate() {
+    this.validateOwnerID();
+    this.validadeTitle();
+  }
+
   private validateOwnerID() {
     if (!this._owner_id) {
       throw new Error("ID do proprietário é necessário");
+    }
+  }
+
+  private validadeTitle() {
+    if (!this._title || this._title.trim().length === 0) {
+      throw new Error(" Titulo é necessário");
     }
   }
   // TODO Adicionar validações depois
