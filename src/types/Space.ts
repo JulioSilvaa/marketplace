@@ -1,18 +1,29 @@
 export enum spaceStatus {
   ATIVO,
-  INATIVIO,
+  INATIVO,
 }
+
+export type IAddress = {
+  street: string;
+  number: string;
+  complement?: string;
+  neighborhood: string;
+  city: string;
+  state: string;
+  zipcode: string;
+  country: string;
+};
 
 export type IEspace = {
   id: string;
   owner_id: string;
   title: string;
   description: string;
-  address: object;
+  address: IAddress;
   capacity: number;
   price_per_weekend?: number;
   price_per_day?: number;
-  comfort: object;
+  comfort: string[];
   images: string[];
   status: spaceStatus;
 };
