@@ -9,6 +9,7 @@ export default defineConfig({
       "@shared": "/src/shared",
       "@infrastructure": "/src/infrastructure",
       "@presentation": "/src/presentation",
+      "@prisma/client": "/src/generated/prisma",
     },
   },
   test: {
@@ -18,7 +19,13 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
-      exclude: ["node_modules/", "dist/", "**/*.config.ts"],
+      exclude: [
+        "node_modules/",
+        "dist/",
+        "**/*.config.ts",
+        "src/infra/repositories/*InMemory.ts",
+        "src/infra/db/**",
+      ],
     },
   },
 });

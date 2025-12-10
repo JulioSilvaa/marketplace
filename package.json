@@ -31,6 +31,7 @@
     "@types/express": "^5.0.5",
     "@vitest/coverage-v8": "4.0.14",
     "@vitest/ui": "^4.0.14",
+    "dotenv": "^17.2.3",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
@@ -40,6 +41,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.7.1",
+    "prisma": "^7.1.0",
     "rimraf": "^6.1.2",
     "tsc": "^2.0.4",
     "tsx": "^4.20.6",
@@ -48,9 +50,12 @@
     "vitest": "^4.0.14"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.1.0",
+    "@prisma/client": "^7.1.0",
     "@types/node": "^24.10.1",
     "@types/pg": "^8.15.6",
     "bcryptjs": "^3.0.3",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "pg": "^8.16.3"
   }
 }
