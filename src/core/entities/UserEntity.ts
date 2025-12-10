@@ -125,6 +125,14 @@ export class UserEntity {
     return this._status;
   }
 
+  get phone(): string {
+    return this._phone;
+  }
+
+  get checked(): boolean {
+    return this._checked;
+  }
+
   public setPassword(hashedPassword: string): void {
     (this as any)._password = hashedPassword;
   }

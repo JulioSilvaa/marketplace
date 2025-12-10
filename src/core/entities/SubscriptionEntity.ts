@@ -3,8 +3,8 @@ import { ISubscription, SubscriptionStatus } from "../../types/Subscription";
 export class SubscriptionEntity {
   private readonly _id?: string;
   private readonly _user_id: string;
-  private readonly _plan: string;
-  private readonly _price: number;
+  private _plan: string;
+  private _price: number;
   private _status: SubscriptionStatus;
   private readonly _trial_until?: Date;
   private _next_billing_date?: Date;
@@ -105,6 +105,13 @@ export class SubscriptionEntity {
     }
 
     this._next_billing_date = newDate;
+    this._updated_at = new Date();
+  }
+
+  public changePlan(newPlan: string, newPrice: number): void {
+    this._plan = newPlan;
+    this._price = newPrice;
+    this.validate();
     this._updated_at = new Date();
   }
 
