@@ -1,16 +1,38 @@
+version: '3.8'
+
 services:
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
     container_name: postgres
-    ports:
-      - "5432:5432"
+    # Porta não exposta externamente por padrão (descomente se precisar acessar localmente)
+    # ports:
+    #   - "5432:5432"
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-lazer_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_this_password_in_production}
       POSTGRES_DB: ${POSTGRES_DB:-lazer}
+      # Configurações de segurança adicionais
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --lc-collate=C --lc-ctype=C"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lazer_user} -d ${POSTGRES_DB:-lazer}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    # Limita recursos para evitar DoS
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
 
   backend:
     build:
@@ -22,10 +44,33 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-lazer}?schema=public
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-lazer_user}:${POSTGRES_PASSWORD:-change_this_password_in_production}@postgres:5432/${POSTGRES_DB:-lazer}?schema=public
+      - NODE_ENV=production
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
     restart: unless-stopped
+    # Limita recursos
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    # Read-only root filesystem (exceto volumes necessários)
+    read_only: false  # Mude para true se possível após testar
 
 volumes:
   postgres_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge
