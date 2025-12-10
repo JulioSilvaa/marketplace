@@ -3,3 +3,9 @@
 /docs
 /coverage
 /src/generated/prisma
+.env
+.env.local
+.env.*.local
+dist
+/generated/prisma
+/generated

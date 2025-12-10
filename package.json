@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "prod": "node --env-file=.env dist/src/index.js",
+    "prod": "node dist/src/index.js",
     "test:coverage": "vitest run --coverage",
     "test:dev": "vitest",
     "test:ui": "npx vitest --ui",

@@ -1,18 +1,5 @@
--- CreateTable
-CREATE TABLE "users" (
-    "id" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "phone" TEXT NOT NULL,
-    "password" TEXT NOT NULL,
-    "role" INTEGER NOT NULL,
-    "checked" BOOLEAN NOT NULL DEFAULT false,
-    "status" INTEGER NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
-);
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
 
 -- CreateTable
 CREATE TABLE "spaces" (
@@ -55,6 +42,22 @@ CREATE TABLE "subscriptions" (
     CONSTRAINT "subscriptions_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "users" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "phone" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "role" INTEGER NOT NULL,
+    "checked" BOOLEAN NOT NULL DEFAULT false,
+    "status" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -63,3 +66,4 @@ ALTER TABLE "spaces" ADD CONSTRAINT "spaces_owner_id_fkey" FOREIGN KEY ("owner_i
 
 -- AddForeignKey
 ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+

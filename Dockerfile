@@ -8,7 +8,7 @@ RUN yarn install --frozen-lockfile
 
 COPY . .
 
-RUN yarn build
+RUN DATABASE_URL="postgresql://user:password@localhost:5432/mydb" yarn build
 
 EXPOSE 5000
 

@@ -7,7 +7,7 @@ export class UserEntity {
   private readonly _phone: string;
   private readonly _role: UserRole;
   private readonly _checked: boolean;
-  private readonly _password: string;
+  private _password: string;
   private readonly _status: UserIsActive;
 
   constructor(private props: IUser) {
@@ -134,6 +134,6 @@ export class UserEntity {
   }
 
   public setPassword(hashedPassword: string): void {
-    (this as any)._password = hashedPassword;
+    this._password = hashedPassword;
   }
 }

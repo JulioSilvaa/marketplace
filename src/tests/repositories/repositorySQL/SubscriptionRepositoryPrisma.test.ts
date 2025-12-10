@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { SubscriptionRepositoryPrisma } from "../../../infra/repositories/SubscriptionRepositoryPrisma";
 import { SubscriptionEntity } from "../../../core/entities/SubscriptionEntity";
-import { prisma } from "../../../infra/db/prisma/client";
+
 import { SubscriptionStatus } from "../../../types/Subscription";
+import { prisma } from "../../../lib/prisma";
 
 describe("SubscriptionRepositoryPrisma (Integration)", () => {
   let subRepository: SubscriptionRepositoryPrisma;
@@ -12,9 +13,9 @@ describe("SubscriptionRepositoryPrisma (Integration)", () => {
   });
 
   beforeEach(async () => {
-    await prisma.subscription.deleteMany({});
-    await prisma.space.deleteMany({});
-    await prisma.user.deleteMany({});
+    await prisma.subscriptions.deleteMany({});
+    await prisma.spaces.deleteMany({});
+    await prisma.users.deleteMany({});
   });
 
   afterAll(async () => {
@@ -22,7 +23,7 @@ describe("SubscriptionRepositoryPrisma (Integration)", () => {
   });
 
   const createTestUser = async (id: string) => {
-    await prisma.user.create({
+    await prisma.users.create({
       data: {
         id,
         email: `sub-${id}@test.com`,
@@ -31,6 +32,7 @@ describe("SubscriptionRepositoryPrisma (Integration)", () => {
         phone: "123",
         role: 0,
         status: 0,
+        checked: true,
       },
     });
   };
@@ -49,7 +51,7 @@ describe("SubscriptionRepositoryPrisma (Integration)", () => {
 
     await subRepository.create(sub);
 
-    const savedSub = await prisma.subscription.findUnique({ where: { id: sub.id } });
+    const savedSub = await prisma.subscriptions.findUnique({ where: { id: sub.id } });
     expect(savedSub).toBeDefined();
     expect(savedSub?.plan).toBe("Pro");
     expect(savedSub?.status).toBe("ACTIVE");
@@ -91,7 +93,7 @@ describe("SubscriptionRepositoryPrisma (Integration)", () => {
 
     await subRepository.update(sub);
 
-    const updatedSub = await prisma.subscription.findUnique({ where: { id: sub.id } });
+    const updatedSub = await prisma.subscriptions.findUnique({ where: { id: sub.id } });
     expect(updatedSub?.plan).toBe("Premium");
     expect(updatedSub?.price).toBe(100.0);
   });

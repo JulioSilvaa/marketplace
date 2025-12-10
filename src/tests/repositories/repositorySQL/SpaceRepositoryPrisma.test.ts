@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { SpaceRepositoryPrisma } from "../../../infra/repositories/SpaceRepositoryPrisma";
 import { SpaceEntity } from "../../../core/entities/SpaceEntity";
-import { prisma } from "../../../infra/db/prisma/client";
+
 import { spaceStatus } from "../../../types/Space";
+import { prisma } from "../../../lib/prisma";
 
 describe("SpaceRepositoryPrisma (Integration)", () => {
   let spaceRepository: SpaceRepositoryPrisma;
@@ -13,9 +14,9 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
 
   beforeEach(async () => {
     // Clean up the table before each test
-    await prisma.subscription.deleteMany({});
-    await prisma.space.deleteMany({});
-    await prisma.user.deleteMany({});
+    await prisma.subscriptions.deleteMany({});
+    await prisma.spaces.deleteMany({});
+    await prisma.users.deleteMany({});
   });
 
   afterAll(async () => {
@@ -25,7 +26,7 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
   // Helper to create a user for FK constraint if needed
   const createTestUser = async (id: string) => {
     // Use upsert to avoid unique constraint errors if not cleaned up properly
-    await prisma.user.upsert({
+    await prisma.users.upsert({
       where: { id },
       update: {},
       create: {
@@ -36,6 +37,7 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
         phone: "123456789",
         role: 0,
         status: 0,
+        checked: true,
       },
     });
   };
@@ -67,7 +69,7 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
 
     await spaceRepository.create(space);
 
-    const savedSpace = await prisma.space.findUnique({ where: { id: space.id } });
+    const savedSpace = await prisma.spaces.findUnique({ where: { id: space.id } });
     expect(savedSpace).toBeDefined();
     expect(savedSpace?.title).toBe("Integration Space");
   });

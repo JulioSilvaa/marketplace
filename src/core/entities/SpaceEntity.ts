@@ -25,7 +25,6 @@ export class SpaceEntity {
     this._comfort = props.comfort;
     this._images = props.images;
     this._status = props.status;
-
     this.validate();
   }
 

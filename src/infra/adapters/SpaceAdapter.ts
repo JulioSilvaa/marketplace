@@ -1,10 +1,9 @@
-import { Space } from "@prisma/client";
-
+import { spaces } from "../../../generated/prisma/client";
 import { SpaceEntity } from "../../core/entities/SpaceEntity";
 import { IAddress, spaceStatus } from "../../types/Space";
 
 export class SpaceAdapter {
-  static toEntity(data: Space): SpaceEntity {
+  static toEntity(data: spaces): SpaceEntity {
     const address: IAddress = {
       street: data.street,
       number: data.number,

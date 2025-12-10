@@ -17,4 +17,6 @@ export type IUser = {
   checked: boolean;
   password: string;
   status: UserIsActive;
+  created_at?: Date;
+  updated_at?: Date;
 };

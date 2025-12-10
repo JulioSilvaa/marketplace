@@ -1,11 +1,11 @@
 import { SubscriptionEntity } from "../../core/entities/SubscriptionEntity";
 import { ISubscriptionRepository } from "../../core/repositories/ISubscriptionRepository";
+import { prisma } from "../../lib/prisma";
 import { SubscriptionAdapter } from "../adapters/SubscriptionAdapter";
-import { prisma } from "../db/prisma/client";
 
 export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
   async create(subscription: SubscriptionEntity): Promise<SubscriptionEntity> {
-    await prisma.subscription.create({
+    await prisma.subscriptions.create({
       data: {
         id: subscription.id!,
         user_id: subscription.user_id,
@@ -20,7 +20,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
   }
 
   async findByUserId(userId: string): Promise<SubscriptionEntity | null> {
-    const subData = await prisma.subscription.findFirst({
+    const subData = await prisma.subscriptions.findFirst({
       where: { user_id: userId },
     });
 
@@ -30,7 +30,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
   }
 
   async update(subscription: SubscriptionEntity): Promise<void> {
-    await prisma.subscription.update({
+    await prisma.subscriptions.update({
       where: { id: subscription.id },
       data: {
         plan: subscription.plan,

@@ -1,8 +1,9 @@
+import { users } from "../../../generated/prisma/client";
 import { UserEntity } from "../../core/entities/UserEntity";
 import { IUser, UserIsActive, UserRole } from "../../types/user";
 
 export class UserAdapter {
-  static toDomain(data: any): IUser {
+  static toDomain(data: users): IUser {
     return {
       id: data.id,
       name: data.name,
@@ -15,7 +16,7 @@ export class UserAdapter {
     };
   }
 
-  static toEntity(data: any): UserEntity {
+  static toEntity(data: users): UserEntity {
     return UserEntity.create(UserAdapter.toDomain(data));
   }
 }

@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { UserRepositoryPrisma } from "../../../infra/repositories/UserRepositoryPrisma";
-import { UserEntity } from "../../../core/entities/UserEntity"; // Assuming a way to create domain user easily or passing interface
-import { prisma } from "../../../infra/db/prisma/client";
+
 import { IUser, UserRole, UserIsActive } from "../../../types/user";
+import { prisma } from "../../../lib/prisma";
 
 describe("UserRepositoryPrisma (Integration)", () => {
   let userRepository: UserRepositoryPrisma;
@@ -12,9 +12,9 @@ describe("UserRepositoryPrisma (Integration)", () => {
   });
 
   beforeEach(async () => {
-    await prisma.subscription.deleteMany({});
-    await prisma.space.deleteMany({});
-    await prisma.user.deleteMany({});
+    await prisma.subscriptions.deleteMany({});
+    await prisma.spaces.deleteMany({});
+    await prisma.users.deleteMany({});
   });
 
   afterAll(async () => {
@@ -35,7 +35,7 @@ describe("UserRepositoryPrisma (Integration)", () => {
 
     await userRepository.create(userData);
 
-    const savedUser = await prisma.user.findUnique({ where: { id: userData.id } });
+    const savedUser = await prisma.users.findUnique({ where: { id: userData.id } });
     expect(savedUser).toBeDefined();
     expect(savedUser?.email).toBe(userData.email);
   });
@@ -53,7 +53,7 @@ describe("UserRepositoryPrisma (Integration)", () => {
     };
 
     // Directly inserting via prisma to test the find method
-    await prisma.user.create({
+    await prisma.users.create({
       data: {
         id: userData.id!,
         email: userData.email,
@@ -105,7 +105,7 @@ describe("UserRepositoryPrisma (Integration)", () => {
 
     await userRepository.update(userData.id!, { name: "Updated Name" });
 
-    const updatedUser = await prisma.user.findUnique({ where: { id: userData.id } });
+    const updatedUser = await prisma.users.findUnique({ where: { id: userData.id } });
     expect(updatedUser?.name).toBe("Updated Name");
   });
 
@@ -124,7 +124,7 @@ describe("UserRepositoryPrisma (Integration)", () => {
 
     await userRepository.delete(userData.id!);
 
-    const deletedUser = await prisma.user.findUnique({ where: { id: userData.id } });
+    const deletedUser = await prisma.users.findUnique({ where: { id: userData.id } });
     expect(deletedUser).toBeNull();
   });
 });

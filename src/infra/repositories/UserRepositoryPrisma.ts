@@ -1,11 +1,11 @@
 import { IUserRepository } from "../../core/repositories/userRepository";
+import { prisma } from "../../lib/prisma";
 import { IUser } from "../../types/user";
 import { UserAdapter } from "../adapters/UserAdapter";
-import { prisma } from "../db/prisma/client";
 
 export class UserRepositoryPrisma implements IUserRepository {
   async create(data: IUser): Promise<void> {
-    await prisma.user.create({
+    await prisma.users.create({
       data: {
         id: data.id,
         email: data.email,
@@ -20,7 +20,7 @@ export class UserRepositoryPrisma implements IUserRepository {
   }
 
   async findByEmail(email: string): Promise<IUser | null> {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { email },
     });
 
@@ -30,7 +30,7 @@ export class UserRepositoryPrisma implements IUserRepository {
   }
 
   async findById(id: string): Promise<IUser | null> {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id },
     });
 
@@ -40,7 +40,7 @@ export class UserRepositoryPrisma implements IUserRepository {
   }
 
   async update(id: string, data: Partial<IUser>): Promise<void> {
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id },
       data: {
         ...data,
@@ -49,7 +49,7 @@ export class UserRepositoryPrisma implements IUserRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await prisma.user.delete({
+    await prisma.users.delete({
       where: { id },
     });
   }
