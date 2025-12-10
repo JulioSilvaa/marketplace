@@ -1,0 +1,8 @@
+# Exclui arquivos e diretórios desnecessários do contexto de build do Docker
+node_modules
+dist
+coverage
+.git
+.github
+.vscode
+.env
