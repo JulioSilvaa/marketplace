@@ -15,7 +15,9 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
-    include: ["src/tests/**/*.test.ts"], // aqui é importante
+    include: ["src/tests/**/*.test.ts"],
+    fileParallelism: false,
+    maxConcurrency: 1,
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
