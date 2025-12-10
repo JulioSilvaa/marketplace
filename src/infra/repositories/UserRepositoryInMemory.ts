@@ -31,6 +31,24 @@ export class UserRepositoryInMemory implements IUserRepository {
     this.users[userIndex] = { ...this.users[userIndex], ...data };
   }
 
+  async search(filters: { name?: string; email?: string; isActive?: boolean }): Promise<IUser[]> {
+    return this.users.filter(user => {
+      if (filters.name && !user.name.toLowerCase().includes(filters.name.toLowerCase())) {
+        return false;
+      }
+      if (filters.email && !user.email.toLowerCase().includes(filters.email.toLowerCase())) {
+        return false;
+      }
+      if (filters.isActive !== undefined) {
+        const isActive = user.status === 0; // Assuming 0 is ATIVO
+        if (filters.isActive !== isActive) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }
+
   async delete(id: string): Promise<void> {
     const userIndex = this.users.findIndex(user => user.id === id);
     if (userIndex === -1) {

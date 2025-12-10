@@ -48,6 +48,39 @@ export class UserRepositoryPrisma implements IUserRepository {
     });
   }
 
+  async findAll(): Promise<IUser[]> {
+    const users = await prisma.users.findMany();
+    return users.map(user => UserAdapter.toDomain(user));
+  }
+
+  async search(filters: { name?: string; email?: string; isActive?: boolean }): Promise<IUser[]> {
+    const where: any = {};
+
+    if (filters.name) {
+      where.name = {
+        contains: filters.name,
+        mode: "insensitive",
+      };
+    }
+
+    if (filters.email) {
+      where.email = {
+        contains: filters.email,
+        mode: "insensitive",
+      };
+    }
+
+    if (filters.isActive !== undefined) {
+      where.status = filters.isActive ? "ATIVO" : "INATIVO";
+    }
+
+    const users = await prisma.users.findMany({
+      where,
+    });
+
+    return users.map(user => UserAdapter.toDomain(user));
+  }
+
   async delete(id: string): Promise<void> {
     await prisma.users.delete({
       where: { id },
