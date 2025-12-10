@@ -1,19 +1,13 @@
 import { NextFunction, Request, Response } from "express";
 
 import { SearchUserDTO } from "../../../core/dtos/SearchUserDTO";
-import { CreateUser } from "../../../core/useCases/users/Create";
-import { FindAllUsers } from "../../../core/useCases/users/FindAll";
-import { FindByIdUser } from "../../../core/useCases/users/FindById";
-import { SearchUser } from "../../../core/useCases/users/Search";
-import { UpdateUser } from "../../../core/useCases/users/Update";
-import { UserRepositoryPrisma } from "../../repositories/UserRepositoryPrisma";
+import { UserUseCaseFactory } from "../../factories/UserUseCaseFactory";
 
 export default class UserController {
   static async add(req: Request, res: Response, next: NextFunction) {
     try {
-      const userSQL = new UserRepositoryPrisma();
-      const user = new CreateUser(userSQL);
-      await user.execute(req.body);
+      const createUser = UserUseCaseFactory.makeCreateUser();
+      await createUser.execute(req.body);
       return res.status(201).json({ message: "Usuário criado com sucesso" });
     } catch (error) {
       next(error);
@@ -22,9 +16,8 @@ export default class UserController {
 
   static async getUsers(req: Request, res: Response, next: NextFunction) {
     try {
-      const userSQL = new UserRepositoryPrisma();
-      const users = new FindAllUsers(userSQL);
-      const data = await users.execute();
+      const findAllUsers = UserUseCaseFactory.makeFindAllUsers();
+      const data = await findAllUsers.execute();
       if (data.length === 0) {
         res.status(200).json({ message: "Lista vazia" });
       }
@@ -37,12 +30,16 @@ export default class UserController {
   static async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const userSQL = new UserRepositoryPrisma();
-      const user = await userSQL.findById(id);
+      const findByIdUser = UserUseCaseFactory.makeFindByIdUser();
+      const user = await findByIdUser.execute(id);
       if (!user) {
         throw new Error("Usuário não encontrado");
       }
-      await userSQL.delete(id);
+      // TODO: Criar DeleteUser use case
+      const repository = new (
+        await import("../../repositories/UserRepositoryPrisma")
+      ).UserRepositoryPrisma();
+      await repository.delete(id);
 
       return res.status(200).json({ message: "Usuário excluído com sucesso!" });
     } catch (error) {
@@ -53,14 +50,8 @@ export default class UserController {
   static async update(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const userSQL = new UserRepositoryPrisma();
-      const user = await userSQL.findById(id);
-
-      if (!user) {
-        throw new Error("Usuário não encontrado");
-      }
-      const editUser = new UpdateUser(userSQL);
-      await editUser.execute({ id: user.id, ...req.body });
+      const updateUser = UserUseCaseFactory.makeUpdateUser();
+      await updateUser.execute({ id, ...req.body });
       return res.status(200).json({ message: "Usuário atualizado com sucesso!" });
     } catch (error) {
       next(error);
@@ -70,9 +61,8 @@ export default class UserController {
   static async findById(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const userSQL = new UserRepositoryPrisma();
-      const getUserById = new FindByIdUser(userSQL);
-      const user = await getUserById.execute(id as any);
+      const findByIdUser = UserUseCaseFactory.makeFindByIdUser();
+      const user = await findByIdUser.execute(id);
 
       if (!user) {
         return res.status(404).json({ message: "Usuário não encontrado" });
@@ -98,10 +88,8 @@ export default class UserController {
             : undefined,
       };
 
-      const userSQL = new UserRepositoryPrisma();
-      const searchUsers = new SearchUser(userSQL);
-
-      const users = await searchUsers.execute(filters);
+      const searchUser = UserUseCaseFactory.makeSearchUser();
+      const users = await searchUser.execute(filters);
 
       if (users.length === 0) {
         return res
