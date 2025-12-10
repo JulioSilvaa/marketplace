@@ -1,0 +1,13 @@
+import bcrypt from "bcryptjs";
+
+import { IHashService } from "../../core/services/IHashService";
+
+export class BcryptHashService implements IHashService {
+  async hash(value: string): Promise<string> {
+    return bcrypt.hash(value, 10);
+  }
+
+  async compare(value: string, hash: string): Promise<boolean> {
+    return bcrypt.compare(value, hash);
+  }
+}
