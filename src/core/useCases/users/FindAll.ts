@@ -1,5 +1,5 @@
 import { IUser } from "../../../types/user";
-import { IUserRepository } from "../../repositories/userRepository";
+import { IUserRepository } from "../../repositories/IUserRepository";
 
 export class FindAllUsers {
   private readonly _userRepository: IUserRepository;

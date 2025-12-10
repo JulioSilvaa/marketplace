@@ -6,7 +6,7 @@ import { CreateSpaceDTO } from "../../dtos/CreateSpaceDTO";
 import { SpaceEntity } from "../../entities/SpaceEntity";
 import { ISpaceRepository } from "../../repositories/ISpaceRepository";
 import { ISubscriptionRepository } from "../../repositories/ISubscriptionRepository";
-import { IUserRepository } from "../../repositories/userRepository";
+import { IUserRepository } from "../../repositories/IUserRepository";
 
 export class CreateSpace {
   constructor(

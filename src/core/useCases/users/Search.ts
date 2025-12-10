@@ -1,6 +1,6 @@
 import { IUser } from "../../../types/user";
 import { SearchUserDTO } from "../../dtos/SearchUserDTO";
-import { IUserRepository } from "../../repositories/userRepository";
+import { IUserRepository } from "../../repositories/IUserRepository";
 
 export class SearchUser {
   private readonly _userRepository: IUserRepository;

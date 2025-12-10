@@ -1,4 +1,4 @@
-import { IUserRepository } from "../../core/repositories/userRepository";
+import { IUserRepository } from "../../core/repositories/IUserRepository";
 import { prisma } from "../../lib/prisma";
 import { IUser } from "../../types/user";
 import { UserAdapter } from "../adapters/UserAdapter";

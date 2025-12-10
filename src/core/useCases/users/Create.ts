@@ -1,16 +1,23 @@
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
-
 import { IUser, UserIsActive, UserRole } from "../../../types/user";
 import { CreateUserDTO } from "../../dtos/CreateUserDTO";
 import { UserEntity } from "../../entities/UserEntity";
-import { IUserRepository } from "../../repositories/userRepository";
+import { IUserRepository } from "../../repositories/IUserRepository";
+import { IHashService } from "../../services/IHashService";
+import { IUuidGenerator } from "../../services/IUuidGenerator";
 
 export class CreateUser {
   private readonly _userRepository: IUserRepository;
+  private readonly _hashService: IHashService;
+  private readonly _uuidGenerator: IUuidGenerator;
 
-  constructor(userRepository: IUserRepository) {
+  constructor(
+    userRepository: IUserRepository,
+    hashService: IHashService,
+    uuidGenerator: IUuidGenerator
+  ) {
     this._userRepository = userRepository;
+    this._hashService = hashService;
+    this._uuidGenerator = uuidGenerator;
   }
 
   async execute(input: CreateUserDTO): Promise<void> {
@@ -22,7 +29,7 @@ export class CreateUser {
     let user: UserEntity;
     try {
       const userData: IUser = {
-        id: crypto.randomUUID(),
+        id: this._uuidGenerator.generate(),
         name: input.name,
         email: input.email,
         password: input.password,
@@ -40,7 +47,7 @@ export class CreateUser {
       throw error;
     }
 
-    const hashedPassword = await bcrypt.hash(input.password, 10);
+    const hashedPassword = await this._hashService.hash(input.password);
     user.setPassword(hashedPassword);
 
     await this._userRepository.create({

@@ -4,7 +4,7 @@ import { SubscriptionStatus } from "../../../types/Subscription";
 import { CreateSubscriptionDTO } from "../../dtos/CreateSubscriptionDTO";
 import { SubscriptionEntity } from "../../entities/SubscriptionEntity";
 import { ISubscriptionRepository } from "../../repositories/ISubscriptionRepository";
-import { IUserRepository } from "../../repositories/userRepository";
+import { IUserRepository } from "../../repositories/IUserRepository";
 
 export class CreateSubscription {
   constructor(
