@@ -191,9 +191,9 @@ export class SpaceEntity {
   }
 
   private validateStatus(): void {
-    const validStatuses = Object.values(spaceStatus).filter(v => typeof v === "number");
+    const validStatuses: spaceStatus[] = ["active", "inactive"];
     if (!validStatuses.includes(this._status)) {
-      throw new Error("O status do espaço é inválido.");
+      throw new Error("O status do espaço é inválido. Use 'active' ou 'inactive'.");
     }
   }
 }
