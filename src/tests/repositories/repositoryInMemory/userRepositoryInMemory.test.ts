@@ -1,4 +1,4 @@
-import { UserRepositoryInMemory } from "../../../infra/repositories/UserRepositoryInMemory";
+import { UserRepositoryInMemory } from "../../../infra/repositories/inMemory/UserRepositoryInMemory";
 
 import { CreateUser } from "../../../core/useCases/users/Create";
 import { beforeEach, describe, expect, it, vi } from "vitest";

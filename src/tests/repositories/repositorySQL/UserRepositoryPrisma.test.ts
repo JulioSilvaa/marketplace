@@ -1,5 +1,6 @@
+import { UserRepositoryPrisma } from "./../../../infra/repositories/sql/UserRepositoryPrisma";
+
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { UserRepositoryPrisma } from "../../../infra/repositories/UserRepositoryPrisma";
 
 import { IUser, UserRole, UserIsActive } from "../../../types/user";
 import { prisma } from "../../../lib/prisma";

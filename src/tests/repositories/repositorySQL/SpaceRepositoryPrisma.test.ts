@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { SpaceRepositoryPrisma } from "../../../infra/repositories/sql/SpaceRepositoryPrisma";
 import { SpaceEntity } from "../../../core/entities/SpaceEntity";
-
-import { spaceStatus } from "../../../types/Space";
 import { prisma } from "../../../lib/prisma";
 
 describe("SpaceRepositoryPrisma (Integration)", () => {

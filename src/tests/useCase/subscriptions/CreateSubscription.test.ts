@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { CreateSubscription } from "../../../core/useCases/subscriptions/Create";
-import { SubscriptionRepositoryInMemory } from "../../../infra/repositories/SubscriptionRepositoryInMemory";
-import { UserRepositoryInMemory } from "../../../infra/repositories/UserRepositoryInMemory";
-import { UserEntity } from "../../../core/entities/UserEntity";
+import { SubscriptionRepositoryInMemory } from "../../../infra/repositories/inMemory/SubscriptionRepositoryInMemory";
+import { UserRepositoryInMemory } from "../../../infra/repositories/inMemory/UserRepositoryInMemory";
 import { SubscriptionStatus } from "../../../types/Subscription";
 import { UserRole } from "../../../types/user";
 

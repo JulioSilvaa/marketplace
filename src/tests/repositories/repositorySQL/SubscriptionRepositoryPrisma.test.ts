@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { SubscriptionRepositoryPrisma } from "../../../infra/repositories/SubscriptionRepositoryPrisma";
+
 import { SubscriptionEntity } from "../../../core/entities/SubscriptionEntity";
+import { SubscriptionRepositoryPrisma } from "../../../infra/repositories/sql/SubscriptionRepositoryPrisma";
 
 import { SubscriptionStatus } from "../../../types/Subscription";
 import { prisma } from "../../../lib/prisma";
