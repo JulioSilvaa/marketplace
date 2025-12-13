@@ -1,52 +1,52 @@
-# Build stage
-FROM node:20.11-alpine3.19 AS builder
-
-# Instala dependências necessárias para build
-RUN apk add --no-cache python3 make g++ openssl
+FROM node:20-alpine AS base
 
 WORKDIR /app
 
-# Copia arquivos de dependências
 COPY package.json yarn.lock ./
 
-# Instala dependências
+FROM base AS dependencies
+
+RUN apk add --no-cache python3 make g++ openssl
+
 RUN yarn install --frozen-lockfile --production=false
 
-# Copia código fonte
+FROM dependencies AS build
+
 COPY . .
 
-# Build da aplicação (usa DATABASE_URL dummy apenas para build)
-RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" yarn build
+COPY .env.build .env
 
-# Production stage
-FROM node:20.11-alpine3.19
+RUN yarn prisma generate
 
-# Instala apenas openssl (necessário para Prisma)
+RUN yarn tsc
+
+FROM base AS production-deps
+
+RUN apk add --no-cache openssl
+
+RUN yarn install --frozen-lockfile --production=true && \
+    yarn cache clean
+
+FROM node:20-alpine AS runner
+
 RUN apk add --no-cache openssl
 
 WORKDIR /app
 
-# Cria usuário não-root
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Copia dependências de produção
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production=true && \
-    yarn cache clean
+COPY --from=production-deps --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=build --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=build --chown=nodejs:nodejs /app/prisma ./prisma
+COPY --from=build --chown=nodejs:nodejs /app/prisma.config.ts ./prisma.config.ts
+COPY --chown=nodejs:nodejs package.json yarn.lock ./
 
-# Copia build da stage anterior
-COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
-COPY --from=builder --chown=nodejs:nodejs /app/prisma.config.ts ./prisma.config.ts
-
-# Muda para usuário não-root
 USER nodejs
 
-EXPOSE 5000
+EXPOSE 3000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:5000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+  CMD node -e "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 CMD ["sh", "-c", "yarn prisma migrate deploy && yarn prod"]
