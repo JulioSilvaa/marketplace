@@ -29,6 +29,21 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
     return SubscriptionAdapter.toEntity(subData);
   }
 
+  async findById(id: string): Promise<SubscriptionEntity | null> {
+    const subData = await prisma.subscriptions.findUnique({
+      where: { id },
+    });
+
+    if (!subData) return null;
+
+    return SubscriptionAdapter.toEntity(subData);
+  }
+
+  async findAll(): Promise<SubscriptionEntity[]> {
+    const subsData = await prisma.subscriptions.findMany();
+    return subsData.map(sub => SubscriptionAdapter.toEntity(sub));
+  }
+
   async update(subscription: SubscriptionEntity): Promise<void> {
     await prisma.subscriptions.update({
       where: { id: subscription.id },

@@ -17,4 +17,22 @@ export class SpaceRepositoryInMemory implements ISpaceRepository {
   async listByOwnerId(ownerId: string): Promise<SpaceEntity[]> {
     return this.spaces.filter(s => s.owner_id === ownerId);
   }
+
+  async findAll(): Promise<SpaceEntity[]> {
+    return this.spaces;
+  }
+
+  async update(space: SpaceEntity): Promise<void> {
+    const index = this.spaces.findIndex(s => s.id === space.id);
+    if (index !== -1) {
+      this.spaces[index] = space;
+    }
+  }
+
+  async delete(id: string): Promise<void> {
+    const index = this.spaces.findIndex(s => s.id === id);
+    if (index !== -1) {
+      this.spaces.splice(index, 1);
+    }
+  }
 }

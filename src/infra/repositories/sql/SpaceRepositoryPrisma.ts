@@ -67,4 +67,39 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
 
     return spacesData.map(s => SpaceAdapter.toEntity(s));
   }
+
+  async findAll(): Promise<SpaceEntity[]> {
+    const spacesData = await prisma.spaces.findMany();
+    return spacesData.map(s => SpaceAdapter.toEntity(s));
+  }
+
+  async update(space: SpaceEntity): Promise<void> {
+    await prisma.spaces.update({
+      where: { id: space.id },
+      data: {
+        title: space.title,
+        description: space.description,
+        capacity: space.capacity,
+        price_per_weekend: space.price_per_weekend,
+        price_per_day: space.price_per_day,
+        comfort: space.comfort,
+        images: space.images,
+        status: space.status,
+        street: space.address.street,
+        number: space.address.number,
+        complement: space.address.complement,
+        neighborhood: space.address.neighborhood,
+        city: space.address.city,
+        state: space.address.state,
+        zipcode: space.address.zipcode,
+        country: space.address.country,
+      },
+    });
+  }
+
+  async delete(id: string): Promise<void> {
+    await prisma.spaces.delete({
+      where: { id },
+    });
+  }
 }
