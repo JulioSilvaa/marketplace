@@ -10,3 +10,4 @@
 dist
 /generated/prisma
 /generated
+user.test.http
