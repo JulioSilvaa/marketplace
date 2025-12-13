@@ -4,6 +4,7 @@
 /coverage
 /src/generated/prisma
 .env
+!.env.build
 .env.local
 .env.*.local
 dist
