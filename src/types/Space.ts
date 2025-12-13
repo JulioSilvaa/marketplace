@@ -1,7 +1,4 @@
-export enum spaceStatus {
-  ATIVO,
-  INATIVO,
-}
+export type spaceStatus = "active" | "inactive";
 
 export type IAddress = {
   street: string;
