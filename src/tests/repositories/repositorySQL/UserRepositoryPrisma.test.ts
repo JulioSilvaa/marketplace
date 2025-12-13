@@ -3,22 +3,28 @@ import { UserRepositoryPrisma } from "./../../../infra/repositories/sql/UserRepo
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 
 import { IUser, UserRole, UserIsActive } from "../../../types/user";
+import { CryptoUuidGenerator } from "../../../infra/services/CryptoUuidGenerator";
 import { prisma } from "../../../lib/prisma";
 
 describe("UserRepositoryPrisma (Integration)", () => {
   let userRepository: UserRepositoryPrisma;
+  const uuidGenerator = new CryptoUuidGenerator();
 
-  beforeAll(() => {
-    userRepository = new UserRepositoryPrisma();
-  });
-
-  beforeEach(async () => {
+  beforeAll(async () => {
+    // Clean up before tests - delete in correct order for foreign keys
     await prisma.subscriptions.deleteMany({});
     await prisma.spaces.deleteMany({});
     await prisma.users.deleteMany({});
   });
 
+  beforeEach(() => {
+    userRepository = new UserRepositoryPrisma();
+  });
+
   afterAll(async () => {
+    await prisma.subscriptions.deleteMany({});
+    await prisma.spaces.deleteMany({});
+    await prisma.users.deleteMany({});
     await prisma.$disconnect();
   });
 
@@ -127,5 +133,78 @@ describe("UserRepositoryPrisma (Integration)", () => {
 
     const deletedUser = await prisma.users.findUnique({ where: { id: userData.id } });
     expect(deletedUser).toBeNull();
+  });
+
+  it("should find all users", async () => {
+    const user1 = {
+      id: uuidGenerator.generate(),
+      name: "User 1 FindAll",
+      email: "findall1@test.com",
+      phone: "1111111111",
+      password: "hashed_password",
+      role: UserRole.CLIENTE,
+      checked: true,
+      status: UserIsActive.ATIVO,
+    };
+
+    const user2 = {
+      id: uuidGenerator.generate(),
+      name: "User 2 FindAll",
+      email: "findall2@test.com",
+      phone: "2222222222",
+      password: "hashed_password",
+      role: UserRole.PROPRIETARIO,
+      checked: false,
+      status: UserIsActive.INATIVO,
+    };
+
+    await userRepository.create(user1);
+    await userRepository.create(user2);
+
+    const allUsers = await userRepository.findAll();
+
+    expect(allUsers.length).toBeGreaterThanOrEqual(2);
+    const emails = allUsers.map(u => u.email);
+    expect(emails).toContain("findall1@test.com");
+    expect(emails).toContain("findall2@test.com");
+  });
+
+  it("should search users by filters", async () => {
+    const user1 = {
+      id: uuidGenerator.generate(),
+      name: "John Search",
+      email: "john.search@test.com",
+      phone: "3333333333",
+      password: "hashed_password",
+      role: UserRole.CLIENTE,
+      checked: true,
+      status: UserIsActive.ATIVO,
+    };
+
+    const user2 = {
+      id: uuidGenerator.generate(),
+      name: "Jane Search",
+      email: "jane.search@test.com",
+      phone: "4444444444",
+      password: "hashed_password",
+      role: UserRole.CLIENTE,
+      checked: true,
+      status: UserIsActive.INATIVO,
+    };
+
+    await userRepository.create(user1);
+    await userRepository.create(user2);
+
+    // Search by name
+    const searchByName = await userRepository.search({ name: "John" });
+    expect(searchByName.length).toBeGreaterThanOrEqual(1);
+    expect(searchByName.some(u => u.name === "John Search")).toBe(true);
+
+    // Search by email
+    const searchByEmail = await userRepository.search({
+      email: "jane.search@test.com",
+    });
+    expect(searchByEmail.length).toBeGreaterThanOrEqual(1);
+    expect(searchByEmail.some(u => u.email === "jane.search@test.com")).toBe(true);
   });
 });

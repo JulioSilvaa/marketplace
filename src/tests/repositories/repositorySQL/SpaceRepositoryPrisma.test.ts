@@ -1,52 +1,56 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { SpaceRepositoryPrisma } from "../../../infra/repositories/sql/SpaceRepositoryPrisma";
+import { UserRepositoryPrisma } from "../../../infra/repositories/sql/UserRepositoryPrisma";
 import { SpaceEntity } from "../../../core/entities/SpaceEntity";
+import { CryptoUuidGenerator } from "../../../infra/services/CryptoUuidGenerator";
 import { prisma } from "../../../lib/prisma";
+import { UserIsActive, UserRole } from "../../../types/user";
 
 describe("SpaceRepositoryPrisma (Integration)", () => {
   let spaceRepository: SpaceRepositoryPrisma;
+  let userRepository: UserRepositoryPrisma;
+  const uuidGenerator = new CryptoUuidGenerator();
+  let testUserId: string;
 
-  beforeAll(() => {
-    spaceRepository = new SpaceRepositoryPrisma();
-  });
-
-  beforeEach(async () => {
-    // Clean up the table before each test
+  beforeAll(async () => {
+    // Clean up before tests - delete in correct order for foreign keys
     await prisma.subscriptions.deleteMany({});
     await prisma.spaces.deleteMany({});
     await prisma.users.deleteMany({});
+
+    // Create a test user for foreign key constraints
+    userRepository = new UserRepositoryPrisma();
+    testUserId = uuidGenerator.generate();
+    await userRepository.create({
+      id: testUserId,
+      name: "Test Owner",
+      email: "owner@test.com",
+      phone: "1234567890",
+      password: "hashed_password",
+      role: UserRole.PROPRIETARIO,
+      checked: true,
+      status: UserIsActive.ATIVO,
+    });
+  });
+
+  beforeEach(async () => {
+    // Clean only subscriptions and spaces between tests, keep user
+    await prisma.subscriptions.deleteMany({});
+    await prisma.spaces.deleteMany({});
+    spaceRepository = new SpaceRepositoryPrisma();
   });
 
   afterAll(async () => {
+    await prisma.subscriptions.deleteMany({});
+    await prisma.spaces.deleteMany({});
+    await prisma.users.deleteMany({});
     await prisma.$disconnect();
   });
 
-  // Helper to create a user for FK constraint if needed
-  const createTestUser = async (id: string) => {
-    // Use upsert to avoid unique constraint errors if not cleaned up properly
-    await prisma.users.upsert({
-      where: { id },
-      update: {},
-      create: {
-        id,
-        email: `test-${id}@example.com`,
-        name: "Test Owner",
-        password: "hashed-pass",
-        phone: "123456789",
-        role: 0,
-        status: 0,
-        checked: true,
-      },
-    });
-  };
-
   it("should create a space in the database", async () => {
-    const ownerId = "owner-123";
-    await createTestUser(ownerId);
-
     const space = SpaceEntity.create({
       id: "space-123",
-      owner_id: ownerId,
+      owner_id: testUserId,
       title: "Integration Space",
       description: "A lovely place with great amenities and comfort for everyone",
       capacity: 5,
@@ -73,12 +77,9 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
   });
 
   it("should find a space by id", async () => {
-    const ownerId = "owner-456";
-    await createTestUser(ownerId);
-
     const space = SpaceEntity.create({
       id: "space-456",
-      owner_id: ownerId,
+      owner_id: testUserId,
       title: "Find Me",
       description: "A hidden place with amazing features and comfort",
       capacity: 2,
@@ -106,12 +107,9 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
   });
 
   it("should list spaces by owner id", async () => {
-    const ownerId = "owner-789";
-    await createTestUser(ownerId);
-
     const space1 = SpaceEntity.create({
       id: "space-789-1",
-      owner_id: ownerId,
+      owner_id: testUserId,
       title: "Space 1",
       description: "Description for space 1 with all amenities included",
       capacity: 10,
@@ -132,7 +130,7 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
 
     const space2 = SpaceEntity.create({
       id: "space-789-2",
-      owner_id: ownerId,
+      owner_id: testUserId,
       title: "Space 2",
       description: "Description for space 2 with premium facilities",
       capacity: 20,
@@ -154,11 +152,143 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
     await spaceRepository.create(space1);
     await spaceRepository.create(space2);
 
-    const list = await spaceRepository.listByOwnerId(ownerId);
+    const list = await spaceRepository.listByOwnerId(testUserId);
     expect(list).toHaveLength(2);
     // Assuming order isn't strictly guaranteed without orderBy, but we can check containment
     const titles = list.map(s => s.title);
     expect(titles).toContain("Space 1");
     expect(titles).toContain("Space 2");
+  });
+
+  it("should find all spaces", async () => {
+    const space1 = SpaceEntity.create({
+      id: uuidGenerator.generate(),
+      owner_id: testUserId,
+      title: "Space 1 for FindAll",
+      description: "A very nice place to stay for your vacation",
+      address: {
+        street: "Main St",
+        number: "123",
+        neighborhood: "Downtown",
+        city: "City",
+        state: "ST",
+        country: "Country",
+        zipcode: "12345-678",
+      },
+      capacity: 50,
+      price_per_day: 100,
+      comfort: ["Wifi"],
+      images: ["http://example.com/1.jpg"],
+      status: "active",
+    });
+
+    const space2 = SpaceEntity.create({
+      id: uuidGenerator.generate(),
+      owner_id: testUserId,
+      title: "Space 2 for FindAll",
+      description: "Another beautiful place for your vacation",
+      address: {
+        street: "Second St",
+        number: "456",
+        neighborhood: "Uptown",
+        city: "City",
+        state: "ST",
+        country: "Country",
+        zipcode: "98765-432",
+      },
+      capacity: 30,
+      price_per_day: 80,
+      comfort: ["Pool"],
+      images: ["http://example.com/2.jpg"],
+      status: "active",
+    });
+
+    await spaceRepository.create(space1);
+    await spaceRepository.create(space2);
+
+    const allSpaces = await spaceRepository.findAll();
+
+    expect(allSpaces.length).toBeGreaterThanOrEqual(2);
+    const titles = allSpaces.map(s => s.title);
+    expect(titles).toContain("Space 1 for FindAll");
+    expect(titles).toContain("Space 2 for FindAll");
+  });
+
+  it("should update a space", async () => {
+    const space = SpaceEntity.create({
+      id: uuidGenerator.generate(),
+      owner_id: testUserId,
+      title: "Original Title",
+      description: "Original description that will be updated",
+      address: {
+        street: "Main St",
+        number: "123",
+        neighborhood: "Downtown",
+        city: "City",
+        state: "ST",
+        country: "Country",
+        zipcode: "12345-678",
+      },
+      capacity: 50,
+      price_per_day: 100,
+      comfort: ["Wifi"],
+      images: ["http://example.com/original.jpg"],
+      status: "active",
+    });
+
+    const created = await spaceRepository.create(space);
+
+    const updatedSpace = SpaceEntity.create({
+      id: created.id!,
+      owner_id: created.owner_id,
+      title: "Updated Title",
+      description: "Updated description with new information",
+      address: created.address,
+      capacity: 100,
+      price_per_day: 150,
+      comfort: ["Wifi", "Pool"],
+      images: ["http://example.com/updated.jpg"],
+      status: "active",
+    });
+
+    await spaceRepository.update(updatedSpace);
+
+    const found = await spaceRepository.findById(created.id!);
+
+    expect(found).toBeDefined();
+    expect(found?.title).toBe("Updated Title");
+    expect(found?.description).toBe("Updated description with new information");
+    expect(found?.capacity).toBe(100);
+    expect(found?.price_per_day).toBe(150);
+  });
+
+  it("should delete a space", async () => {
+    const space = SpaceEntity.create({
+      id: uuidGenerator.generate(),
+      owner_id: testUserId,
+      title: "Space to Delete",
+      description: "This space will be deleted from database",
+      address: {
+        street: "Main St",
+        number: "123",
+        neighborhood: "Downtown",
+        city: "City",
+        state: "ST",
+        country: "Country",
+        zipcode: "12345-678",
+      },
+      capacity: 50,
+      price_per_day: 100,
+      comfort: ["Wifi"],
+      images: ["http://example.com/delete.jpg"],
+      status: "active",
+    });
+
+    const created = await spaceRepository.create(space);
+
+    await spaceRepository.delete(created.id!);
+
+    const found = await spaceRepository.findById(created.id!);
+    expect(found).toBeNull();
   });
 });
