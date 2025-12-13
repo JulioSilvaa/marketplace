@@ -1,4 +1,6 @@
 import { spaces } from "../../../generated/prisma/client";
+import { SpaceListOutputDTO } from "../../core/dtos/SpaceListOutputDTO";
+import { SpaceOutputDTO } from "../../core/dtos/SpaceOutputDTO";
 import { SpaceEntity } from "../../core/entities/SpaceEntity";
 import { IAddress, spaceStatus } from "../../types/Space";
 
@@ -28,5 +30,28 @@ export class SpaceAdapter {
       status: data.status as spaceStatus,
       address,
     });
+  }
+
+  static toOutputDTO(space: SpaceEntity): SpaceOutputDTO {
+    return {
+      id: space.id!,
+      owner_id: space.owner_id!,
+      title: space.title,
+      description: space.description,
+      address: space.address,
+      capacity: space.capacity,
+      price_per_weekend: space.price_per_weekend,
+      price_per_day: space.price_per_day,
+      comfort: space.comfort,
+      images: space.images,
+      status: space.status,
+    };
+  }
+
+  static toListOutputDTO(spaces: SpaceEntity[]): SpaceListOutputDTO {
+    return {
+      data: spaces.map(space => this.toOutputDTO(space)),
+      total: spaces.length,
+    };
   }
 }
