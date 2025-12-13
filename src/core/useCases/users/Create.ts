@@ -34,7 +34,7 @@ export class CreateUser {
         email: input.email,
         password: input.password,
         phone: input.phone,
-        role: input.role ?? UserRole.CLIENTE,
+        role: input.role ?? UserRole.PROPRIETARIO,
         checked: false,
         status: UserIsActive.ATIVO, // Default status
       };

@@ -48,9 +48,9 @@ export class UserAdapter {
       email: user.email,
       name: user.name,
       phone: user.phone,
-      role: user.role,
+      role: user.role === UserRole.PROPRIETARIO ? "owner" : "client",
       checked: user.checked,
-      status: user.status,
+      status: user.status === UserIsActive.ATIVO ? "active" : "inactive",
       created_at: user.created_at?.toISOString(),
       updated_at: user.updated_at?.toISOString(),
       // password is intentionally excluded

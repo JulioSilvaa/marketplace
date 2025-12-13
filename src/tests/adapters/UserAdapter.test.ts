@@ -25,9 +25,9 @@ describe("UserAdapter", () => {
       expect(output.name).toBe("John Doe");
       expect(output.email).toBe("john@example.com");
       expect(output.phone).toBe("11999999999");
-      expect(output.role).toBe(UserRole.CLIENTE);
+      expect(output.role).toBe("client");
       expect(output.checked).toBe(true);
-      expect(output.status).toBe(UserIsActive.ATIVO);
+      expect(output.status).toBe("active");
       expect(output.created_at).toBe("2025-01-01T00:00:00.000Z");
       expect(output.updated_at).toBe("2025-01-10T00:00:00.000Z");
 
@@ -50,6 +50,9 @@ describe("UserAdapter", () => {
 
       const output = UserAdapter.toOutputDTO(user);
 
+      expect(output.role).toBe("owner");
+      expect(output.checked).toBe(false);
+      expect(output.status).toBe("active");
       expect(output.created_at).toBeUndefined();
       expect(output.updated_at).toBeUndefined();
     });
