@@ -48,7 +48,7 @@ services:
       - ./prisma:/app/prisma
       - ./prisma.config.ts:/app/prisma.config.ts
       - node_modules_dev:/app/node_modules
-    command: sh -c "yarn install && yarn prisma generate && yarn dev"
+    command: sh -c "yarn install && yarn prisma generate && yarn prisma migrate deploy && yarn dev"
     depends_on:
       postgres:
         condition: service_healthy
