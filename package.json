@@ -5,7 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch src/infra/http/express/Express.ts",
     "prod": "node dist/src/index.js",
     "test:coverage": "vitest run --coverage",
     "test:dev": "vitest",
@@ -56,6 +56,7 @@
     "@types/pg": "^8.15.6",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
+    "express": "^4.21.2",
     "pg": "^8.16.3"
   }
 }
