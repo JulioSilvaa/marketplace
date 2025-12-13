@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { SearchUserDTO } from "../../../core/dtos/SearchUserDTO";
+import { UserAdapter } from "../../adapters/UserAdapter";
 import { UserUseCaseFactory } from "../../factories/UserUseCaseFactory";
 
 export default class UserController {
@@ -17,11 +18,14 @@ export default class UserController {
   static async getUsers(req: Request, res: Response, next: NextFunction) {
     try {
       const findAllUsers = UserUseCaseFactory.makeFindAllUsers();
-      const data = await findAllUsers.execute();
-      if (data.length === 0) {
+      const users = await findAllUsers.execute();
+
+      const output = UserAdapter.toListOutputDTO(users);
+
+      if (users.length === 0) {
         res.status(200).json({ message: "Lista vazia" });
       }
-      return res.status(200).json({ data, total: data.length });
+      return res.status(200).json(output);
     } catch (error) {
       next(error);
     }
@@ -35,10 +39,11 @@ export default class UserController {
       if (!user) {
         throw new Error("Usuário não encontrado");
       }
-      // TODO: Criar DeleteUser use case
-      const repository = new (
-        await import("../../repositories/sql/UserRepositoryPrisma")
-      ).UserRepositoryPrisma();
+
+      // Note: Delete use case needs to be created
+      // For now, we'll keep the direct repository access
+      const { UserRepositoryPrisma } = await import("../../repositories/sql/UserRepositoryPrisma");
+      const repository = new UserRepositoryPrisma();
       await repository.delete(id);
 
       return res.status(200).json({ message: "Usuário excluído com sucesso!" });
@@ -68,7 +73,9 @@ export default class UserController {
         return res.status(404).json({ message: "Usuário não encontrado" });
       }
 
-      return res.status(200).json({ data: user });
+      const output = UserAdapter.toOutputDTO(user);
+
+      return res.status(200).json({ data: output });
     } catch (error) {
       next(error);
     }
@@ -97,7 +104,9 @@ export default class UserController {
           .json({ message: "Nenhum usuário encontrado com os filtros fornecidos" });
       }
 
-      return res.status(200).json({ data: users });
+      const output = UserAdapter.toListOutputDTO(users);
+
+      return res.status(200).json(output);
     } catch (error) {
       next(error);
     }

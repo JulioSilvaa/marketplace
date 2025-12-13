@@ -10,11 +10,12 @@ const router = Router();
 
 // 2. Rotas de coleção
 router.get("/", ExpressAdapter.create(SpaceController.getSpaces));
+router.get("/all", ExpressAdapter.create(SpaceController.getAllSpaces));
 router.post("/", ExpressAdapter.create(SpaceController.add));
 
 // 3. Rotas com parâmetros (menos específicas)
-// router.get("/:id", ExpressAdapter.create(SpaceController.findById));
-// router.patch("/:id", ExpressAdapter.create(SpaceController.update));
-// router.delete("/:id", ExpressAdapter.create(SpaceController.delete));
+router.get("/:id", ExpressAdapter.create(SpaceController.findById));
+router.patch("/:id", ExpressAdapter.create(SpaceController.update));
+router.delete("/:id", ExpressAdapter.create(SpaceController.delete));
 
 export default router;

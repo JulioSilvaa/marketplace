@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 
+import { SpaceAdapter } from "../../adapters/SpaceAdapter";
 import { SpaceUseCaseFactory } from "../../factories/SpaceUseCaseFactory";
 
 class SpaceController {
@@ -8,13 +9,11 @@ class SpaceController {
       const createSpace = SpaceUseCaseFactory.makeCreateSpace();
       const space = await createSpace.execute(req.body);
 
+      const output = SpaceAdapter.toOutputDTO(space);
+
       return res.status(201).json({
         message: "Espaço criado com sucesso",
-        data: {
-          id: space.id,
-          title: space.title,
-          owner_id: space.owner_id,
-        },
+        data: output,
       });
     } catch (error) {
       if (error instanceof Error) {
@@ -35,15 +34,94 @@ class SpaceController {
       const listSpaces = SpaceUseCaseFactory.makeListSpaces();
       const spaces = await listSpaces.executeByOwner({ owner_id });
 
-      return res.status(200).json({
-        data: spaces,
-        total: spaces.length,
-      });
+      const output = SpaceAdapter.toListOutputDTO(spaces);
+
+      return res.status(200).json(output);
     } catch (error) {
       if (error instanceof Error) {
         return res.status(400).json({ message: error.message });
       }
       return res.status(500).json({ message: "Erro ao listar espaços" });
+    }
+  }
+
+  async getAllSpaces(req: Request, res: Response) {
+    try {
+      const findAllSpaces = SpaceUseCaseFactory.makeFindAllSpaces();
+      const spaces = await findAllSpaces.execute();
+
+      const output = SpaceAdapter.toListOutputDTO(spaces);
+
+      return res.status(200).json(output);
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message });
+      }
+      return res.status(500).json({ message: "Erro ao listar espaços" });
+    }
+  }
+
+  async findById(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      const findByIdSpace = SpaceUseCaseFactory.makeFindByIdSpace();
+      const space = await findByIdSpace.execute(id);
+
+      if (!space) {
+        return res.status(404).json({ message: "Espaço não encontrado" });
+      }
+
+      const output = SpaceAdapter.toOutputDTO(space);
+
+      return res.status(200).json({ data: output });
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message });
+      }
+      return res.status(500).json({ message: "Erro ao buscar espaço" });
+    }
+  }
+
+  async update(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { owner_id } = req.body;
+
+      if (!owner_id) {
+        return res.status(400).json({ message: "owner_id é obrigatório" });
+      }
+
+      const updateSpace = SpaceUseCaseFactory.makeUpdateSpace();
+      await updateSpace.execute({ id, owner_id, ...req.body });
+
+      return res.status(200).json({ message: "Espaço atualizado com sucesso" });
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message });
+      }
+      return res.status(500).json({ message: "Erro ao atualizar espaço" });
+    }
+  }
+
+  async delete(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { owner_id } = req.body;
+
+      if (!owner_id) {
+        return res.status(400).json({ message: "owner_id é obrigatório" });
+      }
+
+      const deleteSpace = SpaceUseCaseFactory.makeDeleteSpace();
+      await deleteSpace.execute({ id, owner_id });
+
+      return res.status(200).json({ message: "Espaço excluído com sucesso" });
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message });
+      }
+      return res.status(500).json({ message: "Erro ao excluir espaço" });
     }
   }
 }

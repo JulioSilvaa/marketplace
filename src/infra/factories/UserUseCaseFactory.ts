@@ -8,35 +8,30 @@ import { BcryptHashService } from "../services/BcryptHashService";
 import { CryptoUuidGenerator } from "../services/CryptoUuidGenerator";
 
 export class UserUseCaseFactory {
-  private static getUserRepository() {
-    return new UserRepositoryPrisma();
-  }
-
-  private static getHashService() {
-    return new BcryptHashService();
-  }
-
-  private static getUuidGenerator() {
-    return new CryptoUuidGenerator();
-  }
-
   static makeCreateUser(): CreateUser {
-    return new CreateUser(this.getUserRepository(), this.getHashService(), this.getUuidGenerator());
-  }
-
-  static makeFindAllUsers(): FindAllUsers {
-    return new FindAllUsers(this.getUserRepository());
+    const userRepository = new UserRepositoryPrisma();
+    const hashService = new BcryptHashService();
+    const uuidGenerator = new CryptoUuidGenerator();
+    return new CreateUser(userRepository, hashService, uuidGenerator);
   }
 
   static makeFindByIdUser(): FindByIdUser {
-    return new FindByIdUser(this.getUserRepository());
+    const userRepository = new UserRepositoryPrisma();
+    return new FindByIdUser(userRepository);
   }
 
-  static makeUpdateUser(): UpdateUser {
-    return new UpdateUser(this.getUserRepository());
+  static makeFindAllUsers(): FindAllUsers {
+    const userRepository = new UserRepositoryPrisma();
+    return new FindAllUsers(userRepository);
   }
 
   static makeSearchUser(): SearchUser {
-    return new SearchUser(this.getUserRepository());
+    const userRepository = new UserRepositoryPrisma();
+    return new SearchUser(userRepository);
+  }
+
+  static makeUpdateUser(): UpdateUser {
+    const userRepository = new UserRepositoryPrisma();
+    return new UpdateUser(userRepository);
   }
 }
