@@ -5,6 +5,10 @@ export class UserRepositoryInMemory implements IUserRepository {
   private users: IUser[] = [];
 
   async create(data: IUser): Promise<void> {
+    const existingUser = await this.findByEmail(data.email);
+    if (existingUser) {
+      throw new Error("email already exists");
+    }
     await this.users.push(data);
   }
   async findByEmail(email: string): Promise<IUser | null> {
