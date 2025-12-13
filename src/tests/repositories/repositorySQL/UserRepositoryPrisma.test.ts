@@ -5,6 +5,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { IUser, UserRole, UserIsActive } from "../../../types/user";
 import { CryptoUuidGenerator } from "../../../infra/services/CryptoUuidGenerator";
 import { prisma } from "../../../lib/prisma";
+import { UserAdapter } from "../../../infra/adapters/UserAdapter";
 
 describe("UserRepositoryPrisma (Integration)", () => {
   let userRepository: UserRepositoryPrisma;
@@ -67,9 +68,9 @@ describe("UserRepositoryPrisma (Integration)", () => {
         name: userData.name,
         password: userData.password,
         phone: userData.phone,
-        role: userData.role,
+        role: UserAdapter.toPrismaRole(userData.role),
         checked: userData.checked,
-        status: userData.status,
+        status: UserAdapter.toPrismaStatus(userData.status),
       },
     });
 

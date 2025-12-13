@@ -49,9 +49,19 @@ model users {
   name          String
   phone         String
   password      String
-  role          Int
+  role          Role            @default(user)
   checked       Boolean         @default(false)
-  status        Int
+  status        Status          @default(active)
   spaces        spaces[]
   subscriptions subscriptions[]
+}
+
+enum Status {
+  active
+  inactive
+}
+
+enum Role {
+  user
+  admin
 }

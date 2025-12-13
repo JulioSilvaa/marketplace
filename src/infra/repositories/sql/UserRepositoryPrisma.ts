@@ -12,9 +12,9 @@ export class UserRepositoryPrisma implements IUserRepository {
         name: data.name,
         phone: data.phone,
         password: data.password,
-        role: data.role,
+        role: UserAdapter.toPrismaRole(data.role),
         checked: data.checked,
-        status: data.status,
+        status: UserAdapter.toPrismaStatus(data.status),
       },
     });
   }
@@ -40,11 +40,19 @@ export class UserRepositoryPrisma implements IUserRepository {
   }
 
   async update(id: string, data: Partial<IUser>): Promise<void> {
+    const prismaData: any = { ...data };
+
+    // Convert domain enums to Prisma enums if present
+    if (data.role !== undefined) {
+      prismaData.role = UserAdapter.toPrismaRole(data.role);
+    }
+    if (data.status !== undefined) {
+      prismaData.status = UserAdapter.toPrismaStatus(data.status);
+    }
+
     await prisma.users.update({
       where: { id },
-      data: {
-        ...data,
-      },
+      data: prismaData,
     });
   }
 
@@ -71,7 +79,7 @@ export class UserRepositoryPrisma implements IUserRepository {
     }
 
     if (filters.isActive !== undefined) {
-      where.status = filters.isActive ? "ATIVO" : "INATIVO";
+      where.status = filters.isActive ? "active" : "inactive";
     }
 
     const users = await prisma.users.findMany({

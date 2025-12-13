@@ -5,6 +5,26 @@ import { UserEntity } from "../../core/entities/UserEntity";
 import { IUser, UserIsActive, UserRole } from "../../types/user";
 
 export class UserAdapter {
+  // Convert domain numeric role to Prisma string role
+  static toPrismaRole(role: UserRole): "user" | "admin" {
+    return role === UserRole.CLIENTE ? "user" : "admin";
+  }
+
+  // Convert Prisma string role to domain numeric role
+  static fromPrismaRole(role: string): UserRole {
+    return role === "user" ? UserRole.CLIENTE : UserRole.PROPRIETARIO;
+  }
+
+  // Convert domain numeric status to Prisma string status
+  static toPrismaStatus(status: UserIsActive): "active" | "inactive" {
+    return status === UserIsActive.ATIVO ? "active" : "inactive";
+  }
+
+  // Convert Prisma string status to domain numeric status
+  static fromPrismaStatus(status: string): UserIsActive {
+    return status === "active" ? UserIsActive.ATIVO : UserIsActive.INATIVO;
+  }
+
   static toDomain(data: users): IUser {
     return {
       id: data.id,
@@ -12,9 +32,9 @@ export class UserAdapter {
       email: data.email,
       phone: data.phone,
       password: data.password,
-      role: data.role as UserRole,
+      role: UserAdapter.fromPrismaRole(data.role),
       checked: data.checked,
-      status: data.status as UserIsActive,
+      status: UserAdapter.fromPrismaStatus(data.status),
     };
   }
 
