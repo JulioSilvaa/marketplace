@@ -1,5 +1,5 @@
-import { SpaceEntity } from "../../core/entities/SpaceEntity";
-import { ISpaceRepository } from "../../core/repositories/ISpaceRepository";
+import { SpaceEntity } from "../../../core/entities/SpaceEntity";
+import { ISpaceRepository } from "../../../core/repositories/ISpaceRepository";
 
 export class SpaceRepositoryInMemory implements ISpaceRepository {
   public spaces: SpaceEntity[] = [];

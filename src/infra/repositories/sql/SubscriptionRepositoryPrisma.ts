@@ -1,7 +1,7 @@
-import { SubscriptionEntity } from "../../core/entities/SubscriptionEntity";
-import { ISubscriptionRepository } from "../../core/repositories/ISubscriptionRepository";
-import { prisma } from "../../lib/prisma";
-import { SubscriptionAdapter } from "../adapters/SubscriptionAdapter";
+import { SubscriptionEntity } from "../../../core/entities/SubscriptionEntity";
+import { ISubscriptionRepository } from "../../../core/repositories/ISubscriptionRepository";
+import { prisma } from "../../../lib/prisma";
+import { SubscriptionAdapter } from "../../adapters/SubscriptionAdapter";
 
 export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
   async create(subscription: SubscriptionEntity): Promise<SubscriptionEntity> {

@@ -1,7 +1,7 @@
-import { IUserRepository } from "../../core/repositories/IUserRepository";
-import { prisma } from "../../lib/prisma";
-import { IUser } from "../../types/user";
-import { UserAdapter } from "../adapters/UserAdapter";
+import { IUserRepository } from "../../../core/repositories/IUserRepository";
+import { prisma } from "../../../lib/prisma";
+import { IUser } from "../../../types/user";
+import { UserAdapter } from "../../adapters/UserAdapter";
 
 export class UserRepositoryPrisma implements IUserRepository {
   async create(data: IUser): Promise<void> {

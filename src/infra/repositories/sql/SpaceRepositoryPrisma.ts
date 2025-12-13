@@ -1,8 +1,8 @@
-import { spaces } from "../../../generated/prisma/client";
-import { SpaceEntity } from "../../core/entities/SpaceEntity";
-import { ISpaceRepository } from "../../core/repositories/ISpaceRepository";
-import { prisma } from "../../lib/prisma";
-import { SpaceAdapter } from "./../adapters/SpaceAdapter";
+import { spaces } from "../../../../generated/prisma/client";
+import { SpaceEntity } from "../../../core/entities/SpaceEntity";
+import { ISpaceRepository } from "../../../core/repositories/ISpaceRepository";
+import { prisma } from "../../../lib/prisma";
+import { SpaceAdapter } from "../../adapters/SpaceAdapter";
 
 export class SpaceRepositoryPrisma implements ISpaceRepository {
   async create(space: SpaceEntity): Promise<SpaceEntity> {

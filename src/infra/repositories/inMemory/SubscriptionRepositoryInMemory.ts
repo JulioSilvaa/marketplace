@@ -1,5 +1,5 @@
-import { SubscriptionEntity } from "../../core/entities/SubscriptionEntity";
-import { ISubscriptionRepository } from "../../core/repositories/ISubscriptionRepository";
+import { SubscriptionEntity } from "../../../core/entities/SubscriptionEntity";
+import { ISubscriptionRepository } from "../../../core/repositories/ISubscriptionRepository";
 
 export class SubscriptionRepositoryInMemory implements ISubscriptionRepository {
   public subscriptions: SubscriptionEntity[] = [];
