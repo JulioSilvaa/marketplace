@@ -17,11 +17,7 @@ describe("UserRepositoryPrisma (Integration)", () => {
     await prisma.users.deleteMany({});
   });
 
-  beforeEach(async () => {
-    // Clean data between tests to avoid conflicts
-    await prisma.subscriptions.deleteMany({});
-    await prisma.spaces.deleteMany({});
-    await prisma.users.deleteMany({});
+  beforeEach(() => {
     userRepository = new UserRepositoryPrisma();
   });
 
