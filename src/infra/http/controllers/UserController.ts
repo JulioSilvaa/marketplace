@@ -37,7 +37,7 @@ export default class UserController {
       }
       // TODO: Criar DeleteUser use case
       const repository = new (
-        await import("../../repositories/UserRepositoryPrisma")
+        await import("../../repositories/sql/UserRepositoryPrisma")
       ).UserRepositoryPrisma();
       await repository.delete(id);
 

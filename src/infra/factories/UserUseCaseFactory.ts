@@ -3,7 +3,7 @@ import { FindAllUsers } from "../../core/useCases/users/FindAll";
 import { FindByIdUser } from "../../core/useCases/users/FindById";
 import { SearchUser } from "../../core/useCases/users/Search";
 import { UpdateUser } from "../../core/useCases/users/Update";
-import { UserRepositoryPrisma } from "../repositories/UserRepositoryPrisma";
+import { UserRepositoryPrisma } from "../repositories/sql/UserRepositoryPrisma";
 import { BcryptHashService } from "../services/BcryptHashService";
 import { CryptoUuidGenerator } from "../services/CryptoUuidGenerator";
 
