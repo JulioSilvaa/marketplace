@@ -34,7 +34,7 @@ export class CreateSpace {
     const space = SpaceEntity.create({
       ...input,
       id: crypto.randomUUID(),
-      status: spaceStatus.ATIVO,
+      status: "active",
     });
 
     // 4. Persistir
