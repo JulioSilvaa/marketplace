@@ -1,37 +1,48 @@
 import { UserRepositoryInMemory } from "../../../infra/repositories/UserRepositoryInMemory";
 
 import { CreateUser } from "../../../core/useCases/users/Create";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { UserIsActive, UserRole } from "../../../types/user";
+import { IHashService } from "../../../core/services/IHashService";
+import { IUuidGenerator } from "../../../core/services/IUuidGenerator";
 
 describe("UserRepositoryInMemory", () => {
   let userRepository: UserRepositoryInMemory;
   let createUserUseCase: CreateUser;
+  let mockHashService: IHashService;
+  let mockUuidGenerator: IUuidGenerator;
+
   beforeEach(() => {
     userRepository = new UserRepositoryInMemory();
-    createUserUseCase = new CreateUser(userRepository);
+
+    mockHashService = {
+      hash: vi.fn().mockResolvedValue("hashed_password"),
+      compare: vi.fn().mockResolvedValue(true),
+    };
+
+    mockUuidGenerator = {
+      generate: vi.fn().mockReturnValue("generated-uuid-123"),
+    };
+
+    createUserUseCase = new CreateUser(userRepository, mockHashService, mockUuidGenerator);
   });
 
   it("Deveria criar um usuário", async () => {
     const userData = {
-      id: "1",
       email: "user@example.com",
       password: "password123",
       name: "Test User",
       phone: "1234567890",
       role: UserRole.CLIENTE,
-      checked: false,
-      status: UserIsActive.ATIVO,
     };
 
     await createUserUseCase.execute(userData);
     const foundUser = await userRepository.findByEmail(userData.email);
     expect(foundUser).toBeDefined();
-    expect(foundUser?.id).toBeDefined();
+    expect(foundUser?.id).toBe("generated-uuid-123");
     expect(foundUser?.email).toBe(userData.email);
     expect(foundUser?.name).toBe(userData.name);
-    // Password should be hashed, so not equal to original
-    expect(foundUser?.password).not.toBe(userData.password);
+    expect(foundUser?.password).toBe("hashed_password");
   });
 
   it("Deveria encontrar um usuário por email", async () => {
