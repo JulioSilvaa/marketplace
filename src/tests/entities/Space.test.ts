@@ -24,7 +24,7 @@ const mockValidSpaceProps: IEspace = {
   price_per_day: 1200.0,
   comfort: ["Wi-Fi", "Ar Condicionado", "Estacionamento"],
   images: ["https://example.com/img1.jpg", "https://example.com/img2.jpg"],
-  status: spaceStatus.ATIVO,
+  status: "active",
 };
 
 describe("SpaceEntity", () => {
@@ -42,7 +42,7 @@ describe("SpaceEntity", () => {
       expect(space.owner_id).toBe(mockValidSpaceProps.owner_id);
       expect(space.title).toBe("Espaço de Eventos Central");
       expect(space.capacity).toBe(150);
-      expect(space.status).toBe(spaceStatus.ATIVO);
+      expect(space.status).toBe("active");
       expect(space.images.length).toBe(2);
       expect(space.address.zipcode).toBe("01000-000");
     });

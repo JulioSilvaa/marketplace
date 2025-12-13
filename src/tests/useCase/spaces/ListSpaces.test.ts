@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { ListSpaces } from "../../../core/useCases/spaces/List";
-import { SpaceRepositoryInMemory } from "../../../infra/repositories/SpaceRepositoryInMemory";
+import { SpaceRepositoryInMemory } from "../../../infra/repositories/inMemory/SpaceRepositoryInMemory";
 import { SpaceEntity } from "../../../core/entities/SpaceEntity";
 import { spaceStatus } from "../../../types/Space";
 
@@ -32,7 +32,7 @@ describe("List Spaces UseCase", () => {
       price_per_day: 100,
       comfort: ["Wifi"],
       images: ["http://img.com"],
-      status: spaceStatus.ATIVO,
+      status: "active",
     });
 
     const space2 = SpaceEntity.create({
@@ -53,7 +53,7 @@ describe("List Spaces UseCase", () => {
       price_per_day: 200,
       comfort: ["Wifi"],
       images: ["http://img.com"],
-      status: spaceStatus.ATIVO,
+      status: "active",
     });
 
     const space3 = SpaceEntity.create({
@@ -74,7 +74,7 @@ describe("List Spaces UseCase", () => {
       price_per_day: 300,
       comfort: ["Wifi"],
       images: ["http://img.com"],
-      status: spaceStatus.ATIVO,
+      status: "active",
     });
 
     await spaceRepo.create(space1);

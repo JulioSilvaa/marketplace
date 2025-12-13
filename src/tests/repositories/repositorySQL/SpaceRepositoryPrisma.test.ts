@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import { SpaceRepositoryPrisma } from "../../../infra/repositories/SpaceRepositoryPrisma";
+import { SpaceRepositoryPrisma } from "../../../infra/repositories/sql/SpaceRepositoryPrisma";
 import { SpaceEntity } from "../../../core/entities/SpaceEntity";
 
 import { spaceStatus } from "../../../types/Space";
@@ -55,7 +55,7 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
       price_per_day: 100,
       comfort: ["WiFi"],
       images: ["https://example.com/img1.jpg"],
-      status: spaceStatus.ATIVO,
+      status: "active",
       address: {
         street: "Test St",
         number: "123",
@@ -87,7 +87,7 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
       price_per_weekend: 200,
       comfort: ["WiFi"],
       images: ["https://example.com/img1.jpg"],
-      status: spaceStatus.ATIVO,
+      status: "active",
       address: {
         street: "Find St",
         number: "456",
@@ -120,7 +120,7 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
       price_per_day: 150,
       comfort: ["WiFi"],
       images: ["https://example.com/img1.jpg"],
-      status: spaceStatus.ATIVO,
+      status: "active",
       address: {
         street: "St 1",
         number: "1",
@@ -141,7 +141,7 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
       price_per_day: 200,
       comfort: ["TV"],
       images: ["https://example.com/img2.jpg"],
-      status: spaceStatus.ATIVO,
+      status: "active",
       address: {
         street: "St 2",
         number: "2",

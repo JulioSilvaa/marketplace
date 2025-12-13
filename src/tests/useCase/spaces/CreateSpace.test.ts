@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { CreateSpace } from "../../../core/useCases/spaces/Create";
-import { SpaceRepositoryInMemory } from "../../../infra/repositories/SpaceRepositoryInMemory";
-import { UserRepositoryInMemory } from "../../../infra/repositories/UserRepositoryInMemory";
-import { SubscriptionRepositoryInMemory } from "../../../infra/repositories/SubscriptionRepositoryInMemory";
+import { SpaceRepositoryInMemory } from "../../../infra/repositories/inMemory/SpaceRepositoryInMemory";
+import { UserRepositoryInMemory } from "../../../infra/repositories/inMemory/UserRepositoryInMemory";
+import { SubscriptionRepositoryInMemory } from "../../../infra/repositories/inMemory/SubscriptionRepositoryInMemory";
 import { SubscriptionEntity } from "../../../core/entities/SubscriptionEntity";
 import { SubscriptionStatus } from "../../../types/Subscription";
 import { spaceStatus } from "../../../types/Space";
