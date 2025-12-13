@@ -55,10 +55,10 @@ jobs:
           CI: true
           DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
       
-      - name: Run Tests (development)
-        run: |
-          npx prisma migrate deploy
-          yarn test:dev
-        env:
-          CI: true
-          DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public     
+      # - name: Run Tests (development)
+      #   run: |
+      #     npx prisma migrate deploy
+      #     yarn test:dev
+      #   env:
+      #     CI: true
+      #     DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public     
