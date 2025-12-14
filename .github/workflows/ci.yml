@@ -54,6 +54,8 @@ jobs:
         env:
           CI: true
           DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
+          JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
       
       # - name: Run Tests (development)
       #   run: |
