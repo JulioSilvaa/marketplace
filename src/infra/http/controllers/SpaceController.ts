@@ -6,8 +6,18 @@ import { SpaceUseCaseFactory } from "../../factories/SpaceUseCaseFactory";
 class SpaceController {
   async add(req: Request, res: Response) {
     try {
+      // user_id vem do token JWT (AuthMiddleware)
+      const owner_id = req.user_id;
+
+      if (!owner_id) {
+        return res.status(401).json({ message: "Usuário não autenticado" });
+      }
+
       const createSpace = SpaceUseCaseFactory.makeCreateSpace();
-      const space = await createSpace.execute(req.body);
+      const space = await createSpace.execute({
+        ...req.body,
+        owner_id, // Sobrescreve qualquer owner_id do body
+      });
 
       const output = SpaceAdapter.toOutputDTO(space);
 
@@ -86,10 +96,11 @@ class SpaceController {
   async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { owner_id } = req.body;
+      // owner_id vem do token JWT (AuthMiddleware)
+      const owner_id = req.user_id;
 
       if (!owner_id) {
-        return res.status(400).json({ message: "owner_id é obrigatório" });
+        return res.status(401).json({ message: "Usuário não autenticado" });
       }
 
       const updateSpace = SpaceUseCaseFactory.makeUpdateSpace();
@@ -107,10 +118,11 @@ class SpaceController {
   async delete(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const { owner_id } = req.body;
+      // owner_id vem do token JWT (AuthMiddleware)
+      const owner_id = req.user_id;
 
       if (!owner_id) {
-        return res.status(400).json({ message: "owner_id é obrigatório" });
+        return res.status(401).json({ message: "Usuário não autenticado" });
       }
 
       const deleteSpace = SpaceUseCaseFactory.makeDeleteSpace();
