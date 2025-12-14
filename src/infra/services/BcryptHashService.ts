@@ -4,7 +4,7 @@ import { IHashService } from "../../core/services/IHashService";
 
 export class BcryptHashService implements IHashService {
   async hash(value: string): Promise<string> {
-    return bcrypt.hash(value, 10);
+    return bcrypt.hash(value, Number(process.env.BCRYPT_SALT));
   }
 
   async compare(value: string, hash: string): Promise<boolean> {

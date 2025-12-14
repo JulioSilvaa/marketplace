@@ -44,16 +44,31 @@ model subscriptions {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model users {
-  id            String          @id
-  email         String          @unique
-  name          String
-  phone         String
-  password      String
-  role          Role            @default(user)
-  checked       Boolean         @default(false)
-  status        Status          @default(active)
-  spaces        spaces[]
-  subscriptions subscriptions[]
+  id                    String                  @id
+  email                 String                  @unique
+  name                  String
+  phone                 String
+  password              String
+  role                  Role                    @default(user)
+  checked               Boolean                 @default(false)
+  status                Status                  @default(active)
+  spaces                spaces[]
+  subscriptions         subscriptions[]
+  password_reset_tokens password_reset_tokens[]
+}
+
+/// This model stores password reset tokens
+model password_reset_tokens {
+  id         String   @id
+  user_id    String
+  token      String   @unique
+  expires_at DateTime
+  used       Boolean  @default(false)
+  created_at DateTime @default(now())
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([user_id])
 }
 
 enum Status {
