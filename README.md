@@ -136,12 +136,29 @@ cp .env.example .env
 Edite o arquivo `.env` com suas credenciais:
 
 ```env
+# Database
 POSTGRES_USER=lazer_user
 POSTGRES_PASSWORD=sua_senha_forte_aqui
 POSTGRES_DB=lazer
 DATABASE_URL=postgresql://lazer_user:sua_senha_forte_aqui@postgres:5432/lazer?schema=public
+
+# Server
 PORT=3000
+NODE_ENV=development
+
+# JWT Secrets (IMPORTANTE: Use valores diferentes e seguros em produção)
+JWT_ACCESS_SECRET=seu_secret_de_access_token_aqui_mude_em_producao
+JWT_REFRESH_SECRET=seu_secret_de_refresh_token_aqui_mude_em_producao
+
+# Bcrypt
+BCRYPT_SALT=10
 ```
+
+**⚠️ IMPORTANTE:**
+
+- Nunca commite o arquivo `.env` no Git
+- Use secrets fortes e únicos em produção
+- Gere secrets com: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
 
 ### 🔧 Modo Desenvolvimento
 
@@ -241,11 +258,43 @@ curl http://localhost:3000/health
 
 ### 🔐 Segurança
 
-- ✅ Hash de senhas com bcryptjs
-- ✅ Validação rigorosa de inputs (email, telefone, CPF)
-- ✅ Proteção contra SQL Injection (Prisma ORM)
-- ✅ CORS configurado
-- ✅ Containers com usuário não-root
+- ✅ **Autenticação JWT** com Access e Refresh Tokens
+- ✅ **Hash de senhas** com bcryptjs (salt rounds: 10)
+- ✅ **Rate Limiting** em endpoints críticos
+  - Login: 5 tentativas / 15 minutos
+  - Registro: 3 tentativas / hora
+  - Reset de senha: 3 tentativas / hora
+- ✅ **Cookies HttpOnly** para Refresh Tokens
+- ✅ **Reset de senha seguro** com tokens de expiração (1 hora)
+- ✅ **Validação rigorosa** de inputs (email, telefone, CPF)
+- ✅ **Proteção contra SQL Injection** (Prisma ORM)
+- ✅ **CORS configurado**
+- ✅ **Containers com usuário não-root**
+- ✅ **Prevenção de reuso de tokens** de reset
+- ✅ **Não revelação de informações** (emails existentes)
+
+### 🔑 Autenticação e Autorização
+
+- ✅ **Sistema JWT completo**
+  - Access Token (curta duração)
+  - Refresh Token (7 dias, HttpOnly cookie)
+- ✅ **Registro e Login**
+  - Validação de email único
+  - Hash bcrypt com salt
+  - Login automático após registro
+- ✅ **Reset de Senha**
+  - Solicitação via email
+  - Token seguro de 1 hora
+  - Validação de força de senha
+  - Prevenção de reuso de tokens
+- ✅ **Proteção de Rotas**
+  - Middleware de autenticação
+  - Validação de tokens
+  - Refresh automático
+- ✅ **Rate Limiting**
+  - Proteção contra brute force
+  - Limites por endpoint
+  - Headers informativos
 
 ### 👥 Gestão de Usuários (Proprietários)
 
@@ -357,7 +406,150 @@ GET /health
 
 Retorna status da aplicação (usado pelo Docker healthcheck)
 
-### Usuários
+### 🔐 Autenticação
+
+#### Registro
+
+```http
+POST /api/auth/register
+Content-Type: application/json
+
+{
+  "name": "João Silva",
+  "email": "joao@example.com",
+  "password": "senha123",
+  "phone": "11999999999"
+}
+```
+
+**Resposta (201):**
+
+```json
+{
+  "message": "Usuário criado com sucesso",
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "uuid",
+    "name": "João Silva",
+    "email": "joao@example.com"
+  }
+}
+```
+
+**Rate Limit:** 3 tentativas/hora
+
+#### Login
+
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao@example.com",
+  "password": "senha123"
+}
+```
+
+**Resposta (200):**
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "uuid",
+    "name": "João Silva",
+    "email": "joao@example.com"
+  }
+}
+```
+
+**Rate Limit:** 5 tentativas/15min
+
+**Nota:** Refresh Token é enviado via cookie HttpOnly
+
+#### Refresh Token
+
+```http
+POST /api/auth/refresh
+Cookie: refreshToken=...
+```
+
+**Resposta (200):**
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Rate Limit:** 10 tentativas/15min
+
+#### Logout
+
+```http
+POST /api/auth/logout
+```
+
+**Resposta (200):**
+
+```json
+{
+  "message": "Logout realizado com sucesso"
+}
+```
+
+#### Esqueci Minha Senha
+
+```http
+POST /api/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "joao@example.com"
+}
+```
+
+**Resposta (200):**
+
+```json
+{
+  "message": "Se o email existir, você receberá instruções para redefinir sua senha"
+}
+```
+
+**Rate Limit:** 3 tentativas/hora
+
+**Segurança:** Não revela se o email existe no sistema
+
+#### Resetar Senha
+
+```http
+POST /api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "token-recebido-por-email",
+  "newPassword": "novaSenha123"
+}
+```
+
+**Resposta (200):**
+
+```json
+{
+  "message": "Senha redefinida com sucesso"
+}
+```
+
+**Rate Limit:** 5 tentativas/15min
+
+**Validações:**
+
+- Token válido e não expirado (1 hora)
+- Senha mínima de 6 caracteres
+- Token não pode ser reutilizado
+
+### 👥 Usuários
 
 ```http
 GET    /api/user              # Lista todos os usuários
@@ -485,14 +677,28 @@ Os testes cobrem:
 
 ## 🚧 Roadmap
 
-- [ ] Implementar autenticação JWT
+### ✅ Concluído
+
+- [x] Autenticação JWT completa
+- [x] Sistema de refresh tokens
+- [x] Reset de senha seguro
+- [x] Rate limiting
+- [x] Testes automatizados (184 testes)
+
+### 🚀 Em Desenvolvimento
+
+- [ ] Serviço de envio de emails (SMTP)
 - [ ] Sistema de reservas/agendamento
 - [ ] Upload de imagens (S3/Cloudinary)
-- [ ] Notificações por email
+
+### 📋 Planejado
+
 - [ ] Painel administrativo
 - [ ] API de pagamentos (Stripe/Mercado Pago)
 - [ ] Sistema de avaliações
 - [ ] Busca geolocalizada
+- [ ] Notificações push
+- [ ] Chat entre proprietário e cliente
 
 ---
 
