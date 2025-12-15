@@ -4,11 +4,13 @@ import { ForgotPassword } from "../../../core/useCases/auth/ForgotPassword";
 import { IUserRepository } from "../../../core/repositories/IUserRepository";
 import { IPasswordResetTokenRepository } from "../../../core/repositories/IPasswordResetTokenRepository";
 import { IUser, UserRole, UserIsActive } from "../../../types/user";
+import { IEmailService } from "../../../core/services/IEmailService";
 
 describe("ForgotPassword", () => {
   let forgotPassword: ForgotPassword;
   let mockUserRepository: IUserRepository;
   let mockResetTokenRepository: IPasswordResetTokenRepository;
+  let mockEmailService: IEmailService;
 
   beforeEach(() => {
     // Mock do repositório de usuários
@@ -30,7 +32,16 @@ describe("ForgotPassword", () => {
       deleteExpired: vi.fn(),
     };
 
-    forgotPassword = new ForgotPassword(mockUserRepository, mockResetTokenRepository);
+    // Mock do serviço de email
+    mockEmailService = {
+      sendPasswordResetEmail: vi.fn(),
+    };
+
+    forgotPassword = new ForgotPassword(
+      mockUserRepository,
+      mockResetTokenRepository,
+      mockEmailService
+    );
   });
 
   it("deve gerar token para email válido", async () => {

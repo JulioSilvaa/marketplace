@@ -10,12 +10,14 @@ import { ForgotPassword } from "../../../core/useCases/auth/ForgotPassword";
 import { ResetPassword } from "../../../core/useCases/auth/ResetPassword";
 import { IUser, UserRole, UserIsActive } from "../../../types/user";
 import { CryptoUuidGenerator } from "../../../infra/services/CryptoUuidGenerator";
+import { MockEmailService } from "../../mocks/MockEmailService";
 
 describe("Auth Use Cases (Integration)", () => {
   let userRepository: UserRepositoryPrisma;
   let resetTokenRepository: PasswordResetTokenRepositoryPrisma;
   let hashService: BcryptHashService;
   let uuidGenerator: CryptoUuidGenerator;
+  let mockEmailService: MockEmailService;
 
   beforeAll(async () => {
     // Configurar variáveis de ambiente JWT para testes
@@ -44,6 +46,7 @@ describe("Auth Use Cases (Integration)", () => {
     resetTokenRepository = new PasswordResetTokenRepositoryPrisma();
     hashService = new BcryptHashService();
     uuidGenerator = new CryptoUuidGenerator();
+    mockEmailService = new MockEmailService();
   });
 
   afterAll(async () => {
@@ -135,7 +138,11 @@ describe("Auth Use Cases (Integration)", () => {
 
   describe("ForgotPassword (Integration)", () => {
     it("deve gerar token de reset para email válido", async () => {
-      const forgotPassword = new ForgotPassword(userRepository, resetTokenRepository);
+      const forgotPassword = new ForgotPassword(
+        userRepository,
+        resetTokenRepository,
+        mockEmailService
+      );
       const hashedPassword = await hashService.hash("password123");
 
       const testUser: IUser = {
@@ -163,7 +170,11 @@ describe("Auth Use Cases (Integration)", () => {
     });
 
     it("deve armazenar data de expiração do token", async () => {
-      const forgotPassword = new ForgotPassword(userRepository, resetTokenRepository);
+      const forgotPassword = new ForgotPassword(
+        userRepository,
+        resetTokenRepository,
+        mockEmailService
+      );
       const hashedPassword = await hashService.hash("password123");
 
       const testUser: IUser = {
@@ -187,7 +198,11 @@ describe("Auth Use Cases (Integration)", () => {
     });
 
     it("deve retornar sucesso mesmo com email inexistente (segurança)", async () => {
-      const forgotPassword = new ForgotPassword(userRepository, resetTokenRepository);
+      const forgotPassword = new ForgotPassword(
+        userRepository,
+        resetTokenRepository,
+        mockEmailService
+      );
 
       const result = await forgotPassword.execute({ email: "nonexistent@test.com" });
 
@@ -199,7 +214,11 @@ describe("Auth Use Cases (Integration)", () => {
 
   describe("ResetPassword (Integration)", () => {
     it("deve resetar senha com token válido", async () => {
-      const forgotPassword = new ForgotPassword(userRepository, resetTokenRepository);
+      const forgotPassword = new ForgotPassword(
+        userRepository,
+        resetTokenRepository,
+        mockEmailService
+      );
       const resetPassword = new ResetPassword(userRepository, resetTokenRepository, hashService);
       const hashedPassword = await hashService.hash("oldpassword");
 
@@ -238,7 +257,11 @@ describe("Auth Use Cases (Integration)", () => {
     });
 
     it("deve invalidar token após uso bem-sucedido", async () => {
-      const forgotPassword = new ForgotPassword(userRepository, resetTokenRepository);
+      const forgotPassword = new ForgotPassword(
+        userRepository,
+        resetTokenRepository,
+        mockEmailService
+      );
       const resetPassword = new ResetPassword(userRepository, resetTokenRepository, hashService);
       const hashedPassword = await hashService.hash("oldpassword");
 
@@ -307,7 +330,11 @@ describe("Auth Use Cases (Integration)", () => {
 
   describe("Fluxo End-to-End", () => {
     it("Forgot Password → Reset Password → Login com nova senha", async () => {
-      const forgotPassword = new ForgotPassword(userRepository, resetTokenRepository);
+      const forgotPassword = new ForgotPassword(
+        userRepository,
+        resetTokenRepository,
+        mockEmailService
+      );
       const resetPassword = new ResetPassword(userRepository, resetTokenRepository, hashService);
       const loginUser = new LoginUser(userRepository, hashService);
       const hashedPassword = await hashService.hash("originalpassword");
