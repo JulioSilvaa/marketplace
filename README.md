@@ -84,7 +84,7 @@
                              │ HTTP/REST
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      EXPRESS SERVER (Port 3000)                  │
+│                      EXPRESS SERVER (Port ${PORT})                  │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
 │  │   Routes     │─▶│ Controllers  │─▶│   Adapters   │          │
 │  └──────────────┘  └──────────────┘  └──────────────┘          │
@@ -180,7 +180,7 @@ docker compose logs -f app-dev
 docker compose --profile dev down
 ```
 
-Acesse: **http://localhost:3000**
+Acesse: **http://localhost:${PORT}** (porta configurada no `.env`)
 
 ### 🚀 Modo Produção
 
@@ -249,7 +249,7 @@ docker compose down -v
 **Testar health check:**
 
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:${PORT}/health
 ```
 
 ---
@@ -262,8 +262,10 @@ curl http://localhost:3000/health
 - ✅ **Hash de senhas** com bcryptjs (salt rounds: 10)
 - ✅ **Rate Limiting** em endpoints críticos
   - Login: 5 tentativas / 15 minutos
-  - Registro: 3 tentativas / hora
-  - Reset de senha: 3 tentativas / hora
+  - Registro: 3 tentativas / 15 minutos
+  - Refresh: 10 tentativas / 15 minutos
+  - Forgot Password: 3 tentativas / 15 minutos
+  - Reset de senha: 3 tentativas / 15 minutos
 - ✅ **Cookies HttpOnly** para Refresh Tokens
 - ✅ **Reset de senha seguro** com tokens de expiração (1 hora)
 - ✅ **Validação rigorosa** de inputs (email, telefone, CPF)
@@ -408,10 +410,15 @@ Retorna status da aplicação (usado pelo Docker healthcheck)
 
 ### 🔐 Autenticação
 
+> [!NOTE]
+> **Base URL de Autenticação**: `/auth` (não `/api/auth`)
+>
+> **Porta**: Configurável via variável `PORT` no `.env` (padrão: 3000)
+
 #### Registro
 
 ```http
-POST /api/auth/register
+POST /auth/register
 Content-Type: application/json
 
 {
@@ -436,12 +443,12 @@ Content-Type: application/json
 }
 ```
 
-**Rate Limit:** 3 tentativas/hora
+**Rate Limit:** 3 tentativas/15 minutos
 
 #### Login
 
 ```http
-POST /api/auth/login
+POST /auth/login
 Content-Type: application/json
 
 {
@@ -482,12 +489,14 @@ Cookie: refreshToken=...
 }
 ```
 
-**Rate Limit:** 10 tentativas/15min
+**Rate Limit:** 10 tentativas/15 minutos
+
+**Nota:** O refresh token é lido automaticamente do cookie HttpOnly. Não é necessário enviar no body ou header.
 
 #### Logout
 
 ```http
-POST /api/auth/logout
+POST /auth/logout
 ```
 
 **Resposta (200):**
@@ -501,7 +510,7 @@ POST /api/auth/logout
 #### Esqueci Minha Senha
 
 ```http
-POST /api/auth/forgot-password
+POST /auth/forgot-password
 Content-Type: application/json
 
 {
@@ -517,14 +526,14 @@ Content-Type: application/json
 }
 ```
 
-**Rate Limit:** 3 tentativas/hora
+**Rate Limit:** 3 tentativas/15 minutos
 
 **Segurança:** Não revela se o email existe no sistema
 
 #### Resetar Senha
 
 ```http
-POST /api/auth/reset-password
+POST /auth/reset-password
 Content-Type: application/json
 
 {
@@ -541,7 +550,7 @@ Content-Type: application/json
 }
 ```
 
-**Rate Limit:** 5 tentativas/15min
+**Rate Limit:** 3 tentativas/15 minutos
 
 **Validações:**
 
@@ -551,31 +560,55 @@ Content-Type: application/json
 
 ### 👥 Usuários
 
+> [!IMPORTANT]
+> **Rotas Públicas vs Protegidas**
+>
+> - **Rotas Públicas** (sem autenticação): Visitantes podem listar e buscar usuários
+> - **Rotas Protegidas** (requerem autenticação): Criar, atualizar e deletar usuários
+
 ```http
+# Rotas Públicas (sem token)
 GET    /api/user              # Lista todos os usuários
 GET    /api/user/search       # Busca usuários (query params)
 GET    /api/user/:id          # Busca por ID
+
+# Rotas Protegidas (requerem Authorization: Bearer {token})
 POST   /api/user              # Cria novo usuário
 PATCH  /api/user/:id          # Atualiza usuário
 DELETE /api/user/:id          # Remove usuário
 ```
 
-### Espaços (em desenvolvimento)
+### 🏠 Espaços
+
+> [!IMPORTANT]
+> **Rotas Públicas vs Protegidas**
+>
+> - **Rotas Públicas** (sem autenticação): Visitantes podem explorar espaços disponíveis
+> - **Rotas Protegidas** (requerem autenticação): Apenas proprietários podem criar/editar/deletar
 
 ```http
-GET    /api/spaces            # Lista espaços
+# Rotas Públicas (sem token)
+GET    /api/spaces            # Lista espaços (paginado)
+GET    /api/spaces/all        # Lista todos os espaços
 GET    /api/spaces/:id        # Detalhes do espaço
+
+# Rotas Protegidas (requerem Authorization: Bearer {token})
 POST   /api/spaces            # Cadastra espaço
 PATCH  /api/spaces/:id        # Atualiza espaço
 DELETE /api/spaces/:id        # Remove espaço
 ```
 
-### Assinaturas (em desenvolvimento)
+### 💳 Assinaturas
+
+> [!WARNING]
+> **Todas as rotas protegidas** - Futura implementação de controle SUPER_ADMIN
 
 ```http
-GET    /api/subscriptions/:userId    # Assinatura do usuário
-POST   /api/subscriptions            # Cria assinatura
-PATCH  /api/subscriptions/:id        # Atualiza assinatura
+# Todas requerem Authorization: Bearer {token}
+GET    /api/subscription                # Lista assinaturas
+GET    /api/subscription/user/:userId   # Assinatura do usuário
+POST   /api/subscription                # Cria assinatura
+PATCH  /api/subscription/:id            # Atualiza assinatura
 ```
 
 ---
