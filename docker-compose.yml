@@ -35,10 +35,14 @@ services:
     container_name: app-dev
     working_dir: /app
     ports:
-      - "3000:3000"
+      - "${PORT:-3000}:${PORT:-3000}"
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://${POSTGRES_USER}:v5Y9t8mVb65e2J7b8THzqlvjG02FhebsFvaHI95%2FXkY%3D@postgres:5432/${POSTGRES_DB}?schema=public
+      - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - BCRYPT_SALT=${BCRYPT_SALT:-10}
+      - PORT=${PORT:-3000}
     volumes:
       - ./src:/app/src
       - ./public:/app/public
