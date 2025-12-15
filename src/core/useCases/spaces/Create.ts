@@ -1,21 +1,17 @@
 import crypto from "crypto";
 
-import { SubscriptionStatus } from "../../../types/Subscription";
 import { CreateSpaceDTO } from "../../dtos/CreateSpaceDTO";
 import { SpaceEntity } from "../../entities/SpaceEntity";
 import { ISpaceRepository } from "../../repositories/ISpaceRepository";
-import { ISubscriptionRepository } from "../../repositories/ISubscriptionRepository";
 import { IUserRepository } from "../../repositories/IUserRepository";
 
 export class CreateSpace {
   constructor(
     private spaceRepository: ISpaceRepository,
-    private userRepository: IUserRepository,
-    private subscriptionRepository: ISubscriptionRepository
+    private userRepository: IUserRepository
   ) {
     this.spaceRepository = spaceRepository;
     this.userRepository = userRepository;
-    this.subscriptionRepository = subscriptionRepository;
   }
 
   async execute(input: CreateSpaceDTO): Promise<SpaceEntity> {
@@ -23,10 +19,10 @@ export class CreateSpace {
     if (!owner) {
       throw new Error("Owner not found");
     }
-    const subscription = await this.subscriptionRepository.findByUserId(input.owner_id);
-    if (!subscription || subscription.status !== SubscriptionStatus.ACTIVE) {
-      throw new Error("User needs an active subscription to create a space");
-    }
+
+    // TODO: Implementar validação de subscription quando integrar Mercado Pago
+    // A validação deve verificar se o usuário tem uma subscription ativa antes de criar espaço
+    // Referência: https://www.mercadopago.com.br/developers/pt/docs/subscriptions/landing
 
     const space = SpaceEntity.create({
       ...input,
