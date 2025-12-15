@@ -152,7 +152,55 @@ JWT_REFRESH_SECRET=seu_secret_de_refresh_token_aqui_mude_em_producao
 
 # Bcrypt
 BCRYPT_SALT=10
+
+# Resend Email Service (Opcional - para envio de emails de reset de senha)
+RESEND_API_KEY=re_sua_api_key_aqui
+FRONTEND_URL=http://localhost:3000
+EMAIL_FROM=onboarding@resend.dev
+EMAIL_FROM_NAME=Lazer
 ```
+
+#### 📧 Configuração do Resend (Opcional)
+
+O sistema de reset de senha está **totalmente funcional sem email**. Em modo development/test, o token é retornado diretamente na resposta da API.
+
+**Para habilitar envio de emails:**
+
+1.  **Criar conta no Resend** (gratuito)
+    - Acesse [resend.com](https://resend.com)
+    - Crie sua conta
+    - 100 emails/dia grátis
+
+2.  **Obter API Key**
+    - Dashboard → API Keys → Create API Key
+    - Copie a key (começa com `re_`)
+
+3.  **Configurar no `.env`**
+
+    ```env
+    RESEND_API_KEY=re_sua_key_aqui
+    FRONTEND_URL=http://localhost:3000  # URL do seu frontend
+    EMAIL_FROM=onboarding@resend.dev    # Email de teste (sem domínio)
+    EMAIL_FROM_NAME=Lazer
+    ```
+
+4.  **Reiniciar container**
+    ```bash
+    docker compose restart app-dev
+    ```
+
+**Sem domínio verificado:**
+
+- Use `EMAIL_FROM=onboarding@resend.dev` (email de teste do Resend)
+- Emails podem cair em spam
+- Gmail geralmente aceita melhor que Yahoo/Outlook
+
+**Com domínio próprio (produção):**
+
+- Configure domínio no dashboard do Resend
+- Adicione registros DNS (SPF, DKIM, DMARC)
+- Use `EMAIL_FROM=noreply@seudominio.com`
+- Emails chegam direto na caixa de entrada
 
 **⚠️ IMPORTANTE:**
 
