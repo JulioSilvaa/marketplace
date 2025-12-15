@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { Request, Response } from "express";
 
 import { SpaceAdapter } from "../../adapters/SpaceAdapter";
@@ -13,10 +14,64 @@ class SpaceController {
         return res.status(401).json({ message: "Usuário não autenticado" });
       }
 
+      // Processar imagens se houver
+      let imageUrls: string[] = [];
+      if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+        const { SharpImageService } = await import("../../services/SharpImageService");
+        const { SupabaseStorageService } = await import("../../services/SupabaseStorageService");
+
+        const imageService = new SharpImageService();
+        const storageService = new SupabaseStorageService();
+        const BUCKET_NAME = "space-images";
+
+        for (const file of req.files as Express.Multer.File[]) {
+          // Validar e processar imagem
+          await imageService.validateImage(file.buffer, file.mimetype);
+          const processed = await imageService.processImage(file.buffer, file.originalname);
+
+          // Gerar nome único
+          const timestamp = Date.now();
+          const baseName = file.originalname.replace(/\.[^/.]+$/, "");
+          const sanitizedName = baseName.replace(/[^a-zA-Z0-9-_]/g, "_");
+
+          // Upload apenas do large (original otimizado)
+          const largePath = `spaces/temp_${timestamp}_${sanitizedName}.webp`;
+          const largeUrl = await storageService.uploadImage(
+            BUCKET_NAME,
+            largePath,
+            processed.large,
+            "image/webp"
+          );
+
+          imageUrls.push(largeUrl);
+        }
+      }
+
+      // Parsear dados do formulário
+      let spaceData = req.body;
+
+      // Se vier como string (multipart/form-data), fazer parse
+      if (typeof spaceData.address === "string") {
+        spaceData.address = JSON.parse(spaceData.address);
+      }
+      if (typeof spaceData.comfort === "string") {
+        spaceData.comfort = JSON.parse(spaceData.comfort);
+      }
+      if (typeof spaceData.price_per_day === "string") {
+        spaceData.price_per_day = parseFloat(spaceData.price_per_day);
+      }
+      if (typeof spaceData.price_per_weekend === "string") {
+        spaceData.price_per_weekend = parseFloat(spaceData.price_per_weekend);
+      }
+      if (typeof spaceData.capacity === "string") {
+        spaceData.capacity = parseInt(spaceData.capacity);
+      }
+
       const createSpace = SpaceUseCaseFactory.makeCreateSpace();
       const space = await createSpace.execute({
-        ...req.body,
-        owner_id, // Sobrescreve qualquer owner_id do body
+        ...spaceData,
+        owner_id,
+        images: imageUrls.length > 0 ? imageUrls : spaceData.images || [],
       });
 
       const output = SpaceAdapter.toOutputDTO(space);
@@ -37,15 +92,18 @@ class SpaceController {
     try {
       const { owner_id } = req.query;
 
-      if (!owner_id || typeof owner_id !== "string") {
-        return res.status(400).json({ message: "owner_id é obrigatório" });
+      // Se owner_id for fornecido, filtra por proprietário
+      if (owner_id && typeof owner_id === "string") {
+        const listSpaces = SpaceUseCaseFactory.makeListSpaces();
+        const spaces = await listSpaces.executeByOwner({ owner_id });
+        const output = SpaceAdapter.toListOutputDTO(spaces);
+        return res.status(200).json(output);
       }
 
-      const listSpaces = SpaceUseCaseFactory.makeListSpaces();
-      const spaces = await listSpaces.executeByOwner({ owner_id });
-
+      // Caso contrário, lista todos os espaços
+      const findAllSpaces = SpaceUseCaseFactory.makeFindAllSpaces();
+      const spaces = await findAllSpaces.execute();
       const output = SpaceAdapter.toListOutputDTO(spaces);
-
       return res.status(200).json(output);
     } catch (error) {
       if (error instanceof Error) {

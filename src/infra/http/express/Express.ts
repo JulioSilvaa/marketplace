@@ -7,6 +7,7 @@ import { globalLimiter } from "../middlewares/RateLimitMiddleware";
 import AuthRouter from "../routes/AuthRouter";
 import SpacesRouter from "../routes/SpacesRouter";
 import SubscriptionRouter from "../routes/SubscriptionRouter";
+import { uploadRouter } from "../routes/UploadRouter";
 import UserRouter from "../routes/UserRouter";
 
 const app = express();
@@ -30,6 +31,7 @@ app.use("/auth", AuthRouter);
 app.use("/api/user", UserRouter);
 app.use("/api/spaces", SpacesRouter);
 app.use("/api/subscription", SubscriptionRouter);
+app.use("/api/upload", uploadRouter);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err);
@@ -42,5 +44,5 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Rodando na porta ${PORT}`);
+  console.error(`Rodando na porta ${PORT}`);
 });

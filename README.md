@@ -646,6 +646,111 @@ PATCH  /api/spaces/:id        # Atualiza espaço
 DELETE /api/spaces/:id        # Remove espaço
 ```
 
+### 📸 Upload de Imagens
+
+> [!IMPORTANT]
+> **Todas as rotas protegidas** - Requerem autenticação JWT
+
+```http
+# Rotas Protegidas (requerem Authorization: Bearer {token})
+POST   /api/upload/images           # Upload de imagens
+DELETE /api/upload/images/:filename # Deletar imagem
+```
+
+#### Upload de Imagens
+
+```http
+POST /api/upload/images
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
+
+Body:
+- images: File[] (obrigatório, max 10)
+- spaceId: string (opcional, para organizar por espaço)
+```
+
+**Validações:**
+
+- ✅ Formatos aceitos: JPEG, PNG, WebP
+- ✅ Tamanho máximo: 5MB por imagem
+- ✅ Quantidade máxima: 10 imagens por upload
+- ✅ Processamento automático: 3 tamanhos (thumbnail, medium, large)
+- ✅ Conversão automática para WebP (70% menor)
+
+**Exemplo cURL:**
+
+```bash
+curl -X POST http://localhost:3000/api/upload/images \
+  -H "Authorization: Bearer eyJhbGc..." \
+  -F "images=@foto1.jpg" \
+  -F "images=@foto2.png" \
+  -F "spaceId=uuid-do-espaco"
+```
+
+**Resposta (201):**
+
+```json
+{
+  "message": "2 imagem(ns) enviada(s) com sucesso",
+  "images": [
+    {
+      "thumbnail": "https://projeto.supabase.co/storage/v1/object/public/space-images/spaces/uuid/thumb_1234_foto1.webp",
+      "medium": "https://projeto.supabase.co/storage/v1/object/public/space-images/spaces/uuid/medium_1234_foto1.webp",
+      "large": "https://projeto.supabase.co/storage/v1/object/public/space-images/spaces/uuid/large_1234_foto1.webp",
+      "metadata": {
+        "originalSize": 2048000,
+        "compressedSize": 450000,
+        "format": "webp",
+        "width": 4000,
+        "height": 3000
+      }
+    }
+  ]
+}
+```
+
+**Erros comuns:**
+
+```json
+// Arquivo muito grande
+{
+  "error": "Arquivo muito grande. O tamanho máximo é 5MB por imagem."
+}
+
+// Muitos arquivos
+{
+  "error": "Muitos arquivos. O máximo é 10 imagens por upload."
+}
+
+// Formato inválido
+{
+  "error": "Formato inválido. Apenas JPEG, PNG e WebP são permitidos."
+}
+
+// Sem autenticação
+{
+  "message": "Token não fornecido"
+}
+```
+
+#### Deletar Imagem
+
+```http
+DELETE /api/upload/images/:filename
+Authorization: Bearer {token}
+
+Body (opcional):
+- spaceId: string
+```
+
+**Resposta (200):**
+
+```json
+{
+  "message": "Imagem deletada com sucesso"
+}
+```
+
 ### 💳 Assinaturas
 
 > [!WARNING]

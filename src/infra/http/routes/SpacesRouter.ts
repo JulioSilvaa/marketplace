@@ -3,6 +3,7 @@ import { Router } from "express";
 import ExpressAdapter from "../../adapters/ExpressAdapter";
 import SpaceController from "../controllers/SpaceController";
 import AuthMiddleware from "../middlewares/AuthMiddleware";
+import { uploadImages } from "../middlewares/uploadMiddleware";
 
 const router = Router();
 
@@ -15,7 +16,7 @@ router.get("/all", ExpressAdapter.create(SpaceController.getAllSpaces));
 router.get("/:id", ExpressAdapter.create(SpaceController.findById));
 
 // 3. Rotas protegidas (requerem autenticação)
-router.post("/", AuthMiddleware.auth, ExpressAdapter.create(SpaceController.add));
+router.post("/", AuthMiddleware.auth, uploadImages, ExpressAdapter.create(SpaceController.add));
 router.patch("/:id", AuthMiddleware.auth, ExpressAdapter.create(SpaceController.update));
 router.delete("/:id", AuthMiddleware.auth, ExpressAdapter.create(SpaceController.delete));
 
