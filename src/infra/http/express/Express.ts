@@ -26,10 +26,10 @@ app.get("/health", (req: Request, res: Response) => {
 // Rotas públicas (não requerem autenticação)
 app.use("/auth", AuthRouter);
 
-// Rotas protegidas (requerem autenticação)
-app.use("/api/user", AuthMiddleware.auth, UserRouter);
-app.use("/api/spaces", AuthMiddleware.auth, SpacesRouter);
-app.use("/api/subscription", AuthMiddleware.auth, SubscriptionRouter);
+// Rotas com autenticação gerenciada internamente por cada router
+app.use("/api/user", UserRouter);
+app.use("/api/spaces", SpacesRouter);
+app.use("/api/subscription", SubscriptionRouter);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err);

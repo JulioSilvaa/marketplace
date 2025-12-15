@@ -2,15 +2,23 @@ import { Router } from "express";
 
 import ExpressAdapter from "../../adapters/ExpressAdapter";
 import SubscriptionController from "../controllers/SubscriptionController";
+import AuthMiddleware from "../middlewares/AuthMiddleware";
 
 const router = Router();
 
-// Collection routes
-router.get("/", ExpressAdapter.create(SubscriptionController.getSubscriptions));
-router.post("/", ExpressAdapter.create(SubscriptionController.add));
-
-// Routes with parameters
-router.get("/user/:userId", ExpressAdapter.create(SubscriptionController.findByUserId));
-router.patch("/:id", ExpressAdapter.create(SubscriptionController.update));
+// Todas as rotas protegidas (requerem autenticação)
+// Futuramente: apenas SUPER_ADMIN poderá acessar
+router.get(
+  "/",
+  AuthMiddleware.auth,
+  ExpressAdapter.create(SubscriptionController.getSubscriptions)
+);
+router.post("/", AuthMiddleware.auth, ExpressAdapter.create(SubscriptionController.add));
+router.get(
+  "/user/:userId",
+  AuthMiddleware.auth,
+  ExpressAdapter.create(SubscriptionController.findByUserId)
+);
+router.patch("/:id", AuthMiddleware.auth, ExpressAdapter.create(SubscriptionController.update));
 
 export default router;
