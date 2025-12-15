@@ -804,6 +804,56 @@ Seguimos o [Conventional Commits](https://www.conventionalcommits.org/):
 
 ---
 
+## 🤝 Contribuindo
+
+### Workflow de Desenvolvimento
+
+1. **Crie uma branch** a partir de `main`
+
+   ```bash
+   git checkout -b feat/sua-feature
+   ```
+
+2. **Desenvolva e teste** localmente
+
+   ```bash
+   yarn test:dev
+   yarn lint
+   ```
+
+3. **Commit** seguindo Conventional Commits
+
+   ```bash
+   git commit -m "feat: adicionar nova funcionalidade"
+   ```
+
+4. **Push** para o repositório
+
+   ```bash
+   git push origin feat/sua-feature
+   ```
+
+5. **Abra um Pull Request** para `main`
+
+### Proteção da Branch Main
+
+A branch `main` está protegida com as seguintes regras:
+
+- ✅ **Pull Request obrigatório** - Não é possível commit direto
+- ✅ **1 aprovação necessária** - PR precisa ser aprovado
+- ✅ **CI deve passar** - Todos os testes devem passar
+- ✅ **Conversas resolvidas** - Comentários devem ser resolvidos
+- ✅ **Branch atualizada** - Deve estar sincronizada com main
+
+**CI Pipeline:**
+
+- Testes em Node.js 20.x, 22.x e 25.x
+- Linting com ESLint
+- Coverage de testes
+- Validação do Prisma
+
+---
+
 ## 📄 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
