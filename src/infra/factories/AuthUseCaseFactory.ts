@@ -5,6 +5,7 @@ import { ResetPassword } from "../../core/useCases/auth/ResetPassword";
 import { PasswordResetTokenRepositoryPrisma } from "../repositories/sql/PasswordResetTokenRepositoryPrisma";
 import { UserRepositoryPrisma } from "../repositories/sql/UserRepositoryPrisma";
 import { BcryptHashService } from "../services/BcryptHashService";
+import { ResendEmailService } from "../services/ResendEmailService";
 
 export class AuthUseCaseFactory {
   static makeLoginUser(): LoginUser {
@@ -20,7 +21,8 @@ export class AuthUseCaseFactory {
   static makeForgotPassword(): ForgotPassword {
     const userRepository = new UserRepositoryPrisma();
     const resetTokenRepository = new PasswordResetTokenRepositoryPrisma();
-    return new ForgotPassword(userRepository, resetTokenRepository);
+    const emailService = new ResendEmailService();
+    return new ForgotPassword(userRepository, resetTokenRepository, emailService);
   }
 
   static makeResetPassword(): ResetPassword {
