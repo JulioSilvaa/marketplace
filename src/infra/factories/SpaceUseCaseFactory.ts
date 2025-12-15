@@ -5,15 +5,13 @@ import { FindByIdSpace } from "../../core/useCases/spaces/FindById";
 import { ListSpaces } from "../../core/useCases/spaces/List";
 import { UpdateSpace } from "../../core/useCases/spaces/Update";
 import { SpaceRepositoryPrisma } from "../repositories/sql/SpaceRepositoryPrisma";
-import { SubscriptionRepositoryPrisma } from "../repositories/sql/SubscriptionRepositoryPrisma";
 import { UserRepositoryPrisma } from "../repositories/sql/UserRepositoryPrisma";
 
 export class SpaceUseCaseFactory {
   static makeCreateSpace(): CreateSpace {
     const spaceRepository = new SpaceRepositoryPrisma();
     const userRepository = new UserRepositoryPrisma();
-    const subscriptionRepository = new SubscriptionRepositoryPrisma();
-    return new CreateSpace(spaceRepository, userRepository, subscriptionRepository);
+    return new CreateSpace(spaceRepository, userRepository);
   }
 
   static makeListSpaces(): ListSpaces {

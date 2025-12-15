@@ -2,26 +2,21 @@ import { SpaceRepositoryInMemory } from "./../../../infra/repositories/inMemory/
 import { describe, it, expect, beforeEach } from "vitest";
 import { CreateSpace } from "../../../core/useCases/spaces/Create";
 
-import { SubscriptionEntity } from "../../../core/entities/SubscriptionEntity";
-import { SubscriptionStatus } from "../../../types/Subscription";
 import { UserRole } from "../../../types/user";
 import { UserRepositoryInMemory } from "../../../infra/repositories/inMemory/UserRepositoryInMemory";
-import { SubscriptionRepositoryInMemory } from "../../../infra/repositories/inMemory/SubscriptionRepositoryInMemory";
 
 describe("Create Space UseCase", () => {
   let createSpace: CreateSpace;
   let spaceRepo: SpaceRepositoryInMemory;
   let userRepo: UserRepositoryInMemory;
-  let subRepo: SubscriptionRepositoryInMemory;
 
   beforeEach(async () => {
     spaceRepo = new SpaceRepositoryInMemory();
     userRepo = new UserRepositoryInMemory();
-    subRepo = new SubscriptionRepositoryInMemory();
-    createSpace = new CreateSpace(spaceRepo, userRepo, subRepo);
+    createSpace = new CreateSpace(spaceRepo, userRepo);
   });
 
-  it("should be able to create a space when user has active subscription", async () => {
+  it("should be able to create a space", async () => {
     // 1. Create User
     const user = {
       id: "user-1",
@@ -35,16 +30,7 @@ describe("Create Space UseCase", () => {
     };
     await userRepo.create(user);
 
-    // 2. Create Active Subscription
-    const sub = SubscriptionEntity.create({
-      user_id: "user-1",
-      status: SubscriptionStatus.ACTIVE,
-      plan: "basic",
-      price: 30,
-    });
-    await subRepo.create(sub);
-
-    // 3. Execute
+    // 2. Execute
     const spaceInput = {
       owner_id: "user-1",
       title: "My Beautiful Space",
@@ -71,23 +57,9 @@ describe("Create Space UseCase", () => {
     expect(space.title).toBe("My Beautiful Space");
   });
 
-  it("should NOT be able to create a space without active subscription", async () => {
-    const user = {
-      id: "user-2",
-      name: "Jane Doe",
-      email: "jane@example.com",
-      phone: "9876543210",
-      password: "123",
-      role: UserRole.PROPRIETARIO,
-      checked: true,
-      status: 0, // ATIVO
-    };
-    await userRepo.create(user);
-
-    // No subscription created for user-2
-
+  it("should NOT be able to create a space if owner does not exist", async () => {
     const spaceInput = {
-      owner_id: "user-2",
+      owner_id: "non-existent-user",
       title: "My Space",
       description: "Desc Desc Desc Desc Desc Desc",
       address: {
@@ -105,8 +77,6 @@ describe("Create Space UseCase", () => {
       images: ["http://ex.com/img.png"],
     };
 
-    await expect(createSpace.execute(spaceInput)).rejects.toThrow(
-      "User needs an active subscription"
-    );
+    await expect(createSpace.execute(spaceInput)).rejects.toThrow("Owner not found");
   });
 });
