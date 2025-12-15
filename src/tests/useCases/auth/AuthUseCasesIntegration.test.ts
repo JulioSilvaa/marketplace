@@ -18,6 +18,14 @@ describe("Auth Use Cases (Integration)", () => {
   let uuidGenerator: CryptoUuidGenerator;
 
   beforeAll(async () => {
+    // Configurar variáveis de ambiente JWT para testes
+    if (!process.env.JWT_ACCESS_SECRET) {
+      process.env.JWT_ACCESS_SECRET = "test-access-secret-key";
+    }
+    if (!process.env.JWT_REFRESH_SECRET) {
+      process.env.JWT_REFRESH_SECRET = "test-refresh-secret-key";
+    }
+
     // Limpar banco de dados
     await prisma.password_reset_tokens.deleteMany({});
     await prisma.subscriptions.deleteMany({});
