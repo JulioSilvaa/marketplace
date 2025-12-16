@@ -5,15 +5,7 @@ import { UserAdapter } from "../../adapters/UserAdapter";
 import { UserUseCaseFactory } from "../../factories/UserUseCaseFactory";
 
 export default class UserController {
-  static async add(req: Request, res: Response, next: NextFunction) {
-    try {
-      const createUser = UserUseCaseFactory.makeCreateUser();
-      await createUser.execute(req.body);
-      return res.status(201).json({ message: "Usuário criado com sucesso" });
-    } catch (error) {
-      next(error);
-    }
-  }
+  // Nota: Criação de usuário é feita via /auth/register
 
   static async getUsers(req: Request, res: Response, next: NextFunction) {
     try {
@@ -34,17 +26,17 @@ export default class UserController {
   static async delete(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
-      const findByIdUser = UserUseCaseFactory.makeFindByIdUser();
-      const user = await findByIdUser.execute(id);
-      if (!user) {
-        throw new Error("Usuário não encontrado");
+      const requestingUserId = req.user_id; // ID do usuário autenticado (do AuthMiddleware)
+
+      // 🔒 PROTEÇÃO IDOR: Verificar se usuário está tentando deletar a si mesmo
+      if (id !== requestingUserId) {
+        return res.status(403).json({
+          message: "Acesso negado. Você só pode deletar sua própria conta.",
+        });
       }
 
-      // Note: Delete use case needs to be created
-      // For now, we'll keep the direct repository access
-      const { UserRepositoryPrisma } = await import("../../repositories/sql/UserRepositoryPrisma");
-      const repository = new UserRepositoryPrisma();
-      await repository.delete(id);
+      const deleteUser = UserUseCaseFactory.makeDeleteUser();
+      await deleteUser.execute({ id });
 
       return res.status(200).json({ message: "Usuário excluído com sucesso!" });
     } catch (error) {
@@ -55,6 +47,15 @@ export default class UserController {
   static async update(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = req.params;
+      const requestingUserId = req.user_id; // ID do usuário autenticado (do AuthMiddleware)
+
+      // 🔒 PROTEÇÃO IDOR: Verificar se usuário está tentando atualizar a si mesmo
+      if (id !== requestingUserId) {
+        return res.status(403).json({
+          message: "Acesso negado. Você só pode atualizar sua própria conta.",
+        });
+      }
+
       const updateUser = UserUseCaseFactory.makeUpdateUser();
       await updateUser.execute({ id, ...req.body });
       return res.status(200).json({ message: "Usuário atualizado com sucesso!" });
