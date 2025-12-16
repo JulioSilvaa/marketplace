@@ -5,7 +5,7 @@ export function generateAccessToken(id: string) {
     throw new Error("JWT_ACCESS_SECRET is not defined");
   }
   return jwt.sign({ userId: id }, process.env.JWT_ACCESS_SECRET, {
-    expiresIn: "15m", // Access token com vida curta
+    expiresIn: "30m", // Access token com 30 minutos (tempo suficiente para criar espaço após registro)
     subject: id,
   });
 }

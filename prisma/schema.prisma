@@ -28,6 +28,11 @@ model spaces {
   zipcode           String
   country           String
   users             users    @relation(fields: [owner_id], references: [id])
+
+  @@index([owner_id])
+  @@index([status])
+  @@index([city])
+  @@index([title])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -40,6 +45,9 @@ model subscriptions {
   trial_until       DateTime?
   next_billing_date DateTime?
   users             users     @relation(fields: [user_id], references: [id])
+
+  @@index([user_id])
+  @@index([status])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -55,6 +63,10 @@ model users {
   spaces                spaces[]
   subscriptions         subscriptions[]
   password_reset_tokens password_reset_tokens[]
+
+  @@index([name])
+  @@index([status])
+  @@index([role])
 }
 
 /// This model stores password reset tokens

@@ -1,4 +1,5 @@
 import { CreateUser } from "../../core/useCases/users/Create";
+import { DeleteUser } from "../../core/useCases/users/Delete";
 import { FindAllUsers } from "../../core/useCases/users/FindAll";
 import { FindByIdUser } from "../../core/useCases/users/FindById";
 import { SearchUser } from "../../core/useCases/users/Search";
@@ -33,5 +34,10 @@ export class UserUseCaseFactory {
   static makeUpdateUser(): UpdateUser {
     const userRepository = new UserRepositoryPrisma();
     return new UpdateUser(userRepository);
+  }
+
+  static makeDeleteUser(): DeleteUser {
+    const userRepository = new UserRepositoryPrisma();
+    return new DeleteUser(userRepository);
   }
 }

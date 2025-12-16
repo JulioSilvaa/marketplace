@@ -12,7 +12,7 @@ router.get("/", ExpressAdapter.create(UserController.getUsers));
 router.get("/:id", ExpressAdapter.create(UserController.findById));
 
 // Rotas protegidas (requerem autenticação)
-router.post("/", AuthMiddleware.auth, ExpressAdapter.create(UserController.add));
+// Nota: Criação de usuário é feita via /auth/register
 router.patch("/:id", AuthMiddleware.auth, ExpressAdapter.create(UserController.update));
 router.delete("/:id", AuthMiddleware.auth, ExpressAdapter.create(UserController.delete));
 

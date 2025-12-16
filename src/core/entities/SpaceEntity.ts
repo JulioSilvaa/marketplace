@@ -128,9 +128,10 @@ export class SpaceEntity {
       throw new Error("Endereço: O estado (state) é obrigatório e deve ter 2 caracteres (ex: UF).");
     }
 
-    // Validação de CEP (Zipcode) - Exemplo de formato brasileiro (8 dígitos opcionais com hífen)
+    // Validação de CEP (Zipcode) - Sanitizar antes de validar para remover espaços
+    const sanitizedZipcode = address.zipcode?.trim();
     const zipcodeRegex = /^\d{5}-?\d{3}$/;
-    if (!address.zipcode || !zipcodeRegex.test(address.zipcode)) {
+    if (!sanitizedZipcode || !zipcodeRegex.test(sanitizedZipcode)) {
       throw new Error(
         "Endereço: O CEP (zipcode) é obrigatório e deve ser válido (ex: 12345-678 ou 12345678)."
       );
