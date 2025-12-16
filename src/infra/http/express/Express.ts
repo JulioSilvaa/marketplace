@@ -42,5 +42,5 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Rodando na porta ${PORT}`);
+  console.error(`Rodando na porta ${PORT}`);
 });
