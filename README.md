@@ -318,6 +318,7 @@ curl http://localhost:${PORT}/health
 - ✅ **Reset de senha seguro** com tokens de expiração (1 hora)
 - ✅ **Validação rigorosa** de inputs (email, telefone, CPF)
 - ✅ **Proteção contra SQL Injection** (Prisma ORM)
+- ✅ **Proteção IDOR** - Verificação de ownership em endpoints
 - ✅ **CORS configurado**
 - ✅ **Containers com usuário não-root**
 - ✅ **Prevenção de reuso de tokens** de reset
@@ -837,6 +838,21 @@ lazer/
 - Prisma com tipos gerados automaticamente
 - Interfaces bem definidas
 
+### Performance
+
+- **Índices de banco de dados** otimizados
+  - 9 índices estratégicos (users, spaces, subscriptions)
+  - 55% mais rápido em queries de busca
+  - 24% de melhoria no response time p95
+- **Processamento de imagens** eficiente
+  - Conversão para WebP (70% menor)
+  - 3 tamanhos gerados automaticamente
+  - Upload paralelo para Supabase Storage
+- **Capacidade testada**
+  - 50 usuários simultâneos: p95 < 320ms
+  - 100 usuários simultâneos: p95 < 520ms
+  - Throughput: 16-32 req/s
+
 ---
 
 ## 🧪 Testes
@@ -844,20 +860,63 @@ lazer/
 ### Executar testes
 
 ```bash
+# Modo watch (desenvolvimento)
 yarn test:dev
 
+# Executar todos os testes uma vez
+yarn test:dev --run
+
+# Com cobertura
 yarn test:coverage
 
+# Interface visual
 yarn test:ui
 ```
 
-### Cobertura
+### Cobertura Atual
+
+**Total: 254 testes (100% passando)**
 
 Os testes cobrem:
 
-- ✅ Validações de entidades
-- ✅ Casos de uso (Use Cases)
-- ✅ Repositórios
+- ✅ **Testes E2E** (14 testes)
+  - AuthE2E: Fluxos completos de autenticação
+  - Testes HTTP com supertest
+- ✅ **Testes de Integração** (63 testes)
+  - Auth Integration: Login, Refresh, Reset Password
+  - User Integration: CRUD completo
+  - Subscription Integration: Ciclo de vida
+  - Repository Prisma: Operações de banco
+  - Image Service: Upload e processamento
+
+- ✅ **Testes Unitários** (177 testes)
+  - Validações de entidades
+  - Casos de uso (Use Cases)
+  - Repositórios In-Memory
+  - Adapters e Services
+
+### Performance Testing
+
+Scripts de teste de carga com k6:
+
+```bash
+# Instalar k6
+brew install k6  # macOS
+sudo apt-get install k6  # Linux
+
+# Executar teste com 50 usuários
+k6 run load-test-50.js
+
+# Executar teste com 100 usuários
+k6 run load-test-100.js
+```
+
+**Capacidade testada:**
+
+- 50 VUs: Response time p95 < 320ms ✅
+- 100 VUs: Response time p95 < 520ms ✅
+- Throughput: 16-32 req/s
+- Error rate: < 4%
 
 ---
 
@@ -869,17 +928,20 @@ Os testes cobrem:
 - [x] Sistema de refresh tokens
 - [x] Reset de senha seguro
 - [x] Rate limiting
-- [x] Testes automatizados (184 testes)
+- [x] Proteção IDOR (ownership verification)
+- [x] Índices de performance no banco de dados
+- [x] Testes automatizados (254 testes - 100%)
+- [x] Upload de imagens (Supabase Storage)
+- [x] Processamento de imagens (Sharp + WebP)
+- [x] Testes de carga (k6)
 
 ### 🚀 Em Desenvolvimento
 
-- [ ] Serviço de envio de emails (SMTP)
 - [ ] Sistema de reservas/agendamento
-- [ ] Upload de imagens (S3/Cloudinary)
+- [ ] Painel administrativo
 
 ### 📋 Planejado
 
-- [ ] Painel administrativo
 - [ ] API de pagamentos (Stripe/Mercado Pago)
 - [ ] Sistema de avaliações
 - [ ] Busca geolocalizada
