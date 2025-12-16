@@ -10,17 +10,27 @@ export class ResendEmailService implements IEmailService {
 
   constructor() {
     const apiKey = process.env.RESEND_API_KEY;
+    const isTestEnv = process.env.NODE_ENV === "test" || process.env.CI === "true";
 
-    if (!apiKey) {
+    // Em ambiente de teste/CI, permitir que o serviço seja criado sem API key
+    // Os emails não serão enviados, mas os testes podem prosseguir
+    if (!apiKey && !isTestEnv) {
       throw new Error("RESEND_API_KEY não está definida nas variáveis de ambiente");
     }
 
-    this.resend = new Resend(apiKey);
+    this.resend = apiKey ? new Resend(apiKey) : (null as any);
     this.fromEmail = process.env.EMAIL_FROM || "onboarding@resend.dev";
     this.fromName = process.env.EMAIL_FROM_NAME || "Lazer";
   }
 
   async sendPasswordResetEmail(to: string, resetLink: string, userName: string): Promise<void> {
+    // Em ambiente de teste/CI sem API key, apenas log e retorna
+    if (!this.resend) {
+      console.log(`[TEST MODE] Email de reset seria enviado para ${to}`);
+      console.log(`[TEST MODE] Link: ${resetLink}`);
+      return;
+    }
+
     try {
       const htmlContent = generatePasswordResetEmail(userName, resetLink);
 
