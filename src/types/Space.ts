@@ -12,7 +12,7 @@ export type IAddress = {
 };
 
 export type IEspace = {
-  id: string;
+  id?: string;
   owner_id: string;
   title: string;
   description: string;
