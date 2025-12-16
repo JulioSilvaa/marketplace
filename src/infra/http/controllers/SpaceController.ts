@@ -32,8 +32,10 @@ class SpaceController {
         const storageService = new SupabaseStorageService();
         const BUCKET_NAME = "space-images";
 
-        // Gerar ID temporário para o espaço (será substituído pelo ID real depois)
-        const tempSpaceId = `temp_${Date.now()}`;
+        // Sanitizar título do espaço para usar como nome da pasta
+        const sanitizedTitle = req.body.title
+          ? req.body.title.replace(/[^a-zA-Z0-9-_]/g, "_").toLowerCase()
+          : `space_${Date.now()}`;
 
         for (const file of req.files as Express.Multer.File[]) {
           // Validar e processar imagem
@@ -46,8 +48,8 @@ class SpaceController {
           const sanitizedName = baseName.replace(/[^a-zA-Z0-9-_]/g, "_");
           const uniqueName = `${timestamp}_${sanitizedName}`;
 
-          // Estrutura de pastas: spaces/{owner_id}/{space_id}/
-          const basePath = `spaces/${owner_id}/${tempSpaceId}`;
+          // Estrutura de pastas: spaces/{owner_id}/{space_title}/
+          const basePath = `spaces/${owner_id}/${sanitizedTitle}`;
 
           // Upload dos 3 tamanhos
           const [thumbnailUrl, mediumUrl, largeUrl] = await Promise.all([
