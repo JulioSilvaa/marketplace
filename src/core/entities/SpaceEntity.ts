@@ -184,9 +184,36 @@ export class SpaceEntity {
       throw new Error("É necessário fornecer pelo menos uma imagem.");
     }
 
+    if (this._images.length > 10) {
+      throw new Error("Máximo de 10 imagens por espaço.");
+    }
+
     const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
-    if (this._images.some(url => !urlRegex.test(url))) {
-      throw new Error("Pelo menos um link de imagem fornecido não é um URL válido.");
+
+    for (const imageData of this._images) {
+      // Aceita tanto URL simples quanto objeto JSON com 3 tamanhos
+      if (typeof imageData === "string") {
+        try {
+          // Tentar parsear como JSON
+          const parsed = JSON.parse(imageData);
+          if (parsed.thumbnail && parsed.medium && parsed.large) {
+            // Validar as 3 URLs
+            if (
+              !urlRegex.test(parsed.thumbnail) ||
+              !urlRegex.test(parsed.medium) ||
+              !urlRegex.test(parsed.large)
+            ) {
+              throw new Error("Pelo menos uma URL de imagem (thumbnail/medium/large) é inválida.");
+            }
+            continue;
+          }
+        } catch {
+          // Não é JSON, validar como URL simples
+          if (!urlRegex.test(imageData)) {
+            throw new Error("Pelo menos um link de imagem fornecido não é um URL válido.");
+          }
+        }
+      }
     }
   }
 

@@ -15,14 +15,25 @@ class SpaceController {
       }
 
       // Processar imagens se houver
-      let imageUrls: string[] = [];
+      const imageUrls: string[] = [];
+
       if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+        // Validar limite de 10 imagens por espaço
+        if (req.files.length > 10) {
+          return res.status(400).json({
+            message: "Máximo de 10 imagens por espaço",
+          });
+        }
+
         const { SharpImageService } = await import("../../services/SharpImageService");
         const { SupabaseStorageService } = await import("../../services/SupabaseStorageService");
 
         const imageService = new SharpImageService();
         const storageService = new SupabaseStorageService();
         const BUCKET_NAME = "space-images";
+
+        // Gerar ID temporário para o espaço (será substituído pelo ID real depois)
+        const tempSpaceId = `temp_${Date.now()}`;
 
         for (const file of req.files as Express.Multer.File[]) {
           // Validar e processar imagem
@@ -33,17 +44,41 @@ class SpaceController {
           const timestamp = Date.now();
           const baseName = file.originalname.replace(/\.[^/.]+$/, "");
           const sanitizedName = baseName.replace(/[^a-zA-Z0-9-_]/g, "_");
+          const uniqueName = `${timestamp}_${sanitizedName}`;
 
-          // Upload apenas do large (original otimizado)
-          const largePath = `spaces/temp_${timestamp}_${sanitizedName}.webp`;
-          const largeUrl = await storageService.uploadImage(
-            BUCKET_NAME,
-            largePath,
-            processed.large,
-            "image/webp"
+          // Estrutura de pastas: spaces/{owner_id}/{space_id}/
+          const basePath = `spaces/${owner_id}/${tempSpaceId}`;
+
+          // Upload dos 3 tamanhos
+          const [thumbnailUrl, mediumUrl, largeUrl] = await Promise.all([
+            storageService.uploadImage(
+              BUCKET_NAME,
+              `${basePath}/thumb_${uniqueName}.webp`,
+              processed.thumbnail,
+              "image/webp"
+            ),
+            storageService.uploadImage(
+              BUCKET_NAME,
+              `${basePath}/medium_${uniqueName}.webp`,
+              processed.medium,
+              "image/webp"
+            ),
+            storageService.uploadImage(
+              BUCKET_NAME,
+              `${basePath}/large_${uniqueName}.webp`,
+              processed.large,
+              "image/webp"
+            ),
+          ]);
+
+          // Salvar objeto com os 3 tamanhos
+          imageUrls.push(
+            JSON.stringify({
+              thumbnail: thumbnailUrl,
+              medium: mediumUrl,
+              large: largeUrl,
+            })
           );
-
-          imageUrls.push(largeUrl);
         }
       }
 
