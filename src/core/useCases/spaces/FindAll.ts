@@ -13,4 +13,12 @@ export class FindAllSpaces {
     }
     return spaces;
   }
+
+  async executeWithRatings() {
+    const spacesWithRatings = await this._spaceRepository.findAllWithRatings();
+    if (!spacesWithRatings || spacesWithRatings.length === 0) {
+      throw new Error("Nenhum espaço encontrado");
+    }
+    return spacesWithRatings;
+  }
 }

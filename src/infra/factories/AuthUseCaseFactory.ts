@@ -1,3 +1,4 @@
+import { ChangePassword } from "../../core/useCases/auth/ChangePassword";
 import { ForgotPassword } from "../../core/useCases/auth/ForgotPassword";
 import { LoginUser } from "../../core/useCases/auth/LoginUser";
 import { RefreshToken } from "../../core/useCases/auth/RefreshToken";
@@ -30,5 +31,11 @@ export class AuthUseCaseFactory {
     const resetTokenRepository = new PasswordResetTokenRepositoryPrisma();
     const hashService = new BcryptHashService();
     return new ResetPassword(userRepository, resetTokenRepository, hashService);
+  }
+
+  static makeChangePassword(): ChangePassword {
+    const userRepository = new UserRepositoryPrisma();
+    const hashService = new BcryptHashService();
+    return new ChangePassword(userRepository, hashService);
   }
 }

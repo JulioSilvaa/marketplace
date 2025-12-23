@@ -29,10 +29,15 @@ export class SpaceAdapter {
       images: data.images,
       status: data.status as spaceStatus,
       address,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
     });
   }
 
-  static toOutputDTO(space: SpaceEntity): SpaceOutputDTO {
+  static toOutputDTO(
+    space: SpaceEntity,
+    ratingData?: { average_rating: number | null; reviews_count: number }
+  ): SpaceOutputDTO {
     return {
       id: space.id!,
       owner_id: space.owner_id!,
@@ -45,6 +50,10 @@ export class SpaceAdapter {
       comfort: space.comfort,
       images: space.images,
       status: space.status,
+      created_at: space.created_at?.toISOString(),
+      updated_at: space.updated_at?.toISOString(),
+      average_rating: ratingData?.average_rating ?? undefined,
+      reviews_count: ratingData?.reviews_count ?? undefined,
     };
   }
 
@@ -52,6 +61,24 @@ export class SpaceAdapter {
     return {
       data: spaces.map(space => this.toOutputDTO(space)),
       total: spaces.length,
+    };
+  }
+
+  static toOutputDTOWithRating(
+    spaceWithRating: import("../../core/repositories/ISpaceRepository").SpaceWithRating
+  ): SpaceOutputDTO {
+    return this.toOutputDTO(spaceWithRating.space, {
+      average_rating: spaceWithRating.average_rating,
+      reviews_count: spaceWithRating.reviews_count,
+    });
+  }
+
+  static toListOutputDTOWithRatings(
+    spacesWithRatings: import("../../core/repositories/ISpaceRepository").SpaceWithRating[]
+  ): SpaceListOutputDTO {
+    return {
+      data: spacesWithRatings.map(swr => this.toOutputDTOWithRating(swr)),
+      total: spacesWithRatings.length,
     };
   }
 }

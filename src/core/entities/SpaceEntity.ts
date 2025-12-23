@@ -12,6 +12,8 @@ export class SpaceEntity {
   private readonly _comfort: string[];
   private readonly _images: string[];
   private readonly _status: spaceStatus;
+  private readonly _created_at?: Date;
+  private readonly _updated_at?: Date;
 
   constructor(props: IEspace) {
     this._id = props.id;
@@ -25,6 +27,8 @@ export class SpaceEntity {
     this._comfort = props.comfort;
     this._images = props.images;
     this._status = props.status;
+    this._created_at = props.created_at;
+    this._updated_at = props.updated_at;
     this.validate();
   }
 
@@ -74,6 +78,14 @@ export class SpaceEntity {
 
   public get status(): spaceStatus {
     return this._status;
+  }
+
+  public get created_at(): Date | undefined {
+    return this._created_at;
+  }
+
+  public get updated_at(): Date | undefined {
+    return this._updated_at;
   }
 
   public validate(): void {

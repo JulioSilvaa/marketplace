@@ -23,4 +23,6 @@ export type IEspace = {
   comfort: string[];
   images: string[];
   status: spaceStatus;
+  created_at?: Date;
+  updated_at?: Date;
 };

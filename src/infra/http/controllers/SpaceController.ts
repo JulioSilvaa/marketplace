@@ -129,19 +129,35 @@ class SpaceController {
     try {
       const { owner_id } = req.query;
 
-      // Se owner_id for fornecido, filtra por proprietário
+      // Se owner_id for fornecido, filtra por proprietário (sem ratings para performance)
       if (owner_id && typeof owner_id === "string") {
         const listSpaces = SpaceUseCaseFactory.makeListSpaces();
         const spaces = await listSpaces.executeByOwner({ owner_id });
         const output = SpaceAdapter.toListOutputDTO(spaces);
-        return res.status(200).json(output);
+        return res.status(200).json({
+          spaces: output.data,
+          pagination: {
+            total: output.total,
+            page: 1,
+            limit: 100,
+            totalPages: Math.ceil(output.total / 100) || 1,
+          },
+        });
       }
 
-      // Caso contrário, lista todos os espaços
+      // Caso contrário, lista todos os espaços COM ratings
       const findAllSpaces = SpaceUseCaseFactory.makeFindAllSpaces();
-      const spaces = await findAllSpaces.execute();
-      const output = SpaceAdapter.toListOutputDTO(spaces);
-      return res.status(200).json(output);
+      const spacesWithRatings = await findAllSpaces.executeWithRatings();
+      const output = SpaceAdapter.toListOutputDTOWithRatings(spacesWithRatings);
+      return res.status(200).json({
+        spaces: output.data,
+        pagination: {
+          total: output.total,
+          page: 1,
+          limit: 100,
+          totalPages: Math.ceil(output.total / 100) || 1,
+        },
+      });
     } catch (error) {
       if (error instanceof Error) {
         return res.status(400).json({ message: error.message });
@@ -153,11 +169,19 @@ class SpaceController {
   async getAllSpaces(req: Request, res: Response) {
     try {
       const findAllSpaces = SpaceUseCaseFactory.makeFindAllSpaces();
-      const spaces = await findAllSpaces.execute();
+      const spacesWithRatings = await findAllSpaces.executeWithRatings();
 
-      const output = SpaceAdapter.toListOutputDTO(spaces);
+      const output = SpaceAdapter.toListOutputDTOWithRatings(spacesWithRatings);
 
-      return res.status(200).json(output);
+      return res.status(200).json({
+        spaces: output.data,
+        pagination: {
+          total: output.total,
+          page: 1,
+          limit: 100,
+          totalPages: Math.ceil(output.total / 100) || 1,
+        },
+      });
     } catch (error) {
       if (error instanceof Error) {
         return res.status(400).json({ message: error.message });
@@ -166,9 +190,14 @@ class SpaceController {
     }
   }
 
-  async findById(req: Request, res: Response) {
+  async checkOwnership(req: Request, res: Response) {
     try {
       const { id } = req.params;
+      const owner_id = req.user_id;
+
+      if (!owner_id) {
+        return res.status(200).json({ isOwner: false });
+      }
 
       const findByIdSpace = SpaceUseCaseFactory.makeFindByIdSpace();
       const space = await findByIdSpace.execute(id);
@@ -177,9 +206,26 @@ class SpaceController {
         return res.status(404).json({ message: "Espaço não encontrado" });
       }
 
-      const output = SpaceAdapter.toOutputDTO(space);
+      return res.status(200).json({ isOwner: space.owner_id === owner_id });
+    } catch (error) {
+      return res.status(200).json({ isOwner: false });
+    }
+  }
 
-      return res.status(200).json({ data: output });
+  async findById(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+
+      const findByIdSpace = SpaceUseCaseFactory.makeFindByIdSpace();
+      const spaceWithRating = await findByIdSpace.executeWithRating(id);
+
+      if (!spaceWithRating) {
+        return res.status(404).json({ message: "Espaço não encontrado" });
+      }
+
+      const output = SpaceAdapter.toOutputDTOWithRating(spaceWithRating);
+
+      return res.status(200).json(output);
     } catch (error) {
       if (error instanceof Error) {
         return res.status(400).json({ message: error.message });

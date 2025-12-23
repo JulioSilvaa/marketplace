@@ -39,6 +39,8 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
       comfort: space.comfort,
       images: space.images,
       status: space.status,
+      created_at: new Date(),
+      updated_at: new Date(),
       street: space.address.street,
       number: space.address.number,
       complement: space.address.complement,
@@ -69,7 +71,13 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
   }
 
   async findAll(): Promise<SpaceEntity[]> {
-    const spacesData = await prisma.spaces.findMany();
+    const spacesData = await prisma.spaces.findMany({
+      where: {
+        users: {
+          status: "active",
+        },
+      },
+    });
     return spacesData.map(s => SpaceAdapter.toEntity(s));
   }
 
@@ -100,6 +108,66 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
   async delete(id: string): Promise<void> {
     await prisma.spaces.delete({
       where: { id },
+    });
+  }
+
+  async findByIdWithRating(
+    id: string
+  ): Promise<import("../../../core/repositories/ISpaceRepository").SpaceWithRating | null> {
+    const spaceData = await prisma.spaces.findUnique({
+      where: { id },
+      include: {
+        reviews: {
+          select: {
+            rating: true,
+          },
+        },
+      },
+    });
+
+    if (!spaceData) return null;
+
+    const ratings = spaceData.reviews.map(r => r.rating);
+    const average_rating =
+      ratings.length > 0 ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length : null;
+
+    return {
+      space: SpaceAdapter.toEntity(spaceData),
+      average_rating,
+      reviews_count: ratings.length,
+    };
+  }
+
+  async findAllWithRatings(): Promise<
+    import("../../../core/repositories/ISpaceRepository").SpaceWithRating[]
+  > {
+    const spacesData = await prisma.spaces.findMany({
+      where: {
+        users: {
+          status: "active",
+        },
+      },
+      include: {
+        reviews: {
+          select: {
+            rating: true,
+          },
+        },
+      },
+    });
+
+    return spacesData.map(spaceData => {
+      const ratings = spaceData.reviews.map(r => r.rating);
+      const average_rating =
+        ratings.length > 0
+          ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
+          : null;
+
+      return {
+        space: SpaceAdapter.toEntity(spaceData),
+        average_rating,
+        reviews_count: ratings.length,
+      };
     });
   }
 }

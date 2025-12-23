@@ -119,4 +119,21 @@ export default class AuthController {
       next(error);
     }
   }
+
+  static async changePassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user_id;
+
+      if (!userId) {
+        return res.status(401).json({ message: "Não autenticado" });
+      }
+
+      const changePasswordUseCase = AuthUseCaseFactory.makeChangePassword();
+      const result = await changePasswordUseCase.execute(userId, req.body);
+
+      return res.status(200).json(result);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

@@ -12,4 +12,8 @@ export interface SpaceOutputDTO {
   comfort: string[];
   images: string[];
   status: spaceStatus;
+  created_at?: string;
+  updated_at?: string;
+  average_rating?: number;
+  reviews_count?: number;
 }

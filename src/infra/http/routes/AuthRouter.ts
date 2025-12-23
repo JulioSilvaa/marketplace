@@ -2,6 +2,7 @@ import { Router } from "express";
 
 import ExpressAdapter from "../../adapters/ExpressAdapter";
 import AuthController from "../controllers/AuthController";
+import AuthMiddleware from "../middlewares/AuthMiddleware";
 import {
   forgotPasswordLimiter,
   loginLimiter,
@@ -27,4 +28,12 @@ router.post(
   resetPasswordLimiter,
   ExpressAdapter.create(AuthController.resetPassword)
 );
+
+// Rotas autenticadas
+router.post(
+  "/change-password",
+  AuthMiddleware.auth,
+  ExpressAdapter.create(AuthController.changePassword)
+);
+
 export default router;
