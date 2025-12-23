@@ -129,6 +129,18 @@ export class UserEntity {
     return this._phone;
   }
 
+  get whatsapp(): string | undefined {
+    return this.props.whatsapp;
+  }
+
+  get facebook_url(): string | undefined {
+    return this.props.facebook_url;
+  }
+
+  get instagram_url(): string | undefined {
+    return this.props.instagram_url;
+  }
+
   get checked(): boolean {
     return this._checked;
   }

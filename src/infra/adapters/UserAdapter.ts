@@ -35,6 +35,11 @@ export class UserAdapter {
       role: UserAdapter.fromPrismaRole(data.role),
       checked: data.checked,
       status: UserAdapter.fromPrismaStatus(data.status),
+      whatsapp: data.whatsapp || undefined,
+      facebook_url: data.facebook_url || undefined,
+      instagram_url: data.instagram_url || undefined,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
     };
   }
 
@@ -51,6 +56,9 @@ export class UserAdapter {
       role: user.role === UserRole.PROPRIETARIO ? "owner" : "client",
       checked: user.checked,
       status: user.status === UserIsActive.ATIVO ? "active" : "inactive",
+      whatsapp: user.whatsapp,
+      facebook_url: user.facebook_url,
+      instagram_url: user.instagram_url,
       created_at: user.created_at?.toISOString(),
       updated_at: user.updated_at?.toISOString(),
       // password is intentionally excluded

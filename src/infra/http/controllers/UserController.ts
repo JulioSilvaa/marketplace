@@ -112,4 +112,16 @@ export default class UserController {
       next(error);
     }
   }
+
+  static async getMetrics(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const getMetrics = UserUseCaseFactory.makeGetUserMetrics();
+      const metrics = await getMetrics.execute(id);
+
+      return res.status(200).json(metrics);
+    } catch (error) {
+      next(error);
+    }
+  }
 }

@@ -8,6 +8,9 @@ export interface UserOutputDTO {
   role: string;
   checked: boolean;
   status: string;
+  whatsapp?: string;
+  facebook_url?: string;
+  instagram_url?: string;
   created_at?: string; // ISO date string
   updated_at?: string; // ISO date string
   // Note: password is intentionally excluded for security

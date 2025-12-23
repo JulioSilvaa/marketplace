@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
@@ -27,7 +27,12 @@ model spaces {
   state             String
   zipcode           String
   country           String
-  users             users    @relation(fields: [owner_id], references: [id])
+  created_at        DateTime @default(now())
+  updated_at        DateTime @default(now()) @updatedAt
+  users             users             @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  reviews           Review[]
+  activity_events   activity_events[]
+  review_replies    review_replies[]
 
   @@index([owner_id])
   @@index([status])
@@ -44,7 +49,7 @@ model subscriptions {
   status            String
   trial_until       DateTime?
   next_billing_date DateTime?
-  users             users     @relation(fields: [user_id], references: [id])
+  users             users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@index([user_id])
   @@index([status])
@@ -63,10 +68,35 @@ model users {
   spaces                spaces[]
   subscriptions         subscriptions[]
   password_reset_tokens password_reset_tokens[]
+  reviews               Review[]
+  activity_events       activity_events[]
+  review_replies        review_replies[]
+  whatsapp              String?
+  facebook_url          String?
+  instagram_url         String?
+  created_at            DateTime                @default(now())
+  updated_at            DateTime                @default(now()) @updatedAt
 
   @@index([name])
   @@index([status])
   @@index([role])
+}
+
+model Review {
+  id          String   @id
+  space_id    String
+  user_id     String
+  rating      Int
+  comment     String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+  spaces      spaces   @relation(fields: [space_id], references: [id], onDelete: Cascade)
+  users       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([space_id])
+  @@index([user_id])
+  @@map("reviews")
+  review_replies review_replies[]
 }
 
 /// This model stores password reset tokens
@@ -91,4 +121,38 @@ enum Status {
 enum Role {
   user
   admin
+}
+
+/// This model stores activity events for analytics
+model activity_events {
+  id         String   @id
+  listing_id String
+  user_id    String?
+  event_type String
+  metadata   Json?
+  created_at DateTime @default(now())
+  spaces     spaces   @relation(fields: [listing_id], references: [id], onDelete: Cascade)
+  users      users?   @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@index([listing_id])
+  @@index([user_id])
+  @@index([event_type])
+  @@index([created_at])
+}
+
+model review_replies {
+  id            String   @id
+  review_id     String   @unique
+  listing_id    String
+  owner_user_id String
+  reply_text    String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  review        Review   @relation(fields: [review_id], references: [id], onDelete: Cascade)
+  space         spaces   @relation(fields: [listing_id], references: [id], onDelete: Cascade)
+  owner         users    @relation(fields: [owner_user_id], references: [id], onDelete: Cascade)
+
+  @@index([review_id])
+  @@index([listing_id])
+  @@index([owner_user_id])
 }

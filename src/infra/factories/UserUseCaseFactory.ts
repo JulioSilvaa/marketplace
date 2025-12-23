@@ -2,8 +2,10 @@ import { CreateUser } from "../../core/useCases/users/Create";
 import { DeleteUser } from "../../core/useCases/users/Delete";
 import { FindAllUsers } from "../../core/useCases/users/FindAll";
 import { FindByIdUser } from "../../core/useCases/users/FindById";
+import { GetUserMetrics } from "../../core/useCases/users/GetMetrics";
 import { SearchUser } from "../../core/useCases/users/Search";
 import { UpdateUser } from "../../core/useCases/users/Update";
+import { SpaceRepositoryPrisma } from "../repositories/sql/SpaceRepositoryPrisma";
 import { UserRepositoryPrisma } from "../repositories/sql/UserRepositoryPrisma";
 import { BcryptHashService } from "../services/BcryptHashService";
 import { CryptoUuidGenerator } from "../services/CryptoUuidGenerator";
@@ -39,5 +41,10 @@ export class UserUseCaseFactory {
   static makeDeleteUser(): DeleteUser {
     const userRepository = new UserRepositoryPrisma();
     return new DeleteUser(userRepository);
+  }
+
+  static makeGetUserMetrics(): GetUserMetrics {
+    const spaceRepository = new SpaceRepositoryPrisma();
+    return new GetUserMetrics(spaceRepository);
   }
 }

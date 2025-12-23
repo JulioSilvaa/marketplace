@@ -9,6 +9,7 @@ const router = Router();
 // Rotas públicas (não requerem autenticação)
 router.get("/search", ExpressAdapter.create(UserController.search));
 router.get("/", ExpressAdapter.create(UserController.getUsers));
+router.get("/:id/metrics", ExpressAdapter.create(UserController.getMetrics));
 router.get("/:id", ExpressAdapter.create(UserController.findById));
 
 // Rotas protegidas (requerem autenticação)
