@@ -372,6 +372,19 @@ curl http://localhost:${PORT}/health
 - ✅ Controle de próxima cobrança
 - ✅ Status de assinatura (ativa/cancelada/vencida)
 
+### 📊 Métricas e atividade
+
+- ✅ Gerenciamento de eventos de atividade (visualizações, contatos, favoritos, avaliações)
+- ✅ Agregação de métricas em tempo real por usuário
+- ✅ Dashboard de atividades recentes com suporte a metadados dinâmicos
+
+### 💬 Avaliações e Respostas
+
+- ✅ Sistema de avaliações (1-5 estrelas + comentário)
+- ✅ Respostas oficiais dos proprietários às avaliações
+- ✅ Filtros por status de resposta (Pendente / Respondida)
+- ✅ Geração automática de eventos de atividade para novas avaliações
+
 ### 🧪 Qualidade de Código
 
 - ✅ Testes unitários com Vitest
