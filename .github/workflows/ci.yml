@@ -39,6 +39,11 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile 
       
+      - name: Apply Database Migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
+      
       - name: Generate Prisma Client
         run: npx prisma generate
         env:
@@ -48,9 +53,7 @@ jobs:
         run: yarn lint 
       
       - name: Run Tests (Coverage)
-        run: |
-          npx prisma migrate deploy
-          yarn test:coverage
+        run: yarn test:coverage
         env:
           CI: true
           DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
