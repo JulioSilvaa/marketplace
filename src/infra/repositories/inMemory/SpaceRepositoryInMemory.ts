@@ -30,9 +30,9 @@ export class SpaceRepositoryInMemory implements ISpaceRepository {
   }
 
   async delete(id: string): Promise<void> {
-    const index = this.spaces.findIndex(s => s.id === id);
-    if (index !== -1) {
-      this.spaces.splice(index, 1);
+    const space = this.spaces.find(s => s.id === id);
+    if (space) {
+      space.setStatus("inactive");
     }
   }
 

@@ -177,8 +177,9 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
   }
 
   async delete(id: string): Promise<void> {
-    await prisma.spaces.delete({
+    await prisma.spaces.update({
       where: { id },
+      data: { status: "inactive" },
     });
   }
 
