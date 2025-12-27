@@ -1,4 +1,4 @@
-import { ISpaceRepository } from "../../repositories/ISpaceRepository";
+import { ISpaceRepository, SpaceFilters } from "../../repositories/ISpaceRepository";
 
 export class FindAllSpaces {
   private readonly _spaceRepository: ISpaceRepository;
@@ -8,17 +8,11 @@ export class FindAllSpaces {
 
   async execute() {
     const spaces = await this._spaceRepository.findAll();
-    if (!spaces) {
-      throw new Error("Nenhum espaço encontrado");
-    }
-    return spaces;
+    return spaces || [];
   }
 
-  async executeWithRatings() {
-    const spacesWithRatings = await this._spaceRepository.findAllWithRatings();
-    if (!spacesWithRatings || spacesWithRatings.length === 0) {
-      throw new Error("Nenhum espaço encontrado");
-    }
-    return spacesWithRatings;
+  async executeWithRatings(filters?: SpaceFilters) {
+    const spacesWithRatings = await this._spaceRepository.findAllWithRatings(filters);
+    return spacesWithRatings || [];
   }
 }

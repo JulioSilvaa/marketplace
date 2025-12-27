@@ -15,7 +15,7 @@ export default class UserController {
       const output = UserAdapter.toListOutputDTO(users);
 
       if (users.length === 0) {
-        res.status(200).json({ message: "Lista vazia" });
+        return res.status(200).json({ message: "Lista vazia" });
       }
       return res.status(200).json(output);
     } catch (error) {

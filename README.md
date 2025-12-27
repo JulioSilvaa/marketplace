@@ -54,21 +54,30 @@
    - Login seguro para gerenciar seus espaços
 
 2. **Gerenciamento de Espaços** (Proprietário)
+3. **Cadastro e Autenticação** (Apenas Proprietários)
+   - Proprietário se registra na plataforma
+   - Senha é criptografada com bcrypt
+   - Validações rigorosas de email, telefone e dados pessoais
+   - Login seguro para gerenciar seus espaços
+
+4. **Gerenciamento de Espaços** (Proprietário)
    - Cadastra espaço com título, descrição e endereço completo
    - Define capacidade, preços (diária/fim de semana) e comodidades
    - Upload de múltiplas imagens
    - Controle de status (ativo/inativo)
    - Informações de contato para reservas
 
-3. **Busca e Descoberta** (Cliente - Sem Login)
+5. **Busca e Descoberta** (Cliente - Sem Login)
    - Acessa a plataforma sem necessidade de cadastro
-   - Pesquisa por localização, capacidade ou características
+   - Pesquisa por localização (cidade, estado e **bairro**), capacidade ou características
+   - **Busca inteligente**: Sistema insensível a acentos (ex: "sao carlos" encontra "São Carlos") e case-insensitive
+   - Pesquisa textual robusta em título, descrição e bairro
    - Visualiza galeria de fotos e detalhes completos
    - Compara preços e comodidades
    - Acessa informações de contato do proprietário
    - Realiza reserva diretamente com o proprietário
 
-4. **Sistema de Assinaturas** (Proprietários)
+6. **Sistema de Assinaturas** (Proprietários)
    - Planos para proprietários destacarem seus espaços
    - Maior visibilidade nos resultados de busca
    - Controle de trial, billing e status de pagamento

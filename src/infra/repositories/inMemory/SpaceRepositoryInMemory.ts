@@ -35,4 +35,87 @@ export class SpaceRepositoryInMemory implements ISpaceRepository {
       this.spaces.splice(index, 1);
     }
   }
+
+  async findByIdWithRating(
+    id: string
+  ): Promise<import("../../../core/repositories/ISpaceRepository").SpaceWithRating | null> {
+    const space = await this.findById(id);
+    if (!space) return null;
+    return {
+      space,
+      average_rating: null,
+      reviews_count: 0,
+    };
+  }
+
+  async listByOwnerIdWithMetrics(
+    ownerId: string
+  ): Promise<import("../../../core/repositories/ISpaceRepository").SpaceWithMetrics[]> {
+    const spaces = await this.listByOwnerId(ownerId);
+    return spaces.map(s => ({
+      space: s,
+      average_rating: null,
+      reviews_count: 0,
+      views_count: 0,
+      contacts_count: 0,
+    }));
+  }
+
+  async findAllWithRatings(
+    filters?: import("../../../core/repositories/ISpaceRepository").SpaceFilters
+  ): Promise<import("../../../core/repositories/ISpaceRepository").SpaceWithRating[]> {
+    let results = this.spaces;
+
+    const normalize = (str: string) =>
+      str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+
+    if (filters?.category_id) {
+      results = results.filter(s => s.category_id === filters.category_id);
+    }
+
+    if (filters?.city) {
+      results = results.filter(s => normalize(s.address.city) === normalize(filters.city!));
+    }
+
+    if (filters?.state) {
+      results = results.filter(s => normalize(s.address.state) === normalize(filters.state!));
+    }
+
+    if (filters?.neighborhood) {
+      results = results.filter(s =>
+        normalize(s.address.neighborhood).includes(normalize(filters.neighborhood!))
+      );
+    }
+
+    if (filters?.price_min) {
+      results = results.filter(s => (s.price_per_day || 0) >= filters.price_min!);
+    }
+
+    if (filters?.price_max) {
+      results = results.filter(s => (s.price_per_day || 0) <= filters.price_max!);
+    }
+
+    if (filters?.search) {
+      const search = normalize(filters.search);
+      results = results.filter(
+        s =>
+          normalize(s.title).includes(search) ||
+          normalize(s.description).includes(search) ||
+          normalize(s.address.neighborhood).includes(search)
+      );
+    }
+
+    if (filters?.limit) {
+      results = results.slice(0, filters.limit);
+    }
+
+    return results.map(s => ({
+      space: s,
+      average_rating: null,
+      reviews_count: 0,
+    }));
+  }
 }

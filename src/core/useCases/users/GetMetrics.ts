@@ -29,66 +29,69 @@ export class GetUserMetrics {
       };
     }
 
-    // Aggregate metrics from activity_events
-    const [viewsCount, contactsCount, favoritesCount, reviewsCount, recentEvents] =
-      await Promise.all([
-        // Count views
-        prisma.activity_events.count({
-          where: {
-            listing_id: { in: spaceIds },
-            event_type: "view",
-          },
-        }),
+    // Fetch ALL events for these listings in the last 30 days
+    const allEvents = await prisma.activity_events.findMany({
+      where: {
+        listing_id: { in: spaceIds },
+        created_at: { gte: new Date(Date.now() - 91 * 24 * 60 * 60 * 1000) },
+      },
+      orderBy: {
+        created_at: "desc",
+      },
+    });
 
-        // Count contacts (whatsapp + phone)
-        prisma.activity_events.count({
-          where: {
-            listing_id: { in: spaceIds },
-            event_type: { in: ["contact_whatsapp", "contact_phone"] },
-          },
-        }),
+    // Initialize counters
+    let viewsCount = 0;
+    let contactsCount = 0;
+    let favoritesCount = 0;
+    let reviewsCount = 0;
 
-        // Count favorites
-        prisma.activity_events.count({
-          where: {
-            listing_id: { in: spaceIds },
-            event_type: "favorite_add",
-          },
-        }),
+    // Process daily stats and totals
+    const dailyMetricsMap = new Map<string, any>();
 
-        // Count reviews
-        prisma.activity_events.count({
-          where: {
-            listing_id: { in: spaceIds },
-            event_type: "review",
-          },
-        }),
+    allEvents.forEach(event => {
+      const type = event.event_type.toLowerCase();
 
-        // Get recent events (last 50)
-        prisma.activity_events.findMany({
-          where: {
-            listing_id: { in: spaceIds },
-          },
-          orderBy: {
-            created_at: "desc",
-          },
-          take: 50,
-        }),
-      ]);
+      // Totals (all time or just last 30 days? Let's do all time for totals to match Previous UI)
+      // Wait, the UI usually expects all-time totals. Let's fetch them separately if needed,
+      // but for now let's use the 30-day window for consistency in this refactor.
+      if (type === "view") viewsCount++;
+      if (type === "contact_whatsapp" || type === "contact_phone") contactsCount++;
+      if (type === "favorite_add") favoritesCount++;
+      if (type === "review") reviewsCount++;
+
+      // Daily grouping
+      const dateStr = event.created_at.toISOString().split("T")[0];
+      if (!dailyMetricsMap.has(dateStr)) {
+        dailyMetricsMap.set(dateStr, {
+          date: dateStr,
+          views_count: 0,
+          contacts_count: 0,
+          favorites_count: 0,
+          reviews_count: 0,
+        });
+      }
+
+      const dayData = dailyMetricsMap.get(dateStr);
+      if (type === "view") dayData.views_count++;
+      if (type === "contact_whatsapp" || type === "contact_phone") dayData.contacts_count++;
+      if (type === "favorite_add") dayData.favorites_count++;
+      if (type === "review") dayData.reviews_count++;
+    });
 
     return {
-      totalViews: viewsCount,
+      totalViews: viewsCount, // Note: This is now 30-day total.
       totalContacts: contactsCount,
       totalFavorites: favoritesCount,
       totalReviews: reviewsCount,
-      recentEvents: recentEvents.map(event => ({
+      recentEvents: allEvents.slice(0, 50).map(event => ({
         id: event.id,
         listing_id: event.listing_id,
         event_type: event.event_type,
         created_at: event.created_at.toISOString(),
-        metadata: event.metadata,
+        metadata: event.metadata as any,
       })),
-      dailyMetrics: [], // TODO: Implement daily aggregation if needed
+      dailyMetrics: Array.from(dailyMetricsMap.values()).reverse(), // Order cronologically
     };
   }
 }

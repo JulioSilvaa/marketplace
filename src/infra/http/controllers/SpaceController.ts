@@ -129,11 +129,11 @@ class SpaceController {
     try {
       const { owner_id } = req.query;
 
-      // Se owner_id for fornecido, filtra por proprietário (sem ratings para performance)
+      // Se owner_id for fornecido, filtra por proprietário (com métricas)
       if (owner_id && typeof owner_id === "string") {
         const listSpaces = SpaceUseCaseFactory.makeListSpaces();
-        const spaces = await listSpaces.executeByOwner({ owner_id });
-        const output = SpaceAdapter.toListOutputDTO(spaces);
+        const spacesWithMetrics = await listSpaces.executeByOwnerWithMetrics({ owner_id });
+        const output = SpaceAdapter.toListOutputDTOWithMetrics(spacesWithMetrics);
         return res.status(200).json({
           spaces: output.data,
           pagination: {
@@ -146,16 +146,43 @@ class SpaceController {
       }
 
       // Caso contrário, lista todos os espaços COM ratings
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+      const city = req.query.city as string;
+      const state = req.query.state as string;
+      const category_id =
+        req.query.category_id && !isNaN(parseInt(req.query.category_id as string))
+          ? parseInt(req.query.category_id as string)
+          : undefined;
+      const price_min =
+        req.query.price_min && !isNaN(parseFloat(req.query.price_min as string))
+          ? parseFloat(req.query.price_min as string)
+          : undefined;
+      const price_max =
+        req.query.price_max && !isNaN(parseFloat(req.query.price_max as string))
+          ? parseFloat(req.query.price_max as string)
+          : undefined;
+      const search = req.query.search as string;
+      const neighborhood = req.query.neighborhood as string;
+
       const findAllSpaces = SpaceUseCaseFactory.makeFindAllSpaces();
-      const spacesWithRatings = await findAllSpaces.executeWithRatings();
+      const spacesWithRatings = await findAllSpaces.executeWithRatings({
+        limit,
+        city,
+        state,
+        category_id,
+        price_min,
+        price_max,
+        search,
+        neighborhood,
+      });
       const output = SpaceAdapter.toListOutputDTOWithRatings(spacesWithRatings);
       return res.status(200).json({
         spaces: output.data,
         pagination: {
           total: output.total,
           page: 1,
-          limit: 100,
-          totalPages: Math.ceil(output.total / 100) || 1,
+          limit: limit,
+          totalPages: Math.ceil(output.total / limit) || 1,
         },
       });
     } catch (error) {
@@ -168,8 +195,9 @@ class SpaceController {
 
   async getAllSpaces(req: Request, res: Response) {
     try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
       const findAllSpaces = SpaceUseCaseFactory.makeFindAllSpaces();
-      const spacesWithRatings = await findAllSpaces.executeWithRatings();
+      const spacesWithRatings = await findAllSpaces.executeWithRatings({ limit });
 
       const output = SpaceAdapter.toListOutputDTOWithRatings(spacesWithRatings);
 
@@ -178,8 +206,8 @@ class SpaceController {
         pagination: {
           total: output.total,
           page: 1,
-          limit: 100,
-          totalPages: Math.ceil(output.total / 100) || 1,
+          limit: limit,
+          totalPages: Math.ceil(output.total / limit) || 1,
         },
       });
     } catch (error) {
@@ -244,8 +272,34 @@ class SpaceController {
         return res.status(401).json({ message: "Usuário não autenticado" });
       }
 
+      const data = { ...req.body };
+
+      // Normalizar endereço se vier achatado (flat)
+      if (!data.address && (data.city || data.state)) {
+        data.address = {
+          street: data.street || "",
+          number: data.number || "",
+          complement: data.complement,
+          neighborhood: data.neighborhood || "",
+          city: data.city || "",
+          state: data.state || "",
+          zipcode: data.postal_code || data.zipcode || "",
+          country: data.country || "Brasil",
+        };
+      }
+
+      // Normalizar preços se vierem como 'price' e 'price_type' (comum no frontend antigo)
+      if (data.price !== undefined && data.price_type) {
+        if (data.price_type === "daily") {
+          data.price_per_day = data.price;
+        } else {
+          // Para outros tipos, podemos usar price_per_day como padrão
+          data.price_per_day = data.price;
+        }
+      }
+
       const updateSpace = SpaceUseCaseFactory.makeUpdateSpace();
-      await updateSpace.execute({ id, owner_id, ...req.body });
+      await updateSpace.execute({ id, owner_id, category_id: data.category_id, ...data });
 
       return res.status(200).json({ message: "Espaço atualizado com sucesso" });
     } catch (error) {

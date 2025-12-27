@@ -8,4 +8,10 @@ export class ListSpaces {
   async executeByOwner(input: ListSpacesDTO): Promise<SpaceEntity[]> {
     return this.spaceRepository.listByOwnerId(input.owner_id);
   }
+
+  async executeByOwnerWithMetrics(
+    input: ListSpacesDTO
+  ): Promise<import("../../repositories/ISpaceRepository").SpaceWithMetrics[]> {
+    return this.spaceRepository.listByOwnerIdWithMetrics(input.owner_id);
+  }
 }

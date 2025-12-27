@@ -14,6 +14,11 @@ export interface UpdateSpaceDTO {
   comfort?: string[];
   images?: string[];
   status?: spaceStatus;
+  contact_whatsapp?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  contact_instagram?: string;
+  contact_facebook?: string;
 }
 
 export class UpdateSpace {
@@ -44,6 +49,11 @@ export class UpdateSpace {
       comfort: input.comfort ?? existingSpace.comfort,
       images: input.images ?? existingSpace.images,
       status: input.status ?? existingSpace.status,
+      contact_whatsapp: input.contact_whatsapp ?? existingSpace.contact_whatsapp,
+      contact_phone: input.contact_phone ?? existingSpace.contact_phone,
+      contact_email: input.contact_email ?? existingSpace.contact_email,
+      contact_instagram: input.contact_instagram ?? existingSpace.contact_instagram,
+      contact_facebook: input.contact_facebook ?? existingSpace.contact_facebook,
     });
 
     await this.spaceRepository.update(updatedSpace);

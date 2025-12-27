@@ -21,21 +21,6 @@ export class DeleteSpace {
       throw new Error("You are not authorized to delete this space");
     }
 
-    // Soft delete by creating new entity with inactive status
-    const inactiveSpace = SpaceEntity.create({
-      id: space.id!,
-      owner_id: space.owner_id,
-      title: space.title,
-      description: space.description,
-      address: space.address,
-      capacity: space.capacity,
-      price_per_weekend: space.price_per_weekend,
-      price_per_day: space.price_per_day,
-      comfort: space.comfort,
-      images: space.images,
-      status: "inactive",
-    });
-
-    await this.spaceRepository.update(inactiveSpace);
+    await this.spaceRepository.delete(input.id);
   }
 }

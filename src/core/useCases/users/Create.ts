@@ -34,6 +34,7 @@ export class CreateUser {
         email: input.email,
         password: input.password,
         phone: input.phone,
+        whatsapp: input.whatsapp || input.phone, // Fallback to phone for whatsapp
         role: input.role ?? UserRole.PROPRIETARIO,
         checked: false,
         status: UserIsActive.ATIVO, // Default status
@@ -55,6 +56,7 @@ export class CreateUser {
       email: user.email,
       name: user.name,
       phone: user.phone,
+      whatsapp: user.whatsapp,
       role: user.role,
       checked: user.checked,
       password: user.password,

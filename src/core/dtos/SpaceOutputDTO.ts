@@ -16,4 +16,19 @@ export interface SpaceOutputDTO {
   updated_at?: string;
   average_rating?: number;
   reviews_count?: number;
+  views_count?: number;
+  contacts_count?: number;
+  contact_whatsapp?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  contact_instagram?: string;
+  contact_facebook?: string;
+  owner?: {
+    name: string;
+    phone?: string;
+    whatsapp?: string;
+    facebook_url?: string;
+    instagram_url?: string;
+    email?: string;
+  };
 }

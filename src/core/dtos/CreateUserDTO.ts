@@ -5,5 +5,6 @@ export interface CreateUserDTO {
   email: string;
   password: string;
   phone: string;
+  whatsapp?: string;
   role?: UserRole;
 }

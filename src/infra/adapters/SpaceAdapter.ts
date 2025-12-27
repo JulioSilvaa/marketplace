@@ -28,6 +28,11 @@ export class SpaceAdapter {
       comfort: data.comfort,
       images: data.images,
       status: data.status as spaceStatus,
+      contact_whatsapp: data.contact_whatsapp || undefined,
+      contact_phone: data.contact_phone || undefined,
+      contact_email: data.contact_email || undefined,
+      contact_instagram: data.contact_instagram || undefined,
+      contact_facebook: data.contact_facebook || undefined,
       address,
       created_at: data.created_at,
       updated_at: data.updated_at,
@@ -36,7 +41,13 @@ export class SpaceAdapter {
 
   static toOutputDTO(
     space: SpaceEntity,
-    ratingData?: { average_rating: number | null; reviews_count: number }
+    metricsData?: {
+      average_rating?: number | null;
+      reviews_count?: number;
+      views_count?: number;
+      contacts_count?: number;
+    },
+    ownerData?: any
   ): SpaceOutputDTO {
     return {
       id: space.id!,
@@ -52,8 +63,25 @@ export class SpaceAdapter {
       status: space.status,
       created_at: space.created_at?.toISOString(),
       updated_at: space.updated_at?.toISOString(),
-      average_rating: ratingData?.average_rating ?? undefined,
-      reviews_count: ratingData?.reviews_count ?? undefined,
+      average_rating: metricsData?.average_rating ?? undefined,
+      reviews_count: metricsData?.reviews_count ?? undefined,
+      views_count: metricsData?.views_count ?? undefined,
+      contacts_count: metricsData?.contacts_count ?? undefined,
+      contact_whatsapp: space.contact_whatsapp || ownerData?.whatsapp,
+      contact_phone: space.contact_phone || ownerData?.phone,
+      contact_email: space.contact_email || ownerData?.email,
+      contact_instagram: space.contact_instagram || ownerData?.instagram_url,
+      contact_facebook: space.contact_facebook || ownerData?.facebook_url,
+      owner: ownerData
+        ? {
+            name: ownerData.name,
+            phone: ownerData.phone,
+            whatsapp: ownerData.whatsapp,
+            facebook_url: ownerData.facebook_url,
+            instagram_url: ownerData.instagram_url,
+            email: ownerData.email,
+          }
+        : undefined,
     };
   }
 
@@ -67,10 +95,14 @@ export class SpaceAdapter {
   static toOutputDTOWithRating(
     spaceWithRating: import("../../core/repositories/ISpaceRepository").SpaceWithRating
   ): SpaceOutputDTO {
-    return this.toOutputDTO(spaceWithRating.space, {
-      average_rating: spaceWithRating.average_rating,
-      reviews_count: spaceWithRating.reviews_count,
-    });
+    return this.toOutputDTO(
+      spaceWithRating.space,
+      {
+        average_rating: spaceWithRating.average_rating,
+        reviews_count: spaceWithRating.reviews_count,
+      },
+      spaceWithRating.owner
+    );
   }
 
   static toListOutputDTOWithRatings(
@@ -79,6 +111,22 @@ export class SpaceAdapter {
     return {
       data: spacesWithRatings.map(swr => this.toOutputDTOWithRating(swr)),
       total: spacesWithRatings.length,
+    };
+  }
+
+  static toListOutputDTOWithMetrics(
+    spacesWithMetrics: import("../../core/repositories/ISpaceRepository").SpaceWithMetrics[]
+  ): SpaceListOutputDTO {
+    return {
+      data: spacesWithMetrics.map(swm =>
+        this.toOutputDTO(swm.space, {
+          average_rating: swm.average_rating,
+          reviews_count: swm.reviews_count,
+          views_count: swm.views_count,
+          contacts_count: swm.contacts_count,
+        })
+      ),
+      total: spacesWithMetrics.length,
     };
   }
 }

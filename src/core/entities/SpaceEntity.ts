@@ -3,6 +3,7 @@ import { IAddress, IEspace, spaceStatus } from "../../types/Space";
 export class SpaceEntity {
   private readonly _id?: string;
   private readonly _owner_id: string;
+  private readonly _category_id?: number;
   private readonly _title: string;
   private readonly _description: string;
   private readonly _address: IAddress;
@@ -12,12 +13,18 @@ export class SpaceEntity {
   private readonly _comfort: string[];
   private readonly _images: string[];
   private readonly _status: spaceStatus;
+  private readonly _contact_whatsapp?: string;
+  private readonly _contact_phone?: string;
+  private readonly _contact_email?: string;
+  private readonly _contact_instagram?: string;
+  private readonly _contact_facebook?: string;
   private readonly _created_at?: Date;
   private readonly _updated_at?: Date;
 
   constructor(props: IEspace) {
     this._id = props.id;
     this._owner_id = props.owner_id;
+    this._category_id = props.category_id;
     this._title = props.title;
     this._description = props.description;
     this._address = props.address;
@@ -27,6 +34,11 @@ export class SpaceEntity {
     this._comfort = props.comfort;
     this._images = props.images;
     this._status = props.status;
+    this._contact_whatsapp = props.contact_whatsapp;
+    this._contact_phone = props.contact_phone;
+    this._contact_email = props.contact_email;
+    this._contact_instagram = props.contact_instagram;
+    this._contact_facebook = props.contact_facebook;
     this._created_at = props.created_at;
     this._updated_at = props.updated_at;
     this.validate();
@@ -42,6 +54,10 @@ export class SpaceEntity {
 
   public get owner_id(): string {
     return this._owner_id;
+  }
+
+  public get category_id(): number | undefined {
+    return this._category_id;
   }
 
   public get title(): string {
@@ -78,6 +94,26 @@ export class SpaceEntity {
 
   public get status(): spaceStatus {
     return this._status;
+  }
+
+  public get contact_whatsapp(): string | undefined {
+    return this._contact_whatsapp;
+  }
+
+  public get contact_phone(): string | undefined {
+    return this._contact_phone;
+  }
+
+  public get contact_email(): string | undefined {
+    return this._contact_email;
+  }
+
+  public get contact_instagram(): string | undefined {
+    return this._contact_instagram;
+  }
+
+  public get contact_facebook(): string | undefined {
+    return this._contact_facebook;
   }
 
   public get created_at(): Date | undefined {

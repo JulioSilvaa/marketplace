@@ -10,4 +10,9 @@ export interface CreateSpaceDTO {
   price_per_day?: number;
   comfort: string[];
   images: string[];
+  contact_whatsapp?: string;
+  contact_phone?: string;
+  contact_email?: string;
+  contact_instagram?: string;
+  contact_facebook?: string;
 }
