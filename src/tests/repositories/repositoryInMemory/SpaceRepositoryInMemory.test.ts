@@ -163,7 +163,7 @@ describe("SpaceRepositoryInMemory", () => {
   });
 
   describe("delete", () => {
-    it("Deveria deletar um espaço existente", async () => {
+    it("Deveria fazer soft delete marcando status como inactive", async () => {
       const space = createMockSpace("space-1");
       await repository.create(space);
 
@@ -171,9 +171,11 @@ describe("SpaceRepositoryInMemory", () => {
 
       await repository.delete("space-1");
 
-      expect(repository.spaces).toHaveLength(0);
+      // Soft delete: o espaço ainda existe mas com status inactive
+      expect(repository.spaces).toHaveLength(1);
       const result = await repository.findById("space-1");
-      expect(result).toBeNull();
+      expect(result).toBeDefined();
+      expect(result?.status).toBe("inactive");
     });
 
     it("Não deveria fazer nada ao deletar um espaço inexistente", async () => {
@@ -191,7 +193,7 @@ describe("SpaceRepositoryInMemory", () => {
       expect(result).toBe(space);
     });
 
-    it("Deveria deletar apenas o espaço especificado", async () => {
+    it("Deveria fazer soft delete apenas do espaço especificado", async () => {
       const space1 = createMockSpace("space-1");
       const space2 = createMockSpace("space-2");
       await repository.create(space1);
@@ -199,8 +201,13 @@ describe("SpaceRepositoryInMemory", () => {
 
       await repository.delete("space-1");
 
-      expect(repository.spaces).toHaveLength(1);
-      expect(repository.spaces[0]).toBe(space2);
+      // Ambos os espaços ainda existem
+      expect(repository.spaces).toHaveLength(2);
+      // Mas apenas space-1 tem status inactive
+      const deletedSpace = await repository.findById("space-1");
+      expect(deletedSpace?.status).toBe("inactive");
+      const activeSpace = await repository.findById("space-2");
+      expect(activeSpace?.status).toBe("active");
     });
   });
 });

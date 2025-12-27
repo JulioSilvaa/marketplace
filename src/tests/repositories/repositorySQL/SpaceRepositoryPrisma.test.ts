@@ -262,12 +262,12 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
     expect(found?.price_per_day).toBe(150);
   });
 
-  it("should delete a space", async () => {
+  it("should soft delete a space by marking status as inactive", async () => {
     const space = SpaceEntity.create({
       id: uuidGenerator.generate(),
       owner_id: testUserId,
       title: "Space to Delete",
-      description: "This space will be deleted from database",
+      description: "This space will be soft deleted (marked as inactive)",
       address: {
         street: "Main St",
         number: "123",
@@ -289,6 +289,7 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
     await spaceRepository.delete(created.id!);
 
     const found = await spaceRepository.findById(created.id!);
-    expect(found).toBeNull();
+    expect(found).toBeDefined();
+    expect(found?.status).toBe("inactive");
   });
 });
