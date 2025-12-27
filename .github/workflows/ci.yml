@@ -40,7 +40,7 @@ jobs:
         run: yarn install --frozen-lockfile 
       
       - name: Apply Database Schema
-        run: npx prisma db push --accept-data-loss --skip-generate
+        run: npx prisma db push --accept-data-loss
         env:
           DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
       
