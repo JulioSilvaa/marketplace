@@ -11,11 +11,9 @@ export class SharpImageService implements IImageService {
   private readonly ALLOWED_FORMATS = ["jpeg", "png", "webp"];
   private readonly MAX_SIZE = 5 * 1024 * 1024; // 5MB
 
-  // Tamanhos otimizados
+  // Tamanho otimizado - qualidade média
   private readonly SIZES = {
-    thumbnail: { width: 400, height: 300 },
     medium: { width: 1280, height: 720 },
-    large: { width: 1920, height: 1080 },
   };
 
   async validateImage(buffer: Buffer, mimetype: string): Promise<boolean> {
@@ -45,35 +43,19 @@ export class SharpImageService implements IImageService {
   async processImage(buffer: Buffer, filename: string): Promise<ProcessedImage> {
     const originalMetadata = await sharp(buffer).metadata();
 
-    // Processar thumbnail
-    const thumbnail = await this.resizeImage(
-      buffer,
-      this.SIZES.thumbnail.width,
-      this.SIZES.thumbnail.height
-    );
-
-    // Processar medium
-    const medium = await this.resizeImage(
-      buffer,
-      this.SIZES.medium.width,
-      this.SIZES.medium.height
-    );
-
-    // Processar large
-    const large = await this.resizeImage(buffer, this.SIZES.large.width, this.SIZES.large.height);
+    // Processar imagem com qualidade média
+    const image = await this.resizeImage(buffer, this.SIZES.medium.width, this.SIZES.medium.height);
 
     const metadata: ImageMetadata = {
       originalSize: buffer.length,
-      compressedSize: thumbnail.length + medium.length + large.length,
+      compressedSize: image.length,
       format: "webp",
       width: originalMetadata.width || 0,
       height: originalMetadata.height || 0,
     };
 
     return {
-      thumbnail,
-      medium,
-      large,
+      image,
       metadata,
     };
   }
