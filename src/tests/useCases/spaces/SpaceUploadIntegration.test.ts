@@ -31,86 +31,56 @@ describe("Space Upload Integration", () => {
   }
 
   describe("Upload de imagens", () => {
-    it("deve processar e fazer upload de 1 imagem com 3 tamanhos", async () => {
+    it("deve processar e fazer upload de 1 imagem otimizada", async () => {
       const imageBuffer = await createTestImage(2000, 1500);
-      const ownerId = "user-123";
       const spaceTitle = "test_space";
 
       // Processar imagem
       const processed = await imageService.processImage(imageBuffer, "test.jpg");
 
-      // Upload dos 3 tamanhos
-      const basePath = `spaces/${ownerId}/${spaceTitle}`;
+      // Upload da imagem
+      const basePath = `spaces/${spaceTitle}`;
       const timestamp = Date.now();
 
-      await Promise.all([
-        storageService.uploadImage(
-          BUCKET_NAME,
-          `${basePath}/thumb_${timestamp}_test.webp`,
-          processed.thumbnail,
-          "image/webp"
-        ),
-        storageService.uploadImage(
-          BUCKET_NAME,
-          `${basePath}/medium_${timestamp}_test.webp`,
-          processed.medium,
-          "image/webp"
-        ),
-        storageService.uploadImage(
-          BUCKET_NAME,
-          `${basePath}/large_${timestamp}_test.webp`,
-          processed.large,
-          "image/webp"
-        ),
-      ]);
+      await storageService.uploadImage(
+        BUCKET_NAME,
+        `${basePath}/${timestamp}_test.webp`,
+        processed.image,
+        "image/webp"
+      );
 
-      // Verificar que 3 arquivos foram salvos
-      expect(storageService.getUploadCount()).toBe(3);
+      // Verificar que 1 arquivo foi salvo
+      expect(storageService.getUploadCount()).toBe(1);
 
       // Verificar estrutura de pastas
       const uploadedFiles = storageService.getUploadedFiles();
-      expect(uploadedFiles.every(f => f.includes(`spaces/${ownerId}/${spaceTitle}`))).toBe(true);
+      expect(uploadedFiles.every(f => f.includes(`spaces/${spaceTitle}`))).toBe(true);
     });
 
-    it("deve processar múltiplas imagens (3 imagens = 9 uploads)", async () => {
+    it("deve processar múltiplas imagens (3 imagens = 3 uploads)", async () => {
       const images = await Promise.all([
         createTestImage(1920, 1080),
         createTestImage(1600, 900),
         createTestImage(2400, 1800),
       ]);
 
-      const ownerId = "user-456";
       const spaceTitle = "multi_image_space";
-      const basePath = `spaces/${ownerId}/${spaceTitle}`;
+      const basePath = `spaces/${spaceTitle}`;
 
       for (let i = 0; i < images.length; i++) {
         const processed = await imageService.processImage(images[i], `image${i}.jpg`);
         const timestamp = Date.now() + i;
 
-        await Promise.all([
-          storageService.uploadImage(
-            BUCKET_NAME,
-            `${basePath}/thumb_${timestamp}_image${i}.webp`,
-            processed.thumbnail,
-            "image/webp"
-          ),
-          storageService.uploadImage(
-            BUCKET_NAME,
-            `${basePath}/medium_${timestamp}_image${i}.webp`,
-            processed.medium,
-            "image/webp"
-          ),
-          storageService.uploadImage(
-            BUCKET_NAME,
-            `${basePath}/large_${timestamp}_image${i}.webp`,
-            processed.large,
-            "image/webp"
-          ),
-        ]);
+        await storageService.uploadImage(
+          BUCKET_NAME,
+          `${basePath}/${timestamp}_image${i}.webp`,
+          processed.image,
+          "image/webp"
+        );
       }
 
-      // 3 imagens × 3 tamanhos = 9 uploads
-      expect(storageService.getUploadCount()).toBe(9);
+      // 3 imagens × 1 versão = 3 uploads
+      expect(storageService.getUploadCount()).toBe(3);
     });
 
     it("deve validar que todos os uploads são WebP", async () => {
@@ -119,12 +89,12 @@ describe("Space Upload Integration", () => {
 
       await storageService.uploadImage(
         BUCKET_NAME,
-        "test/thumb.webp",
-        processed.thumbnail,
+        "test/image.webp",
+        processed.image,
         "image/webp"
       );
 
-      const uploaded = storageService.getUploadedFile(BUCKET_NAME, "test/thumb.webp");
+      const uploaded = storageService.getUploadedFile(BUCKET_NAME, "test/image.webp");
       expect(uploaded?.contentType).toBe("image/webp");
 
       // Verificar que o buffer é realmente WebP
@@ -179,12 +149,8 @@ describe("Space Upload Integration", () => {
   });
 
   describe("Estrutura de dados", () => {
-    it("deve aceitar objeto JSON com 3 URLs no SpaceEntity", () => {
-      const imageObject = JSON.stringify({
-        thumbnail: "https://example.com/thumb.webp",
-        medium: "https://example.com/medium.webp",
-        large: "https://example.com/large.webp",
-      });
+    it("deve aceitar URL simples de imagem no SpaceEntity", () => {
+      const imageUrl = "https://example.com/image.webp";
 
       const space = new SpaceEntity({
         owner_id: "user-123",
@@ -202,20 +168,16 @@ describe("Space Upload Integration", () => {
         capacity: 50,
         price_per_day: 100,
         comfort: ["Pool"],
-        images: [imageObject],
+        images: [imageUrl],
         status: "active",
       });
 
       expect(space.images).toHaveLength(1);
-      expect(space.images[0]).toBe(imageObject);
+      expect(space.images[0]).toBe(imageUrl);
     });
 
-    it("deve rejeitar objeto JSON com URLs inválidas", () => {
-      const invalidImageObject = JSON.stringify({
-        thumbnail: "not-a-url",
-        medium: "https://example.com/medium.webp",
-        large: "https://example.com/large.webp",
-      });
+    it("deve rejeitar URL inválida", () => {
+      const invalidImageUrl = "not-a-url";
 
       expect(() => {
         new SpaceEntity({
@@ -234,7 +196,7 @@ describe("Space Upload Integration", () => {
           capacity: 50,
           price_per_day: 100,
           comfort: ["Pool"],
-          images: [invalidImageObject],
+          images: [invalidImageUrl],
           status: "active",
         });
       }).toThrow("Pelo menos um link de imagem fornecido não é um URL válido");
