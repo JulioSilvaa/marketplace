@@ -42,14 +42,14 @@ class SpaceController {
           await imageService.validateImage(file.buffer, file.mimetype);
           const processed = await imageService.processImage(file.buffer, file.originalname);
 
-          // Gerar nome único
+          // Gerar nome único para a imagem
           const timestamp = Date.now();
           const baseName = file.originalname.replace(/\.[^/.]+$/, "");
           const sanitizedName = baseName.replace(/[^a-zA-Z0-9-_]/g, "_");
           const uniqueName = `${timestamp}_${sanitizedName}`;
 
-          // Estrutura de pastas: spaces/{owner_id}/{space_title}/
-          const basePath = `spaces/${owner_id}/${sanitizedTitle}`;
+          // Estrutura simplificada: spaces/{space_title}/
+          const basePath = `spaces/${sanitizedTitle}`;
 
           // Upload da imagem
           const imageUrl = await storageService.uploadImage(
