@@ -12,6 +12,6 @@ router.get(
   AuthMiddleware.auth,
   ExpressAdapter.create(ReviewController.getDashboardReviews)
 );
-router.post("/", AuthMiddleware.auth, ExpressAdapter.create(ReviewController.create));
+router.post("/", ExpressAdapter.create(ReviewController.create));
 
 export default router;

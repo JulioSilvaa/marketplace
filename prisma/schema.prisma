@@ -89,15 +89,16 @@ model users {
 }
 
 model Review {
-  id          String   @id
-  space_id    String
-  user_id     String
-  rating      Int
-  comment     String
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  spaces      spaces   @relation(fields: [space_id], references: [id], onDelete: Cascade)
-  users       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id             String   @id
+  space_id       String
+  user_id        String?
+  reviewer_name  String?
+  rating         Int
+  comment        String
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  spaces         spaces   @relation(fields: [space_id], references: [id], onDelete: Cascade)
+  users          users?   @relation(fields: [user_id], references: [id], onDelete: SetNull)
 
   @@index([space_id])
   @@index([user_id])

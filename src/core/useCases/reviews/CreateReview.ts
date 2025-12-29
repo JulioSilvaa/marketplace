@@ -3,7 +3,8 @@ import { IReviewRepository } from "../../repositories/IReviewRepository";
 
 interface CreateReviewInput {
   space_id: string;
-  user_id: string;
+  user_id?: string;
+  reviewer_name?: string;
   rating: number;
   comment: string;
 }

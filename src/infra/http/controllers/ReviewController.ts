@@ -5,18 +5,19 @@ import { ReviewUseCaseFactory } from "../../factories/ReviewUseCaseFactory";
 export default class ReviewController {
   static async create(req: Request, res: Response, next: NextFunction) {
     try {
-      const user_id = req.user_id;
-      if (!user_id) {
-        return res.status(401).json({ message: "Usuário não autenticado" });
-      }
+      const user_id = req.user_id; // May be undefined for anonymous users
 
-      const { space_id, listing_id, rating, comment } = req.body;
+      const { space_id, listing_id, rating, comment, reviewer_name } = req.body;
       const target_space_id = listing_id || space_id;
+
+      // Determine reviewer name
+      const finalReviewerName = reviewer_name || "Usuário Anônimo";
 
       const createReview = ReviewUseCaseFactory.makeCreateReview();
       const review = await createReview.execute({
         space_id: target_space_id,
         user_id,
+        reviewer_name: finalReviewerName,
         rating: Number(rating),
         comment,
       });
@@ -33,11 +34,11 @@ export default class ReviewController {
         await createEvents.execute([
           {
             listing_id: target_space_id,
-            user_id: user_id,
+            user_id: user_id || null,
             event_type: "review",
             metadata: {
               rating: Number(rating),
-              reviewer_name: req.body.reviewer_name || "Usuário",
+              reviewer_name: finalReviewerName,
               comment: comment,
             },
             created_at: new Date(),
@@ -67,7 +68,9 @@ export default class ReviewController {
 
       // Get user names for reviews
       const { prisma } = await import("../../../lib/prisma");
-      const userIds = result.reviews.map(r => r.props.user_id).filter(Boolean);
+      const userIds = result.reviews
+        .map(r => r.props.user_id)
+        .filter((id): id is string => Boolean(id));
       const users = await prisma.users.findMany({
         where: { id: { in: userIds } },
         select: { id: true, name: true },
@@ -78,7 +81,7 @@ export default class ReviewController {
           const user = users.find(u => u.id === r.props.user_id);
           return {
             ...r.props,
-            reviewer_name: user?.name || "Usuário",
+            reviewer_name: r.props.reviewer_name || user?.name || "Usuário Anônimo",
           };
         }),
         total: result.total,
@@ -141,7 +144,7 @@ export default class ReviewController {
           reviews: reviews.map(r => ({
             id: r.id,
             user_id: r.user_id,
-            reviewer_name: r.users.name,
+            reviewer_name: r.users?.name || "Usuário Anônimo",
             rating: r.rating,
             comment: r.comment,
             created_at: r.created_at.toISOString(),
@@ -215,7 +218,7 @@ export default class ReviewController {
         reviews: reviews.map(r => ({
           id: r.id,
           user_id: r.user_id,
-          reviewer_name: r.users.name,
+          reviewer_name: r.users?.name || "Usuário Anônimo",
           rating: r.rating,
           comment: r.comment,
           created_at: r.created_at.toISOString(),

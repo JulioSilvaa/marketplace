@@ -12,12 +12,12 @@ export class EventRepositoryPrisma implements IEventRepository {
       listing_id: event.listing_id,
       user_id: event.user_id || null,
       event_type: event.event_type,
-      metadata: event.metadata || null,
+      metadata: event.metadata || undefined,
       created_at: event.created_at || new Date(),
     }));
 
     await prisma.activity_events.createMany({
-      data: eventsWithIds,
+      data: eventsWithIds as any,
       skipDuplicates: true,
     });
   }
