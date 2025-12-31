@@ -5,9 +5,7 @@ export interface IImageService {
 }
 
 export interface ProcessedImage {
-  thumbnail: Buffer;
-  medium: Buffer;
-  large: Buffer;
+  image: Buffer;
   metadata: ImageMetadata;
 }
 

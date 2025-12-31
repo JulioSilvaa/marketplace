@@ -87,7 +87,7 @@ describe("SharpImageService", () => {
   });
 
   describe("processImage", () => {
-    it("deve processar imagem e gerar 3 tamanhos", async () => {
+    it("deve processar imagem e gerar uma versão otimizada", async () => {
       // Criar imagem de teste 2000x1500
       const buffer = await sharp({
         create: {
@@ -102,9 +102,7 @@ describe("SharpImageService", () => {
 
       const result = await imageService.processImage(buffer, "test.jpg");
 
-      expect(result.thumbnail).toBeInstanceOf(Buffer);
-      expect(result.medium).toBeInstanceOf(Buffer);
-      expect(result.large).toBeInstanceOf(Buffer);
+      expect(result.image).toBeInstanceOf(Buffer);
       expect(result.metadata.format).toBe("webp");
     });
 
@@ -139,36 +137,12 @@ describe("SharpImageService", () => {
 
       const result = await imageService.processImage(buffer, "test.jpg");
 
-      // Verificar que os buffers são WebP
-      const thumbMeta = await sharp(result.thumbnail).metadata();
-      const mediumMeta = await sharp(result.medium).metadata();
-      const largeMeta = await sharp(result.large).metadata();
-
-      expect(thumbMeta.format).toBe("webp");
-      expect(mediumMeta.format).toBe("webp");
-      expect(largeMeta.format).toBe("webp");
+      // Verificar que a imagem é WebP
+      const imageMeta = await sharp(result.image).metadata();
+      expect(imageMeta.format).toBe("webp");
     });
 
-    it("deve gerar thumbnail com dimensões corretas (400x300)", async () => {
-      const buffer = await sharp({
-        create: {
-          width: 2000,
-          height: 1500,
-          channels: 3,
-          background: { r: 50, g: 100, b: 150 },
-        },
-      })
-        .jpeg()
-        .toBuffer();
-
-      const result = await imageService.processImage(buffer, "test.jpg");
-
-      const thumbMeta = await sharp(result.thumbnail).metadata();
-      expect(thumbMeta.width).toBe(400);
-      expect(thumbMeta.height).toBe(300);
-    });
-
-    it("deve gerar medium com dimensões corretas (1280x720)", async () => {
+    it("deve gerar imagem com dimensões corretas (1280x720)", async () => {
       const buffer = await sharp({
         create: {
           width: 2000,
@@ -182,28 +156,9 @@ describe("SharpImageService", () => {
 
       const result = await imageService.processImage(buffer, "test.jpg");
 
-      const mediumMeta = await sharp(result.medium).metadata();
-      expect(mediumMeta.width).toBe(1280);
-      expect(mediumMeta.height).toBe(720);
-    });
-
-    it("deve gerar large com dimensões corretas (1920x1080)", async () => {
-      const buffer = await sharp({
-        create: {
-          width: 3000,
-          height: 2000,
-          channels: 3,
-          background: { r: 75, g: 125, b: 175 },
-        },
-      })
-        .jpeg()
-        .toBuffer();
-
-      const result = await imageService.processImage(buffer, "test.jpg");
-
-      const largeMeta = await sharp(result.large).metadata();
-      expect(largeMeta.width).toBe(1920);
-      expect(largeMeta.height).toBe(1080);
+      const imageMeta = await sharp(result.image).metadata();
+      expect(imageMeta.width).toBe(1280);
+      expect(imageMeta.height).toBe(720);
     });
   });
 });

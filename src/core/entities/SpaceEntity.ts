@@ -239,29 +239,10 @@ export class SpaceEntity {
 
     const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
 
-    for (const imageData of this._images) {
-      // Aceita tanto URL simples quanto objeto JSON com 3 tamanhos
-      if (typeof imageData === "string") {
-        try {
-          // Tentar parsear como JSON
-          const parsed = JSON.parse(imageData);
-          if (parsed.thumbnail && parsed.medium && parsed.large) {
-            // Validar as 3 URLs
-            if (
-              !urlRegex.test(parsed.thumbnail) ||
-              !urlRegex.test(parsed.medium) ||
-              !urlRegex.test(parsed.large)
-            ) {
-              throw new Error("Pelo menos uma URL de imagem (thumbnail/medium/large) é inválida.");
-            }
-            continue;
-          }
-        } catch {
-          // Não é JSON, validar como URL simples
-          if (!urlRegex.test(imageData)) {
-            throw new Error("Pelo menos um link de imagem fornecido não é um URL válido.");
-          }
-        }
+    for (const imageUrl of this._images) {
+      // Validar como URL simples
+      if (typeof imageUrl !== "string" || !urlRegex.test(imageUrl)) {
+        throw new Error("Pelo menos um link de imagem fornecido não é um URL válido.");
       }
     }
   }

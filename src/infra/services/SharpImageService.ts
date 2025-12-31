@@ -45,35 +45,19 @@ export class SharpImageService implements IImageService {
   async processImage(buffer: Buffer, filename: string): Promise<ProcessedImage> {
     const originalMetadata = await sharp(buffer).metadata();
 
-    // Processar thumbnail
-    const thumbnail = await this.resizeImage(
-      buffer,
-      this.SIZES.thumbnail.width,
-      this.SIZES.thumbnail.height
-    );
-
-    // Processar medium
-    const medium = await this.resizeImage(
-      buffer,
-      this.SIZES.medium.width,
-      this.SIZES.medium.height
-    );
-
-    // Processar large
-    const large = await this.resizeImage(buffer, this.SIZES.large.width, this.SIZES.large.height);
+    // Processar uma única imagem otimizada (medium quality)
+    const image = await this.resizeImage(buffer, this.SIZES.medium.width, this.SIZES.medium.height);
 
     const metadata: ImageMetadata = {
       originalSize: buffer.length,
-      compressedSize: thumbnail.length + medium.length + large.length,
+      compressedSize: image.length,
       format: "webp",
       width: originalMetadata.width || 0,
       height: originalMetadata.height || 0,
     };
 
     return {
-      thumbnail,
-      medium,
-      large,
+      image,
       metadata,
     };
   }

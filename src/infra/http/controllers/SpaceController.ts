@@ -51,36 +51,16 @@ class SpaceController {
           // Estrutura de pastas: spaces/{owner_id}/{space_title}/
           const basePath = `spaces/${owner_id}/${sanitizedTitle}`;
 
-          // Upload dos 3 tamanhos
-          const [thumbnailUrl, mediumUrl, largeUrl] = await Promise.all([
-            storageService.uploadImage(
-              BUCKET_NAME,
-              `${basePath}/thumb_${uniqueName}.webp`,
-              processed.thumbnail,
-              "image/webp"
-            ),
-            storageService.uploadImage(
-              BUCKET_NAME,
-              `${basePath}/medium_${uniqueName}.webp`,
-              processed.medium,
-              "image/webp"
-            ),
-            storageService.uploadImage(
-              BUCKET_NAME,
-              `${basePath}/large_${uniqueName}.webp`,
-              processed.large,
-              "image/webp"
-            ),
-          ]);
-
-          // Salvar objeto com os 3 tamanhos
-          imageUrls.push(
-            JSON.stringify({
-              thumbnail: thumbnailUrl,
-              medium: mediumUrl,
-              large: largeUrl,
-            })
+          // Upload da imagem otimizada
+          const imageUrl = await storageService.uploadImage(
+            BUCKET_NAME,
+            `${basePath}/${uniqueName}.webp`,
+            processed.image,
+            "image/webp"
           );
+
+          // Salvar URL da imagem
+          imageUrls.push(imageUrl);
         }
       }
 
