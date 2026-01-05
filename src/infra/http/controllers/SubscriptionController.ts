@@ -76,6 +76,26 @@ class SubscriptionController {
       return res.status(500).json({ message: "Erro ao atualizar assinatura" });
     }
   }
+  async checkout(req: Request, res: Response) {
+    try {
+      const { spaceId, interval } = req.body;
+      const userId = (req as any).user_id; // Using type casting to access user_id added by middleware
+
+      if (!userId) {
+        return res.status(401).json({ message: "Usuário não autenticado" });
+      }
+
+      const createCheckoutSession = SubscriptionUseCaseFactory.makeCreateCheckoutSession();
+      const output = await createCheckoutSession.execute({ spaceId, userId, interval });
+
+      return res.status(200).json(output);
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message });
+      }
+      return res.status(500).json({ message: "Erro ao criar sessão de checkout" });
+    }
+  }
 }
 
 export default new SubscriptionController();

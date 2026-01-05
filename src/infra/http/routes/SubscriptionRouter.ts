@@ -13,6 +13,11 @@ router.get(
   AuthMiddleware.auth,
   ExpressAdapter.create(SubscriptionController.getSubscriptions)
 );
+router.post(
+  "/checkout",
+  AuthMiddleware.auth,
+  ExpressAdapter.create(SubscriptionController.checkout)
+);
 router.post("/", AuthMiddleware.auth, ExpressAdapter.create(SubscriptionController.add));
 router.get(
   "/user/:userId",
