@@ -6,10 +6,13 @@ export interface SpaceOutputDTO {
   title: string;
   description: string;
   address: IAddress;
-  capacity: number;
+  capacity?: number;
   price_per_weekend?: number;
   price_per_day?: number;
+  price?: number;
+  price_type?: string;
   comfort: string[];
+  specifications?: Record<string, any>;
   images: string[];
   status: spaceStatus;
   created_at?: string;
