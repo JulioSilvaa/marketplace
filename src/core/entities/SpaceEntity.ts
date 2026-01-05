@@ -7,10 +7,11 @@ export class SpaceEntity {
   private readonly _title: string;
   private readonly _description: string;
   private readonly _address: IAddress;
-  private readonly _capacity: number;
+  private readonly _capacity?: number;
   private readonly _price_per_weekend?: number;
   private readonly _price_per_day?: number;
   private readonly _comfort: string[];
+  private readonly _specifications?: Record<string, any>;
   private readonly _images: string[];
   private readonly _status: spaceStatus;
   private readonly _contact_whatsapp?: string;
@@ -32,6 +33,7 @@ export class SpaceEntity {
     this._price_per_weekend = props.price_per_weekend;
     this._price_per_day = props.price_per_day;
     this._comfort = props.comfort;
+    this._specifications = props.specifications;
     this._images = props.images;
     this._status = props.status;
     this._contact_whatsapp = props.contact_whatsapp;
@@ -72,7 +74,7 @@ export class SpaceEntity {
     return this._address;
   }
 
-  public get capacity(): number {
+  public get capacity(): number | undefined {
     return this._capacity;
   }
 
@@ -86,6 +88,10 @@ export class SpaceEntity {
 
   public get comfort(): string[] {
     return this._comfort;
+  }
+
+  public get specifications(): Record<string, any> | undefined {
+    return this._specifications;
   }
 
   public get images(): string[] {
@@ -187,14 +193,16 @@ export class SpaceEntity {
   }
 
   private validateCapacity(): void {
+    if (this._capacity === undefined || this._capacity === null) return;
+
     if (!Number.isInteger(this._capacity) || this._capacity <= 0) {
       throw new Error(
         "A capacidade (capacity) deve ser um número inteiro positivo maior que zero."
       );
     }
 
-    if (this._capacity > 1000) {
-      throw new Error("A capacidade máxima permitida é 1000.");
+    if (this._capacity > 10000) {
+      throw new Error("A capacidade máxima permitida é 10000.");
     }
   }
 

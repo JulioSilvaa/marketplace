@@ -18,10 +18,11 @@ export type IEspace = {
   title: string;
   description: string;
   address: IAddress;
-  capacity: number;
+  capacity?: number;
   price_per_weekend?: number;
   price_per_day?: number;
   comfort: string[];
+  specifications?: Record<string, any>;
   images: string[];
   status: spaceStatus;
   contact_whatsapp?: string;

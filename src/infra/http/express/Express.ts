@@ -2,6 +2,8 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
 
+// Stripe Webhook requires raw body. We must define it before express.json()
+import WebhookController from "../controllers/WebhookController";
 import AuthMiddleware from "../middlewares/AuthMiddleware";
 import { globalLimiter } from "../middlewares/RateLimitMiddleware";
 import AuthRouter from "../routes/AuthRouter";
@@ -22,6 +24,12 @@ app.use(
     credentials: true, // Permite envio de cookies
   })
 );
+app.post(
+  "/webhooks/stripe",
+  express.raw({ type: "application/json" }),
+  WebhookController.handleStripeWebhook
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); // Middleware para ler cookies

@@ -12,6 +12,7 @@ export interface UpdateSpaceDTO {
   price_per_weekend?: number;
   price_per_day?: number;
   comfort?: string[];
+  specifications?: Record<string, any>;
   images?: string[];
   status?: spaceStatus;
   contact_whatsapp?: string;
@@ -47,6 +48,7 @@ export class UpdateSpace {
       price_per_weekend: input.price_per_weekend ?? existingSpace.price_per_weekend,
       price_per_day: input.price_per_day ?? existingSpace.price_per_day,
       comfort: input.comfort ?? existingSpace.comfort,
+      specifications: input.specifications ?? existingSpace.specifications,
       images: input.images ?? existingSpace.images,
       status: input.status ?? existingSpace.status,
       contact_whatsapp: input.contact_whatsapp ?? existingSpace.contact_whatsapp,

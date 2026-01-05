@@ -14,10 +14,11 @@ model spaces {
   category_id       Int?
   title             String
   description       String
-  capacity          Int
+  capacity          Int?
   price_per_weekend Float?
   price_per_day     Float?
   comfort           String[]
+  specifications    Json?
   images            String[]
   status            String   @default("active")
   street            String
@@ -39,6 +40,7 @@ model spaces {
   reviews           Review[]
   activity_events   activity_events[]
   review_replies    review_replies[]
+  subscriptions     subscriptions[]
 
   @@index([owner_id])
   @@index([status])
@@ -48,17 +50,22 @@ model spaces {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model subscriptions {
-  id                String    @id
-  user_id           String
-  plan              String
-  price             Float
-  status            String
-  trial_until       DateTime?
-  next_billing_date DateTime?
-  users             users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  id                     String    @id
+  user_id                String
+  space_id               String? // Optional for now to support data migration if needed, but ideally linked.
+  stripe_subscription_id String?
+  plan                   String
+  price                  Float
+  status                 String
+  trial_until            DateTime?
+  next_billing_date      DateTime?
+  users                  users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  spaces                 spaces?   @relation(fields: [space_id], references: [id])
 
   @@index([user_id])
   @@index([status])
+  @@index([space_id])
+  @@index([stripe_subscription_id])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -71,6 +78,7 @@ model users {
   role                  Role                    @default(user)
   checked               Boolean                 @default(false)
   status                Status                  @default(active)
+  stripe_customer_id    String?
   spaces                spaces[]
   subscriptions         subscriptions[]
   password_reset_tokens password_reset_tokens[]

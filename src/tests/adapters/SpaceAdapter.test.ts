@@ -33,6 +33,7 @@ describe("SpaceAdapter", () => {
       expect(output).toEqual({
         id: "space-1",
         owner_id: "user-1",
+        owner: undefined,
         title: "Beautiful Space",
         description: "A very nice place to stay for your vacation",
         address: {
@@ -45,11 +46,17 @@ describe("SpaceAdapter", () => {
           zipcode: "12345-678",
         },
         capacity: 50,
+        price: 200,
         price_per_weekend: 200,
         price_per_day: 100,
+        price_type: "weekend",
         comfort: ["Wifi", "Pool"],
         images: ["http://example.com/image.jpg"],
         status: "active",
+        reviews_count: undefined,
+        specifications: undefined,
+        updated_at: undefined,
+        views_count: undefined,
       });
     });
   });
