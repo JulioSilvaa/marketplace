@@ -31,14 +31,24 @@ export class WebhookController {
       switch (event.type) {
         case "checkout.session.completed": {
           const session = event.data.object as any; // Stripe.Checkout.Session
-          // TODO: specific logic to activate space
           console.log("Checkout concluído:", session);
 
           if (session.metadata && session.metadata.space_id) {
             console.log(`Ativando espaço ${session.metadata.space_id}`);
-            // Call a use case to activate space?
-            // Or direct repo call (not ideal but quick).
-            // Better: SubscriptionUseCaseFactory.makeActivateSubscription(spaceId, ...)
+
+            const { SpaceRepositoryPrisma } =
+              await import("../../repositories/sql/SpaceRepositoryPrisma");
+            const spaceRepo = new SpaceRepositoryPrisma();
+            const space = await spaceRepo.findById(session.metadata.space_id);
+
+            if (space) {
+              const { prisma } = await import("../../../lib/prisma");
+              await prisma.spaces.update({
+                where: { id: session.metadata.space_id },
+                data: { status: "active" },
+              });
+              console.log(`Espaço ${session.metadata.space_id} ativado com sucesso.`);
+            }
           }
           break;
         }
