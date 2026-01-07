@@ -79,4 +79,43 @@ describe("Create Space UseCase", () => {
 
     await expect(createSpace.execute(spaceInput)).rejects.toThrow("Owner not found");
   });
+
+  it("should create a space with inactive status by default", async () => {
+    // 1. Create User
+    const user = {
+      id: "user-default-status",
+      name: "Status Tester",
+      email: "status@tester.com",
+      phone: "123123123",
+      password: "123",
+      role: UserRole.PROPRIETARIO,
+      checked: true,
+      status: 0,
+    };
+    await userRepo.create(user);
+
+    // 2. Execute
+    const spaceInput = {
+      owner_id: "user-default-status",
+      title: "Inactive Space",
+      description: "Should be inactive initially",
+      address: {
+        street: "Main St",
+        number: "123",
+        neighborhood: "Downtown",
+        city: "City",
+        state: "ST",
+        country: "Country",
+        zipcode: "12345-678",
+      },
+      capacity: 50,
+      price_per_day: 100,
+      comfort: ["Wifi"],
+      images: ["http://example.com/image.jpg"],
+    };
+
+    const space = await createSpace.execute(spaceInput);
+
+    expect(space.status).toBe("inactive");
+  });
 });

@@ -292,4 +292,58 @@ describe("SpaceRepositoryPrisma (Integration)", () => {
     expect(found).toBeDefined();
     expect(found?.status).toBe("inactive");
   });
+
+  describe("findAllWithRatings (Filtering)", () => {
+    it("should filter spaces by city", async () => {
+      const citySpace = SpaceEntity.create({
+        id: uuidGenerator.generate(),
+        owner_id: testUserId,
+        title: "City Space",
+        description: "In target city description must be long enough for validation",
+        address: {
+          street: "St",
+          number: "1",
+          neighborhood: "Nb",
+          city: "TargetCity",
+          state: "TS",
+          country: "C",
+          zipcode: "00000-000",
+        },
+        capacity: 10,
+        price_per_day: 100,
+        comfort: ["TV"],
+        images: ["http://example.com/img.jpg"],
+        status: "active",
+      });
+
+      const otherSpace = SpaceEntity.create({
+        id: uuidGenerator.generate(),
+        owner_id: testUserId,
+        title: "Other Space",
+        description: "In other city description must be long enough for validation",
+        address: {
+          street: "St",
+          number: "1",
+          neighborhood: "Nb",
+          city: "OtherCity",
+          state: "TS",
+          country: "C",
+          zipcode: "00000-000",
+        },
+        capacity: 10,
+        price_per_day: 100,
+        comfort: ["TV"],
+        images: ["http://example.com/img.jpg"],
+        status: "active",
+      });
+
+      await spaceRepository.create(citySpace);
+      await spaceRepository.create(otherSpace);
+
+      const results = await spaceRepository.findAllWithRatings({ city: "TargetCity" });
+
+      expect(results.length).toBe(1);
+      expect(results[0].space.title).toBe("City Space");
+    });
+  });
 });
