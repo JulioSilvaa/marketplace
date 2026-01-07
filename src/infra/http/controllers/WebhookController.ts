@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { Request, Response } from "express";
 
 import { StripeService } from "../../services/StripeService";
@@ -11,52 +12,126 @@ export class WebhookController {
     }
 
     try {
-      // In Express with body-parser, req.body might be parsed JSON.
-      // Stripe requires raw body.
-      // We assume raw body is available, maybe via a middleware or config.
-      // If not, we might need to adjust app setup.
-      // For now, let's assume req.body is buffer if application/json parser is not applied to this route?
-      // Or we check how to get raw body.
-      // Usually: req.rawBody or similar if configured.
-      // Safe bet: assume we can access raw buffer.
-
       const payload = (req as any).rawBody || req.body;
-
       const stripeService = new StripeService();
       const event = stripeService.constructEvent(payload, signature as string);
+      const { prisma } = await import("../../../lib/prisma");
 
       console.log(`Evento Stripe recebido: ${event.type}`);
 
-      // Handle subscription events
       switch (event.type) {
         case "checkout.session.completed": {
-          const session = event.data.object as any; // Stripe.Checkout.Session
-          console.log("Checkout concluído:", session);
+          const session = event.data.object as any;
 
-          if (session.metadata && session.metadata.space_id) {
-            console.log(`Ativando espaço ${session.metadata.space_id}`);
+          if (!session.metadata?.space_id || !session.metadata?.user_id) {
+            console.warn("Checkout session missing metadata");
+            break;
+          }
 
-            const { SpaceRepositoryPrisma } =
-              await import("../../repositories/sql/SpaceRepositoryPrisma");
-            const spaceRepo = new SpaceRepositoryPrisma();
-            const space = await spaceRepo.findById(session.metadata.space_id);
+          const { space_id, user_id, type } = session.metadata;
 
-            if (space) {
-              const { prisma } = await import("../../../lib/prisma");
+          console.log(`Processing checkout for space: ${space_id}, type: ${type}`);
+
+          // Create or update subscription record
+          if (session.subscription) {
+            await prisma.subscriptions.create({
+              data: {
+                id: crypto.randomUUID(),
+                user_id: user_id,
+                space_id: space_id,
+                stripe_subscription_id: session.subscription,
+                plan: session.amount_total === 50000 ? "yearly" : "monthly", // Simple heuristic
+                price: session.amount_total ? session.amount_total / 100 : 0,
+                status: "active",
+                next_billing_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Rough estimate, updated by invoice event
+              },
+            });
+          }
+
+          // Activate space
+          await prisma.spaces.update({
+            where: { id: space_id },
+            data: { status: "active" },
+          });
+
+          console.log(`Space ${space_id} activated successfully.`);
+          break;
+        }
+
+        case "invoice.payment_succeeded": {
+          const invoice = event.data.object as any;
+          if (!invoice.subscription) break;
+
+          const subscription = await prisma.subscriptions.findFirst({
+            where: { stripe_subscription_id: invoice.subscription },
+          });
+
+          if (subscription) {
+            await prisma.subscriptions.update({
+              where: { id: subscription.id },
+              data: {
+                status: "active",
+                next_billing_date: new Date(invoice.lines.data[0].period.end * 1000),
+              },
+            });
+
+            // Ensure space is active
+            if (subscription.space_id) {
               await prisma.spaces.update({
-                where: { id: session.metadata.space_id },
+                where: { id: subscription.space_id },
                 data: { status: "active" },
               });
-              console.log(`Espaço ${session.metadata.space_id} ativado com sucesso.`);
+            }
+            console.log(`Subscription ${subscription.id} renewed.`);
+          }
+          break;
+        }
+
+        case "invoice.payment_failed": {
+          const invoice = event.data.object as any;
+          if (!invoice.subscription) break;
+
+          const subscription = await prisma.subscriptions.findFirst({
+            where: { stripe_subscription_id: invoice.subscription },
+          });
+
+          if (subscription) {
+            await prisma.subscriptions.update({
+              where: { id: subscription.id },
+              data: { status: "past_due" },
+            });
+            // Don't deactivate space immediately on first failure usually, but logic depends on rule.
+            // Leaving space active or setting to 'suspended' if needed.
+            console.log(`Payment failed for subscription ${subscription.id}`);
+          }
+          break;
+        }
+
+        case "customer.subscription.deleted": {
+          const sub = event.data.object as any;
+
+          const subscription = await prisma.subscriptions.findFirst({
+            where: { stripe_subscription_id: sub.id },
+          });
+
+          if (subscription) {
+            await prisma.subscriptions.update({
+              where: { id: subscription.id },
+              data: { status: "canceled" },
+            });
+
+            if (subscription.space_id) {
+              await prisma.spaces.update({
+                where: { id: subscription.space_id },
+                data: { status: "inactive" },
+              });
+              console.log(
+                `Space ${subscription.space_id} deactivated due to subscription cancellation.`
+              );
             }
           }
           break;
         }
-        case "invoice.payment_succeeded":
-          // Handle recurring payment success
-          break;
-        default:
-          console.log(`Tipo de evento não tratado: ${event.type}`);
       }
 
       res.status(200).send({ received: true });

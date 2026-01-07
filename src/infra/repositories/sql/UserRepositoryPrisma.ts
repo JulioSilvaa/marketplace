@@ -23,6 +23,7 @@ export class UserRepositoryPrisma implements IUserRepository {
   }
 
   async findByEmail(email: string): Promise<IUser | null> {
+    if (!email) return null;
     const user = await prisma.users.findUnique({
       where: { email },
     });
