@@ -142,7 +142,7 @@ describe("SharpImageService", () => {
       expect(imageMeta.format).toBe("webp");
     });
 
-    it("deve gerar imagem com dimensões corretas (1280x720)", async () => {
+    it("deve gerar imagem com dimensões corretas (1024x768)", async () => {
       const buffer = await sharp({
         create: {
           width: 2000,
@@ -157,8 +157,8 @@ describe("SharpImageService", () => {
       const result = await imageService.processImage(buffer, "test.jpg");
 
       const imageMeta = await sharp(result.image).metadata();
-      expect(imageMeta.width).toBe(1280);
-      expect(imageMeta.height).toBe(720);
+      expect(imageMeta.width).toBe(1024);
+      expect(imageMeta.height).toBe(768);
     });
   });
 });
