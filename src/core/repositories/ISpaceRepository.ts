@@ -21,6 +21,7 @@ export interface SpaceFilters {
   search?: string;
   neighborhood?: string;
   limit?: number;
+  offset?: number;
 }
 
 export interface ISpaceRepository {
@@ -31,6 +32,8 @@ export interface ISpaceRepository {
   listByOwnerIdWithMetrics(ownerId: string): Promise<SpaceWithMetrics[]>;
   findAll(): Promise<SpaceEntity[]>;
   findAllWithRatings(filters?: SpaceFilters): Promise<SpaceWithRating[]>;
+  count(filters?: SpaceFilters): Promise<number>;
+  search(filters?: SpaceFilters): Promise<{ data: SpaceWithRating[]; total: number }>;
   update(space: SpaceEntity): Promise<void>;
   delete(id: string): Promise<void>;
 }

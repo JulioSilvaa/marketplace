@@ -69,6 +69,9 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
   async findById(id: string): Promise<SpaceEntity | null> {
     const spaceData = await prisma.spaces.findUnique({
       where: { id },
+      include: {
+        category: true,
+      },
     });
 
     if (!spaceData) return null;
@@ -149,6 +152,65 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     return spacesData.map(s => SpaceAdapter.toEntity(s));
   }
 
+  async count(filters?: import("../../../core/repositories/ISpaceRepository").SpaceFilters): Promise<number> {
+    let spaceIds: string[] | undefined = undefined;
+
+    // Reuse text filtering logic
+    if (filters?.city || filters?.state || filters?.neighborhood || filters?.search) {
+      let query = "SELECT id FROM spaces WHERE status = 'active'";
+      const params: any[] = [];
+
+      if (filters.city) {
+        query += ` AND unaccent(city) ILIKE unaccent($${params.length + 1})`;
+        params.push(`%${filters.city}%`);
+      }
+
+      if (filters.state) {
+        query += ` AND unaccent(state) ILIKE unaccent($${params.length + 1})`;
+        params.push(`%${filters.state}%`);
+      }
+
+      if (filters.neighborhood) {
+        query += ` AND unaccent(neighborhood) ILIKE unaccent($${params.length + 1})`;
+        params.push(`%${filters.neighborhood}%`);
+      }
+
+      if (filters.search) {
+        query += ` AND (unaccent(title) ILIKE unaccent($${params.length + 1}) 
+                    OR unaccent(description) ILIKE unaccent($${params.length + 1})
+                    OR unaccent(city) ILIKE unaccent($${params.length + 1})
+                    OR unaccent(state) ILIKE unaccent($${params.length + 1})
+                    OR unaccent(neighborhood) ILIKE unaccent($${params.length + 1}))`;
+        params.push(`%${filters.search}%`);
+      }
+
+      const results = await prisma.$queryRawUnsafe<{ id: string }[]>(query, ...params);
+      spaceIds = results.map(r => r.id);
+
+      if (spaceIds.length === 0) return 0;
+    }
+
+    const count = await prisma.spaces.count({
+      where: {
+        id: spaceIds ? { in: spaceIds } : undefined,
+        status: "active",
+        category_id: filters?.category_id,
+        price_per_day:
+          filters?.price_min !== undefined || filters?.price_max !== undefined
+            ? {
+              gte: filters?.price_min,
+              lte: filters?.price_max,
+            }
+            : undefined,
+        users: {
+          status: "active",
+        },
+      },
+    });
+
+    return count;
+  }
+
   async update(space: SpaceEntity): Promise<void> {
     await prisma.spaces.update({
       where: { id: space.id },
@@ -193,6 +255,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     const spaceData = await prisma.spaces.findUnique({
       where: { id },
       include: {
+        category: true,
         users: true,
         reviews: {
           select: {
@@ -216,63 +279,109 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     };
   }
 
-  async findAllWithRatings(
+  async search(
     filters?: import("../../../core/repositories/ISpaceRepository").SpaceFilters
-  ): Promise<import("../../../core/repositories/ISpaceRepository").SpaceWithRating[]> {
-    let spaceIds: string[] | undefined = undefined;
+  ): Promise<{ data: import("../../../core/repositories/ISpaceRepository").SpaceWithRating[]; total: number }> {
 
-    // Se houver filtros de texto (cidade, estado, bairro ou busca), usamos raw SQL para tratar acentos
-    if (filters?.city || filters?.state || filters?.neighborhood || filters?.search) {
-      let query = "SELECT id FROM spaces WHERE status = 'active'";
-      const params: any[] = [];
+    // Base params
+    const params: any[] = [];
 
-      if (filters.city) {
-        query += ` AND unaccent(city) ILIKE unaccent($${params.length + 1})`;
-        params.push(`%${filters.city}%`);
-      }
+    // Base query: Join with users to check owner status immediately
+    let query = `
+      SELECT s.id 
+      FROM spaces s
+      INNER JOIN users u ON s.owner_id = u.id
+      WHERE s.status = 'active' 
+      AND u.status = 'active'
+    `;
 
-      if (filters.state) {
-        query += ` AND unaccent(state) ILIKE unaccent($${params.length + 1})`;
-        params.push(`%${filters.state}%`);
-      }
-
-      if (filters.neighborhood) {
-        query += ` AND unaccent(neighborhood) ILIKE unaccent($${params.length + 1})`;
-        params.push(`%${filters.neighborhood}%`);
-      }
-
-      if (filters.search) {
-        query += ` AND (unaccent(title) ILIKE unaccent($${params.length + 1}) 
-                    OR unaccent(description) ILIKE unaccent($${params.length + 1})
-                    OR unaccent(neighborhood) ILIKE unaccent($${params.length + 1}))`;
-        params.push(`%${filters.search}%`);
-      }
-
-      const results = await prisma.$queryRawUnsafe<{ id: string }[]>(query, ...params);
-      spaceIds = results.map(r => r.id);
-
-      // Se não houver resultados no filtro de texto, retornamos lista vazia imediatamente
-      if (spaceIds.length === 0) return [];
+    // 1. Text Filters (Unaccent)
+    if (filters?.city) {
+      query += ` AND unaccent(s.city) ILIKE unaccent($${params.length + 1})`;
+      params.push(`%${filters.city}%`);
     }
 
+    if (filters?.state) {
+      query += ` AND unaccent(s.state) ILIKE unaccent($${params.length + 1})`;
+      params.push(`%${filters.state}%`);
+    }
+
+    if (filters?.neighborhood) {
+      query += ` AND unaccent(s.neighborhood) ILIKE unaccent($${params.length + 1})`;
+      params.push(`%${filters.neighborhood}%`);
+    }
+
+    if (filters?.search) {
+      query += ` AND (unaccent(s.title) ILIKE unaccent($${params.length + 1}) 
+                  OR unaccent(s.description) ILIKE unaccent($${params.length + 1})
+                  OR unaccent(s.city) ILIKE unaccent($${params.length + 1})
+                  OR unaccent(s.state) ILIKE unaccent($${params.length + 1})
+                  OR unaccent(s.neighborhood) ILIKE unaccent($${params.length + 1}))`;
+      params.push(`%${filters.search}%`);
+    }
+
+    // 2. Exact Filters (Category)
+    if (filters?.category_id) {
+      query += ` AND s.category_id = $${params.length + 1}`;
+      params.push(filters.category_id);
+    }
+
+    // 3. Range Filters (Price)
+    // Note: We check both price_per_day and price_per_weekend vs the filter per requirement logic
+    // Usually user filters "Price Min" means "Is there any price method >= Min?"
+    // Current Prisma implementation checked 'price_per_day'. We stick to that for consistency, 
+    // or expand if needed. The previous implementation checked ONLY price_per_day inside the Prisma 'where'.
+    // "price_per_day: { gte: ... }"
+    // So we replicate that behavior.
+    if (filters?.price_min !== undefined) {
+      query += ` AND s.price_per_day >= $${params.length + 1}`;
+      params.push(filters.price_min);
+    }
+
+    if (filters?.price_max !== undefined) {
+      query += ` AND s.price_per_day <= $${params.length + 1}`;
+      params.push(filters.price_max);
+    }
+
+    // 4. Ordering
+    // We must ensure stable ordering for slice to work
+    query += ` ORDER BY s.created_at DESC`;
+
+    // Execute Query
+    const results = await prisma.$queryRawUnsafe<{ id: string }[]>(query, ...params);
+    const allIds = results.map(r => r.id);
+    const total = allIds.length;
+
+    if (total === 0) {
+      return { data: [], total: 0 };
+    }
+
+    // 5. Pagination in Memory (Slicing IDs)
+    // This avoids passing 10k IDs to Prisma
+    const limit = filters?.limit || 100; // Default fallback matches controller
+    const offset = filters?.offset || 0;
+
+    // Safety check for offset
+    if (offset >= total) {
+      return { data: [], total };
+    }
+
+    const pageIds = allIds.slice(offset, offset + limit);
+
+    // 6. Fetch Full Data for Page
+    // We already sorted IDs, but findMany(IN) doesn't guarantee order.
+    // We re-apply orderBy created_at to ensure the PAGE is sorted correctly.
+    // Since pageIds represents a contiguous block of sorted items, 
+    // sorting them again by the same key yields the correct visual order.
     const spacesData = await prisma.spaces.findMany({
       where: {
-        id: spaceIds ? { in: spaceIds } : undefined,
-        status: "active",
-        category_id: filters?.category_id,
-        price_per_day:
-          filters?.price_min !== undefined || filters?.price_max !== undefined
-            ? {
-                gte: filters?.price_min,
-                lte: filters?.price_max,
-              }
-            : undefined,
-        users: {
-          status: "active",
-        },
+        id: { in: pageIds }
       },
-      take: filters?.limit,
+      orderBy: {
+        created_at: "desc",
+      },
       include: {
+        category: true,
         reviews: {
           select: {
             rating: true,
@@ -281,7 +390,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
       },
     });
 
-    return spacesData.map((spaceData: any) => {
+    const data = spacesData.map((spaceData: any) => {
       const ratings = spaceData.reviews.map((r: any) => r.rating);
       const average_rating =
         ratings.length > 0
@@ -294,5 +403,14 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
         reviews_count: ratings.length,
       };
     });
+
+    return { data, total };
+  }
+
+  async findAllWithRatings(
+    filters?: import("../../../core/repositories/ISpaceRepository").SpaceFilters
+  ): Promise<import("../../../core/repositories/ISpaceRepository").SpaceWithRating[]> {
+    const { data } = await this.search(filters);
+    return data;
   }
 }

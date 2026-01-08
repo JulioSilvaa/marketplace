@@ -80,7 +80,7 @@ describe("Create Space UseCase", () => {
     await expect(createSpace.execute(spaceInput)).rejects.toThrow("Owner not found");
   });
 
-  it("should create a space with inactive status by default", async () => {
+  it("should create a space with ACTIVE status by default (Free MVP)", async () => {
     // 1. Create User
     const user = {
       id: "user-default-status",
@@ -97,8 +97,8 @@ describe("Create Space UseCase", () => {
     // 2. Execute
     const spaceInput = {
       owner_id: "user-default-status",
-      title: "Inactive Space",
-      description: "Should be inactive initially",
+      title: "Active Space",
+      description: "Should be active initially",
       address: {
         street: "Main St",
         number: "123",
@@ -116,6 +116,6 @@ describe("Create Space UseCase", () => {
 
     const space = await createSpace.execute(spaceInput);
 
-    expect(space.status).toBe("inactive");
+    expect(space.status).toBe("active");
   });
 });

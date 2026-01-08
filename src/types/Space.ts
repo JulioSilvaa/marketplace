@@ -15,6 +15,7 @@ export type IEspace = {
   id?: string;
   owner_id: string;
   category_id?: number;
+  category_name?: string;
   title: string;
   description: string;
   address: IAddress;

@@ -12,7 +12,6 @@ export class FindAllSpaces {
   }
 
   async executeWithRatings(filters?: SpaceFilters) {
-    const spacesWithRatings = await this._spaceRepository.findAllWithRatings(filters);
-    return spacesWithRatings || [];
+    return this._spaceRepository.search(filters);
   }
 }

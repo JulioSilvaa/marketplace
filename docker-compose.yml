@@ -1,34 +1,34 @@
 services:
-  postgres:
-    image: postgres:16-alpine
-    container_name: postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-lazer_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_this_password}
-      POSTGRES_DB: ${POSTGRES_DB:-lazer}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lazer_user} -d ${POSTGRES_DB:-lazer}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 512M
-        reservations:
-          cpus: '0.5'
-          memory: 256M
-    profiles:
-      - dev
-      - prod
+#   postgres:
+#     image: postgres:16-alpine
+#     container_name: postgres
+#     ports:
+#       - "5432:5432"
+#     environment:
+#       POSTGRES_USER: ${POSTGRES_USER:-lazer_user}
+#       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_this_password}
+#       POSTGRES_DB: ${POSTGRES_DB:-lazer}
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+#     networks:
+#       - app-network
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lazer_user} -d ${POSTGRES_DB:-lazer}"]
+#       interval: 10s
+#       timeout: 5s
+#       retries: 5
+#       start_period: 10s
+#     deploy:
+#       resources:
+#         limits:
+#           cpus: '1'
+#           memory: 512M
+#         reservations:
+#           cpus: '0.5'
+#           memory: 256M
+#     profiles:
+#       - dev
+#       - prod
 
   app-dev:
     image: node:20-alpine
@@ -38,7 +38,7 @@ services:
       - "${PORT:-3000}:${PORT:-3000}"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:v5Y9t8mVb65e2J7b8THzqlvjG02FhebsFvaHI95%2FXkY%3D@postgres:5432/${POSTGRES_DB}?schema=public
+      - DATABASE_URL=${DATABASE_URL}
       - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
       - JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN:-30m}
@@ -50,7 +50,6 @@ services:
       - EMAIL_FROM=${EMAIL_FROM:-onboarding@resend.dev}
       - EMAIL_FROM_NAME=${EMAIL_FROM_NAME:-Lazer}
       - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
       - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
@@ -65,9 +64,9 @@ services:
       - ./prisma.config.ts:/app/prisma.config.ts
       - node_modules_dev:/app/node_modules
     command: sh -c "yarn install && yarn prisma generate && yarn prisma migrate deploy && yarn dev"
-    depends_on:
-      postgres:
-        condition: service_healthy
+    # depends_on:
+    #   postgres:
+    #     condition: service_healthy
     networks:
       - app-network
     deploy:
@@ -91,10 +90,10 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-lazer_user}:${POSTGRES_PASSWORD:-change_this_password}@postgres:5432/${POSTGRES_DB:-lazer}?schema=public
-    depends_on:
-      postgres:
-        condition: service_healthy
+      - DATABASE_URL=${DATABASE_URL}
+    # depends_on:
+    #   postgres:
+    #     condition: service_healthy
     networks:
       - app-network
     restart: always
@@ -110,8 +109,8 @@ services:
       - prod
 
 volumes:
-  postgres_data:
-    driver: local
+#   postgres_data:
+#     driver: local
   node_modules_dev:
     driver: local
 
