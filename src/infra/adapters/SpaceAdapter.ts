@@ -20,6 +20,8 @@ export class SpaceAdapter {
     return SpaceEntity.create({
       id: data.id,
       owner_id: data.owner_id,
+      category_id: data.category_id || undefined,
+      category_name: (data as any).category?.name || undefined,
       title: data.title,
       description: data.description,
       capacity: data.capacity ?? undefined,
@@ -48,11 +50,13 @@ export class SpaceAdapter {
       views_count?: number;
       contacts_count?: number;
     },
-    ownerData?: any
+    ownerData?: any,
+    simplified: boolean = false
   ): SpaceOutputDTO {
     return {
       id: space.id!,
       owner_id: space.owner_id!,
+      category_name: space.category_name,
       title: space.title,
       description: space.description,
       address: space.address,
@@ -63,7 +67,7 @@ export class SpaceAdapter {
       price_type: space.price_per_weekend ? "weekend" : "daily",
       comfort: space.comfort,
       specifications: space.specifications,
-      images: space.images,
+      images: simplified && space.images.length > 0 ? [space.images[0]] : space.images,
       status: space.status,
       created_at: space.created_at?.toISOString(),
       updated_at: space.updated_at?.toISOString(),
@@ -78,26 +82,27 @@ export class SpaceAdapter {
       contact_facebook: space.contact_facebook,
       owner: ownerData
         ? {
-            name: ownerData.name,
-            phone: ownerData.phone,
-            whatsapp: ownerData.whatsapp,
-            facebook_url: ownerData.facebook_url,
-            instagram_url: ownerData.instagram_url,
-            email: ownerData.email,
-          }
+          name: ownerData.name,
+          phone: ownerData.phone,
+          whatsapp: ownerData.whatsapp,
+          facebook_url: ownerData.facebook_url,
+          instagram_url: ownerData.instagram_url,
+          email: ownerData.email,
+        }
         : undefined,
     };
   }
 
   static toListOutputDTO(spaces: SpaceEntity[]): SpaceListOutputDTO {
     return {
-      data: spaces.map(space => this.toOutputDTO(space)),
+      data: spaces.map(space => this.toOutputDTO(space, undefined, undefined, true)),
       total: spaces.length,
     };
   }
 
   static toOutputDTOWithRating(
-    spaceWithRating: import("../../core/repositories/ISpaceRepository").SpaceWithRating
+    spaceWithRating: import("../../core/repositories/ISpaceRepository").SpaceWithRating,
+    simplified: boolean = false
   ): SpaceOutputDTO {
     return this.toOutputDTO(
       spaceWithRating.space,
@@ -105,7 +110,8 @@ export class SpaceAdapter {
         average_rating: spaceWithRating.average_rating,
         reviews_count: spaceWithRating.reviews_count,
       },
-      spaceWithRating.owner
+      spaceWithRating.owner,
+      simplified
     );
   }
 
@@ -113,7 +119,7 @@ export class SpaceAdapter {
     spacesWithRatings: import("../../core/repositories/ISpaceRepository").SpaceWithRating[]
   ): SpaceListOutputDTO {
     return {
-      data: spacesWithRatings.map(swr => this.toOutputDTOWithRating(swr)),
+      data: spacesWithRatings.map(swr => this.toOutputDTOWithRating(swr, true)),
       total: spacesWithRatings.length,
     };
   }
@@ -128,7 +134,7 @@ export class SpaceAdapter {
           reviews_count: swm.reviews_count,
           views_count: swm.views_count,
           contacts_count: swm.contacts_count,
-        })
+        }, undefined, true)
       ),
       total: spacesWithMetrics.length,
     };

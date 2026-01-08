@@ -4,6 +4,7 @@ export class SpaceEntity {
   private readonly _id?: string;
   private readonly _owner_id: string;
   private readonly _category_id?: number;
+  private readonly _category_name?: string;
   private readonly _title: string;
   private readonly _description: string;
   private readonly _address: IAddress;
@@ -26,6 +27,7 @@ export class SpaceEntity {
     this._id = props.id;
     this._owner_id = props.owner_id;
     this._category_id = props.category_id;
+    this._category_name = props.category_name;
     this._title = props.title;
     this._description = props.description;
     this._address = props.address;
@@ -60,6 +62,10 @@ export class SpaceEntity {
 
   public get category_id(): number | undefined {
     return this._category_id;
+  }
+
+  public get category_name(): string | undefined {
+    return this._category_name;
   }
 
   public get title(): string {

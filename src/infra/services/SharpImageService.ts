@@ -14,7 +14,7 @@ export class SharpImageService implements IImageService {
   // Tamanhos otimizados
   private readonly SIZES = {
     thumbnail: { width: 400, height: 300 },
-    medium: { width: 1280, height: 720 },
+    medium: { width: 1024, height: 768 },
     large: { width: 1920, height: 1080 },
   };
 

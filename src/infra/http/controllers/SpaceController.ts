@@ -4,6 +4,8 @@ import { Request, Response } from "express";
 import { SpaceAdapter } from "../../adapters/SpaceAdapter";
 import { SpaceUseCaseFactory } from "../../factories/SpaceUseCaseFactory";
 
+import { redisService } from "../../services/RedisService";
+
 class SpaceController {
   async add(req: Request, res: Response) {
     try {
@@ -91,6 +93,11 @@ class SpaceController {
         images: imageUrls.length > 0 ? imageUrls : spaceData.images || [],
       });
 
+      // Invalidate general search cache
+      // Since new items appear at top, we really should just bust the whole search cache or at least common keys.
+      // For simplicity in MVP, we might rely on TTL (5m) or Bust specific keys if we had them tracked.
+      // Or we can just let it be eventually consistent (5 min delay for new ads on public query is acceptable).
+
       const output = SpaceAdapter.toOutputDTO(space);
 
       return res.status(201).json({
@@ -110,6 +117,7 @@ class SpaceController {
       const { owner_id } = req.query;
 
       // Se owner_id for fornecido, filtra por proprietário (com métricas)
+      // Owner queries are dynamic and sensitive, usually NOT cached strongly or cached with owner_id key.
       if (owner_id && typeof owner_id === "string") {
         const listSpaces = SpaceUseCaseFactory.makeListSpaces();
         const spacesWithMetrics = await listSpaces.executeByOwnerWithMetrics({ owner_id });
@@ -125,8 +133,19 @@ class SpaceController {
         });
       }
 
+      // Public Search - Candidate for Caching
+      const cacheKey = redisService.generateKey('spaces:search', req.query);
+      const cached = await redisService.get(cacheKey);
+
+      if (cached) {
+        return res.status(200).json(JSON.parse(cached));
+      }
+
       // Caso contrário, lista todos os espaços COM ratings
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
+      const page = req.query.page ? parseInt(req.query.page as string) : 1;
+      const offset = (page - 1) * limit;
+
       const city = req.query.city as string;
       const state = req.query.state as string;
       const category_id =
@@ -147,6 +166,7 @@ class SpaceController {
       const findAllSpaces = SpaceUseCaseFactory.makeFindAllSpaces();
       const spacesWithRatings = await findAllSpaces.executeWithRatings({
         limit,
+        offset,
         city,
         state,
         category_id,
@@ -155,41 +175,23 @@ class SpaceController {
         search,
         neighborhood,
       });
-      const output = SpaceAdapter.toListOutputDTOWithRatings(spacesWithRatings);
-      return res.status(200).json({
+
+      const output = SpaceAdapter.toListOutputDTOWithRatings(spacesWithRatings.data);
+
+      const response = {
         spaces: output.data,
         pagination: {
-          total: output.total,
-          page: 1,
+          total: spacesWithRatings.total,
+          page: page,
           limit: limit,
-          totalPages: Math.ceil(output.total / limit) || 1,
+          totalPages: Math.ceil(spacesWithRatings.total / limit) || 1,
         },
-      });
-    } catch (error) {
-      if (error instanceof Error) {
-        return res.status(400).json({ message: error.message });
-      }
-      return res.status(500).json({ message: "Erro ao listar espaços" });
-    }
-  }
+      };
 
-  async getAllSpaces(req: Request, res: Response) {
-    try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
-      const findAllSpaces = SpaceUseCaseFactory.makeFindAllSpaces();
-      const spacesWithRatings = await findAllSpaces.executeWithRatings({ limit });
+      // Cache result for 5 minutes
+      await redisService.set(cacheKey, JSON.stringify(response), 300);
 
-      const output = SpaceAdapter.toListOutputDTOWithRatings(spacesWithRatings);
-
-      return res.status(200).json({
-        spaces: output.data,
-        pagination: {
-          total: output.total,
-          page: 1,
-          limit: limit,
-          totalPages: Math.ceil(output.total / limit) || 1,
-        },
-      });
+      return res.status(200).json(response);
     } catch (error) {
       if (error instanceof Error) {
         return res.status(400).json({ message: error.message });
@@ -224,6 +226,14 @@ class SpaceController {
     try {
       const { id } = req.params;
 
+      // Check Cache
+      const cacheKey = `space:${id}`;
+      const cached = await redisService.get(cacheKey);
+
+      if (cached) {
+        return res.status(200).json(JSON.parse(cached));
+      }
+
       const findByIdSpace = SpaceUseCaseFactory.makeFindByIdSpace();
       const spaceWithRating = await findByIdSpace.executeWithRating(id);
 
@@ -232,6 +242,9 @@ class SpaceController {
       }
 
       const output = SpaceAdapter.toOutputDTOWithRating(spaceWithRating);
+
+      // Cache for 15 minutes
+      await redisService.set(cacheKey, JSON.stringify(output), 900);
 
       return res.status(200).json(output);
     } catch (error) {
@@ -281,6 +294,9 @@ class SpaceController {
       const updateSpace = SpaceUseCaseFactory.makeUpdateSpace();
       await updateSpace.execute({ id, owner_id, category_id: data.category_id, ...data });
 
+      // Invalidate Cache
+      await redisService.del(`space:${id}`);
+
       return res.status(200).json({ message: "Espaço atualizado com sucesso" });
     } catch (error) {
       if (error instanceof Error) {
@@ -302,6 +318,9 @@ class SpaceController {
 
       const deleteSpace = SpaceUseCaseFactory.makeDeleteSpace();
       await deleteSpace.execute({ id, owner_id });
+
+      // Invalidate Cache
+      await redisService.del(`space:${id}`);
 
       return res.status(200).json({ message: "Espaço excluído com sucesso" });
     } catch (error) {

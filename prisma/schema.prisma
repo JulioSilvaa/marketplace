@@ -39,6 +39,7 @@ model spaces {
   created_at        DateTime @default(now())
   updated_at        DateTime @default(now()) @updatedAt
   users             users             @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  category          categories?       @relation(fields: [category_id], references: [id])
   reviews           Review[]
   activity_events   activity_events[]
   review_replies    review_replies[]
@@ -48,6 +49,17 @@ model spaces {
   @@index([status])
   @@index([city])
   @@index([title])
+  @@index([category_id])
+  @@index([state])
+  @@index([neighborhood])
+  @@index([price_per_day])
+  @@index([price_per_weekend])
+}
+
+model categories {
+  id    Int      @id @default(autoincrement())
+  name  String   @unique
+  spaces spaces[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
