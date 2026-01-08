@@ -141,4 +141,18 @@ export class SpaceRepositoryInMemory implements ISpaceRepository {
       reviews_count: 0,
     }));
   }
+  async count(
+    filters?: import("../../../core/repositories/ISpaceRepository").SpaceFilters
+  ): Promise<number> {
+    return this.spaces.length;
+  }
+
+  async search(
+    filters?: import("../../../core/repositories/ISpaceRepository").SpaceFilters
+  ): Promise<{
+    data: import("../../../core/repositories/ISpaceRepository").SpaceWithRating[];
+    total: number;
+  }> {
+    return { data: [], total: 0 };
+  }
 }

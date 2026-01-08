@@ -6,6 +6,11 @@ import express, { NextFunction, Request, Response } from "express";
 import WebhookController from "../controllers/WebhookController";
 import AuthMiddleware from "../middlewares/AuthMiddleware";
 import { globalLimiter } from "../middlewares/RateLimitMiddleware";
+// Rotas de Admin
+import AdminAuthRouter from "../routes/admin/AdminAuthRouter";
+import AdminCustomerRouter from "../routes/admin/AdminCustomerRouter";
+import AdminDashboardRouter from "../routes/admin/AdminDashboardRouter";
+import AdminSpaceRouter from "../routes/admin/AdminSpaceRouter";
 import AuthRouter from "../routes/AuthRouter";
 import EventRouter from "../routes/EventRouter";
 import ReviewReplyRouter from "../routes/ReviewReplyRouter";
@@ -51,6 +56,11 @@ app.use("/api/subscription", SubscriptionRouter);
 app.use("/api/reviews", ReviewRouter);
 app.use("/api/events", EventRouter);
 app.use("/api/reviews/replies", ReviewReplyRouter);
+
+app.use("/api/admin/auth", AdminAuthRouter);
+app.use("/api/admin/dashboard", AdminDashboardRouter);
+app.use("/api/admin/users", AdminCustomerRouter);
+app.use("/api/admin/ads", AdminSpaceRouter);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err);

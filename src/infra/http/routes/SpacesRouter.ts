@@ -12,7 +12,7 @@ const router = Router();
 
 // 2. Rotas públicas (sem autenticação)
 router.get("/", ExpressAdapter.create(SpaceController.getSpaces));
-router.get("/all", ExpressAdapter.create(SpaceController.getAllSpaces));
+router.get("/all", ExpressAdapter.create(SpaceController.getSpaces));
 router.get(
   "/:id/check-ownership",
   AuthMiddleware.auth,

@@ -8,9 +8,6 @@ export interface UpdateUserDTO {
   phone?: string;
   role?: number;
   status?: number;
-  whatsapp?: string;
-  facebook_url?: string;
-  instagram_url?: string;
 }
 
 export class UpdateUser {
@@ -34,9 +31,6 @@ export class UpdateUser {
     if (input.phone !== undefined) updateData.phone = input.phone;
     if (input.role !== undefined) updateData.role = input.role;
     if (input.status !== undefined) updateData.status = input.status;
-    if (input.whatsapp !== undefined) updateData.whatsapp = input.whatsapp;
-    if (input.facebook_url !== undefined) updateData.facebook_url = input.facebook_url;
-    if (input.instagram_url !== undefined) updateData.instagram_url = input.instagram_url;
 
     await this._userRepository.update(input.id, updateData);
   }
