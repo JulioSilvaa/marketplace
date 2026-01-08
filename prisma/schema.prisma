@@ -23,6 +23,7 @@ model spaces {
   specifications    Json?
   images            String[]
   status            String   @default("active")
+  views             Int      @default(0)
   street            String
   number            String
   complement        String?
@@ -99,9 +100,7 @@ model users {
   reviews               Review[]
   activity_events       activity_events[]
   review_replies        review_replies[]
-  whatsapp              String?
-  facebook_url          String?
-  instagram_url         String?
+
   created_at            DateTime                @default(now())
   updated_at            DateTime                @default(now()) @updatedAt
 
@@ -182,6 +181,17 @@ model review_replies {
   owner         users    @relation(fields: [owner_user_id], references: [id], onDelete: Cascade)
 
   @@index([review_id])
-  @@index([listing_id])
   @@index([owner_user_id])
+}
+
+model admin_users {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password_hash String
+  role          String    @default("admin") // 'super_admin' or 'admin'
+  created_at    DateTime  @default(now())
+  last_login_at DateTime?
+  updated_at    DateTime  @default(now()) @updatedAt
+
+  @@index([email])
 }

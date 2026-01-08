@@ -15,9 +15,6 @@ export class UserRepositoryPrisma implements IUserRepository {
         role: UserAdapter.toPrismaRole(data.role),
         checked: data.checked,
         status: UserAdapter.toPrismaStatus(data.status),
-        whatsapp: data.whatsapp,
-        facebook_url: data.facebook_url,
-        instagram_url: data.instagram_url,
       },
     });
   }
