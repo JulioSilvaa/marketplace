@@ -36,6 +36,7 @@ export class SpaceAdapter {
       contact_email: data.contact_email || undefined,
       contact_instagram: data.contact_instagram || undefined,
       contact_facebook: data.contact_facebook || undefined,
+      contact_whatsapp_alternative: data.contact_whatsapp_alternative || undefined,
       address,
       created_at: data.created_at,
       updated_at: data.updated_at,
@@ -80,15 +81,16 @@ export class SpaceAdapter {
       contact_email: space.contact_email,
       contact_instagram: space.contact_instagram,
       contact_facebook: space.contact_facebook,
+      contact_whatsapp_alternative: space.contact_whatsapp_alternative,
       owner: ownerData
         ? {
-          name: ownerData.name,
-          phone: ownerData.phone,
-          whatsapp: ownerData.whatsapp,
-          facebook_url: ownerData.facebook_url,
-          instagram_url: ownerData.instagram_url,
-          email: ownerData.email,
-        }
+            name: ownerData.name,
+            phone: ownerData.phone,
+            whatsapp: ownerData.whatsapp,
+            facebook_url: ownerData.facebook_url,
+            instagram_url: ownerData.instagram_url,
+            email: ownerData.email,
+          }
         : undefined,
     };
   }
@@ -129,12 +131,17 @@ export class SpaceAdapter {
   ): SpaceListOutputDTO {
     return {
       data: spacesWithMetrics.map(swm =>
-        this.toOutputDTO(swm.space, {
-          average_rating: swm.average_rating,
-          reviews_count: swm.reviews_count,
-          views_count: swm.views_count,
-          contacts_count: swm.contacts_count,
-        }, undefined, true)
+        this.toOutputDTO(
+          swm.space,
+          {
+            average_rating: swm.average_rating,
+            reviews_count: swm.reviews_count,
+            views_count: swm.views_count,
+            contacts_count: swm.contacts_count,
+          },
+          undefined,
+          true
+        )
       ),
       total: spacesWithMetrics.length,
     };

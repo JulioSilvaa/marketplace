@@ -21,4 +21,5 @@ export type IUser = {
   created_at?: Date;
   updated_at?: Date;
   region?: string;
+  spaces?: { id: string; title: string; status: string }[];
 };
