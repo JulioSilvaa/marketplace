@@ -17,8 +17,6 @@ export class WebhookController {
       const event = stripeService.constructEvent(payload, signature as string);
       const { prisma } = await import("../../../lib/prisma");
 
-      console.log(`Evento Stripe recebido: ${event.type}`);
-
       switch (event.type) {
         case "checkout.session.completed": {
           const session = event.data.object as any;
@@ -29,8 +27,6 @@ export class WebhookController {
           }
 
           const { space_id, user_id, type } = session.metadata;
-
-          console.log(`Processing checkout for space: ${space_id}, type: ${type}`);
 
           // Create or update subscription record
           if (session.subscription) {
@@ -54,7 +50,6 @@ export class WebhookController {
             data: { status: "active" },
           });
 
-          console.log(`Space ${space_id} activated successfully.`);
           break;
         }
 
@@ -82,7 +77,6 @@ export class WebhookController {
                 data: { status: "active" },
               });
             }
-            console.log(`Subscription ${subscription.id} renewed.`);
           }
           break;
         }
@@ -102,7 +96,6 @@ export class WebhookController {
             });
             // Don't deactivate space immediately on first failure usually, but logic depends on rule.
             // Leaving space active or setting to 'suspended' if needed.
-            console.log(`Payment failed for subscription ${subscription.id}`);
           }
           break;
         }
@@ -125,9 +118,6 @@ export class WebhookController {
                 where: { id: subscription.space_id },
                 data: { status: "inactive" },
               });
-              console.log(
-                `Space ${subscription.space_id} deactivated due to subscription cancellation.`
-              );
             }
           }
           break;

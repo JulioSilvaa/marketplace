@@ -35,7 +35,6 @@ export class StripeService implements IPaymentService {
     userId: string
   ): Promise<{ url: string | null }> {
     if (!this.stripe) {
-      console.log(`[TEST MODE] Mock activation checkout for space ${spaceId}`);
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
       return { url: `${frontendUrl}/dashboard?payment_success=true&space_id=${spaceId}&mock=true` };
     }
@@ -78,9 +77,6 @@ export class StripeService implements IPaymentService {
     interval: "month" | "year"
   ): Promise<{ url: string | null }> {
     if (!this.stripe) {
-      console.log(
-        `[TEST MODE] Checkout session would be created for space ${spaceId} (${interval})`
-      );
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
       return { url: `${frontendUrl}/dashboard?payment_success=true&space_id=${spaceId}&mock=true` };
     }

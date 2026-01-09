@@ -25,18 +25,13 @@ export class LoginAdmin {
   async execute({ email, password }: IRequest): Promise<IResponse> {
     const admin = await this.adminUserRepository.findByEmail(email);
 
-    console.log("Login attempt:", { email });
     if (!admin) {
-      console.log("Admin not found in DB");
       throw new Error("Admin não encontrado com este e-mail");
     }
-    console.log("Admin found:", admin.id);
 
     const passwordMatch = await bcrypt.compare(password, admin.password_hash);
-    console.log("Password match result:", passwordMatch);
 
     if (!passwordMatch) {
-      console.log("Password mismatch");
       throw new Error("Senha incorreta");
     }
 

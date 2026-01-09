@@ -26,8 +26,6 @@ export class ResendEmailService implements IEmailService {
   async sendPasswordResetEmail(to: string, resetLink: string, userName: string): Promise<void> {
     // Em ambiente de teste/CI sem API key, apenas log e retorna
     if (!this.resend) {
-      console.log(`[TEST MODE] Email de reset seria enviado para ${to}`);
-      console.log(`[TEST MODE] Link: ${resetLink}`);
       return;
     }
 
@@ -45,8 +43,6 @@ export class ResendEmailService implements IEmailService {
         console.error("Erro ao enviar email:", error);
         throw new Error(`Falha ao enviar email: ${error.message}`);
       }
-
-      console.log(`Email de reset enviado com sucesso para ${to}. ID: ${data?.id}`);
     } catch (error) {
       console.error("Erro ao enviar email de reset de senha:", error);
       throw new Error("Não foi possível enviar o email de recuperação de senha");
