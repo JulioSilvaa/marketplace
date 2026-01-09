@@ -74,6 +74,9 @@ model subscriptions {
   status                 String
   trial_until            DateTime?
   next_billing_date      DateTime?
+  created_at             DateTime  @default(now())
+  created_at_date        DateTime? @default(now())
+  updated_at             DateTime  @default(now()) @updatedAt
   users                  users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   spaces                 spaces?   @relation(fields: [space_id], references: [id])
 
@@ -81,6 +84,7 @@ model subscriptions {
   @@index([status])
   @@index([space_id])
   @@index([stripe_subscription_id])
+  @@index([created_at])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
