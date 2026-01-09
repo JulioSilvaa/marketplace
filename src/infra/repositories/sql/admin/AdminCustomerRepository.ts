@@ -27,8 +27,10 @@ export class AdminCustomerRepository implements IAdminCustomerRepository {
         orderBy: { created_at: "desc" },
         include: {
           spaces: {
-            take: 1,
             select: {
+              id: true,
+              title: true,
+              status: true,
               city: true,
               state: true,
             },

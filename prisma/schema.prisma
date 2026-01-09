@@ -37,6 +37,7 @@ model spaces {
   contact_email     String?
   contact_instagram String?
   contact_facebook  String?
+  contact_whatsapp_alternative String?
   created_at        DateTime @default(now())
   updated_at        DateTime @default(now()) @updatedAt
   users             users             @relation(fields: [owner_id], references: [id], onDelete: Cascade)

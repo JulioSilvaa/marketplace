@@ -41,6 +41,12 @@ export class UserAdapter {
       region: (data as any).spaces?.[0]
         ? `${(data as any).spaces[0].city} - ${(data as any).spaces[0].state}`
         : undefined,
+      spaces:
+        (data as any).spaces?.map((s: any) => ({
+          id: s.id,
+          title: s.title,
+          status: s.status === "active" ? "active" : "inactive", // Simplify status mapping
+        })) || [],
     };
   }
 
@@ -58,6 +64,7 @@ export class UserAdapter {
       checked: user.checked,
       status: user.status === UserIsActive.ATIVO ? "active" : "inactive",
       region: user.region,
+      spaces: user.spaces,
 
       created_at: user.created_at?.toISOString(),
       updated_at: user.updated_at?.toISOString(),
