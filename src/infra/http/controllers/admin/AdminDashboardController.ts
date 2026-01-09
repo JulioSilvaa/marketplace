@@ -66,7 +66,7 @@ class AdminDashboardController {
   }
   async getLists(req: Request, res: Response) {
     try {
-      const [latestUsers, latestAds, mostVisitedAds] = await Promise.all([
+      const [latestUsers, latestAds, mostVisitedAds, latestSubscriptions] = await Promise.all([
         prisma.users.findMany({
           take: 10,
           orderBy: { created_at: "desc" },
@@ -105,6 +105,15 @@ class AdminDashboardController {
             },
           },
         }),
+        prisma.subscriptions.findMany({
+          take: 10,
+          orderBy: { created_at: "desc" },
+          include: {
+            users: {
+              select: { name: true, email: true },
+            },
+          },
+        }),
       ]);
 
       const formattedUsers = latestUsers.map(u => ({
@@ -119,6 +128,7 @@ class AdminDashboardController {
         latestUsers: formattedUsers,
         latestAds,
         mostVisitedAds,
+        latestSubscriptions,
       });
     } catch (error) {
       console.error(error);
