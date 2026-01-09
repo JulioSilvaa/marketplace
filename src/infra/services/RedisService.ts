@@ -10,21 +10,20 @@ class RedisService {
     try {
       this.client = new Redis(redisUrl, {
         maxRetriesPerRequest: 1,
-        retryStrategy: (times) => {
+        retryStrategy: times => {
           if (times > 3) {
             return null; // Stop retrying after 3 attempts
           }
           return Math.min(times * 50, 2000);
         },
-        enableOfflineQueue: false // Fail fast if offline
+        enableOfflineQueue: false, // Fail fast if offline
       });
 
       this.client.on("connect", () => {
-        console.log("Redis connected");
         this.isConnected = true;
       });
 
-      this.client.on("error", (err) => {
+      this.client.on("error", err => {
         // Only log connection errors if we were previously connected or it's the first attempt
         // to avoid spamming logs
         if (this.isConnected) {
@@ -68,12 +67,15 @@ class RedisService {
   generateKey(prefix: string, params: Record<string, any>): string {
     const sortedParams = Object.keys(params)
       .sort()
-      .reduce((acc, key) => {
-        if (params[key] !== undefined && params[key] !== null) {
-          acc[key] = params[key];
-        }
-        return acc;
-      }, {} as Record<string, any>);
+      .reduce(
+        (acc, key) => {
+          if (params[key] !== undefined && params[key] !== null) {
+            acc[key] = params[key];
+          }
+          return acc;
+        },
+        {} as Record<string, any>
+      );
 
     return `${prefix}:${JSON.stringify(sortedParams)}`;
   }

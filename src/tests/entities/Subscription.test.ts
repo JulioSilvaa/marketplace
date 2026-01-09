@@ -164,7 +164,6 @@ describe("SubscriptionEntity", () => {
         price: 1,
         plan: "",
       });
-      console.log(sub.status, "status da assinatura");
       expect(() => sub.suspend()).toThrow(
         "Não é possível suspender a assinatura no status atual: trial"
       );
