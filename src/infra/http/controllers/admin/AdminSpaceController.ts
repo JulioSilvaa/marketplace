@@ -8,12 +8,13 @@ const adminSpaceRepository = new AdminSpaceRepository();
 export default class AdminSpaceController {
   static async list(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 10, search, status } = req.query;
+      const { page = 1, limit = 10, search, status, ownerId } = req.query;
       const result = await adminSpaceRepository.list(
         Number(page),
         Number(limit),
         search as string,
-        status as string
+        status as string,
+        ownerId as string
       );
       const response = {
         data: result.data.map(item => SpaceAdapter.toOutputDTO(item.space, undefined, item.owner)),

@@ -77,11 +77,14 @@ model subscriptions {
   next_billing_date      DateTime?
   users                  users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   spaces                 spaces?   @relation(fields: [space_id], references: [id])
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @default(now()) @updatedAt
 
   @@index([user_id])
   @@index([status])
   @@index([space_id])
   @@index([stripe_subscription_id])
+  @@index([created_at])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.

@@ -8,14 +8,14 @@ export class AdminSpaceRepository implements IAdminSpaceRepository {
     page: number,
     limit: number,
     search?: string,
-    status?: string
+    status?: string,
+    ownerId?: string
   ): Promise<{ data: { space: SpaceEntity; owner: any }[]; total: number }> {
     const skip = (page - 1) * limit;
     const where: any = {};
 
-    if (status) {
-      where.status = status;
-    }
+    if (status) where.status = status;
+    if (ownerId) where.owner_id = ownerId;
 
     if (search) {
       where.OR = [
