@@ -33,6 +33,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
         contact_email: space.contact_email,
         contact_instagram: space.contact_instagram,
         contact_facebook: space.contact_facebook,
+        contact_whatsapp_alternative: space.contact_whatsapp_alternative,
       },
     });
     return SpaceAdapter.toEntity({
@@ -63,6 +64,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
       contact_email: space.contact_email ?? null,
       contact_instagram: space.contact_instagram ?? null,
       contact_facebook: space.contact_facebook ?? null,
+      contact_whatsapp_alternative: space.contact_whatsapp_alternative ?? null,
     } as spaces);
   }
 
@@ -152,7 +154,9 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     return spacesData.map(s => SpaceAdapter.toEntity(s));
   }
 
-  async count(filters?: import("../../../core/repositories/ISpaceRepository").SpaceFilters): Promise<number> {
+  async count(
+    filters?: import("../../../core/repositories/ISpaceRepository").SpaceFilters
+  ): Promise<number> {
     let spaceIds: string[] | undefined = undefined;
 
     // Reuse text filtering logic
@@ -198,9 +202,9 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
         price_per_day:
           filters?.price_min !== undefined || filters?.price_max !== undefined
             ? {
-              gte: filters?.price_min,
-              lte: filters?.price_max,
-            }
+                gte: filters?.price_min,
+                lte: filters?.price_max,
+              }
             : undefined,
         users: {
           status: "active",
@@ -238,6 +242,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
         contact_email: space.contact_email,
         contact_instagram: space.contact_instagram,
         contact_facebook: space.contact_facebook,
+        contact_whatsapp_alternative: space.contact_whatsapp_alternative,
       },
     });
   }
@@ -281,8 +286,10 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
 
   async search(
     filters?: import("../../../core/repositories/ISpaceRepository").SpaceFilters
-  ): Promise<{ data: import("../../../core/repositories/ISpaceRepository").SpaceWithRating[]; total: number }> {
-
+  ): Promise<{
+    data: import("../../../core/repositories/ISpaceRepository").SpaceWithRating[];
+    total: number;
+  }> {
     // Base params
     const params: any[] = [];
 
@@ -329,7 +336,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     // 3. Range Filters (Price)
     // Note: We check both price_per_day and price_per_weekend vs the filter per requirement logic
     // Usually user filters "Price Min" means "Is there any price method >= Min?"
-    // Current Prisma implementation checked 'price_per_day'. We stick to that for consistency, 
+    // Current Prisma implementation checked 'price_per_day'. We stick to that for consistency,
     // or expand if needed. The previous implementation checked ONLY price_per_day inside the Prisma 'where'.
     // "price_per_day: { gte: ... }"
     // So we replicate that behavior.
@@ -371,11 +378,11 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     // 6. Fetch Full Data for Page
     // We already sorted IDs, but findMany(IN) doesn't guarantee order.
     // We re-apply orderBy created_at to ensure the PAGE is sorted correctly.
-    // Since pageIds represents a contiguous block of sorted items, 
+    // Since pageIds represents a contiguous block of sorted items,
     // sorting them again by the same key yields the correct visual order.
     const spacesData = await prisma.spaces.findMany({
       where: {
-        id: { in: pageIds }
+        id: { in: pageIds },
       },
       orderBy: {
         created_at: "desc",

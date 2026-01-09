@@ -12,5 +12,6 @@ export interface UserOutputDTO {
   created_at?: string; // ISO date string
   updated_at?: string; // ISO date string
   region?: string;
+  spaces?: { id: string; title: string; status: string }[];
   // Note: password is intentionally excluded for security
 }

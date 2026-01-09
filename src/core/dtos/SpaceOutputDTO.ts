@@ -27,6 +27,7 @@ export interface SpaceOutputDTO {
   contact_email?: string;
   contact_instagram?: string;
   contact_facebook?: string;
+  contact_whatsapp_alternative?: string;
   owner?: {
     name: string;
     phone?: string;

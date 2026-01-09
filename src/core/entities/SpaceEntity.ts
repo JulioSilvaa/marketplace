@@ -20,6 +20,7 @@ export class SpaceEntity {
   private readonly _contact_email?: string;
   private readonly _contact_instagram?: string;
   private readonly _contact_facebook?: string;
+  private readonly _contact_whatsapp_alternative?: string;
   private readonly _created_at?: Date;
   private readonly _updated_at?: Date;
 
@@ -43,6 +44,7 @@ export class SpaceEntity {
     this._contact_email = props.contact_email;
     this._contact_instagram = props.contact_instagram;
     this._contact_facebook = props.contact_facebook;
+    this._contact_whatsapp_alternative = props.contact_whatsapp_alternative;
     this._created_at = props.created_at;
     this._updated_at = props.updated_at;
     this.validate();
@@ -134,6 +136,10 @@ export class SpaceEntity {
 
   public get updated_at(): Date | undefined {
     return this._updated_at;
+  }
+
+  public get contact_whatsapp_alternative(): string | undefined {
+    return this._contact_whatsapp_alternative;
   }
 
   public validate(): void {
