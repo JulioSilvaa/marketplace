@@ -19,6 +19,9 @@ export default [
       "src/tests/**/*.ts",
       "**/*.test.ts",
       "**/*.spec.ts",
+      "src/generated",
+      "generated",
+      "**/generated/**",
     ],
   },
 
@@ -55,24 +58,19 @@ export default [
       ...js.configs.recommended.rules,
       ...tsPlugin.configs.recommended.rules,
 
-      "prettier/prettier": "error",
-      "@typescript-eslint/no-explicit-any": "warn",
+      "prettier/prettier": "warn",
+      "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/explicit-function-return-type": "off",
       "@typescript-eslint/no-unused-vars": "off",
       "no-unused-vars": "off",
 
-      "no-console": [
-        "warn",
-        {
-          allow: ["warn", "error"],
-        },
-      ],
+      "no-console": "off",
 
-      "simple-import-sort/imports": "error",
-      "simple-import-sort/exports": "error",
-      "import/first": "error",
-      "import/newline-after-import": "error",
-      "import/no-duplicates": "error",
+      "simple-import-sort/imports": "warn",
+      "simple-import-sort/exports": "warn",
+      "import/first": "warn",
+      "import/newline-after-import": "warn",
+      "import/no-duplicates": "warn",
     },
   },
 

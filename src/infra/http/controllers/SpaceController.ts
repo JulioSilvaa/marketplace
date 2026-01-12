@@ -3,7 +3,6 @@ import { Request, Response } from "express";
 
 import { SpaceAdapter } from "../../adapters/SpaceAdapter";
 import { SpaceUseCaseFactory } from "../../factories/SpaceUseCaseFactory";
-
 import { redisService } from "../../services/RedisService";
 
 class SpaceController {
@@ -134,7 +133,7 @@ class SpaceController {
       }
 
       // Public Search - Candidate for Caching
-      const cacheKey = redisService.generateKey('spaces:search', req.query);
+      const cacheKey = redisService.generateKey("spaces:search", req.query);
       const cached = await redisService.get(cacheKey);
 
       if (cached) {
