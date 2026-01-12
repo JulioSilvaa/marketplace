@@ -5,31 +5,65 @@ import { prisma } from "../../../../lib/prisma";
 class AdminDashboardController {
   async getStats(req: Request, res: Response) {
     try {
-      const [totalUsers, activeAds, totalViews] = await Promise.all([
+      const now = new Date();
+      const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const prev7Days = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+      const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      const [
+        totalUsers,
+        prevTotalUsers,
+        activeAds,
+        prevActiveAds,
+        totalViews,
+        mmrData,
+        prevMmrData,
+        canceledLast30,
+      ] = await Promise.all([
         prisma.users.count(),
+        prisma.users.count({ where: { created_at: { lt: last7Days } } }),
         prisma.spaces.count({ where: { status: "active" } }),
-        prisma.spaces.aggregate({
-          _sum: { views: true },
+        prisma.spaces.count({ where: { status: "active", created_at: { lt: last7Days } } }),
+        prisma.spaces.aggregate({ _sum: { views: true } }),
+        prisma.subscriptions.aggregate({
+          _sum: { price: true },
+          where: { status: "active" },
+        }),
+        prisma.subscriptions.aggregate({
+          _sum: { price: true },
+          where: { status: "active", created_at: { lt: last7Days } },
+        }),
+        prisma.subscriptions.count({
+          where: {
+            status: { in: ["cancelled", "cancelada"] },
+            updated_at: { gte: last30Days },
+          },
         }),
       ]);
 
-      // Mock revenue for now as Subscription logic might be complex or empty
-      const revenue = await prisma.subscriptions.aggregate({
-        _sum: { price: true },
-        where: { status: "active" },
-      });
+      const mmr = mmrData._sum.price || 0;
+      const prevMmr = prevMmrData._sum.price || 0;
+
+      // Calculate Churn Rate: (Canceled in last 30d / Total Active)
+      const churnRate = activeAds > 0 ? (canceledLast30 / activeAds) * 100 : 0;
+
+      const calculateGrowth = (current: number, previous: number) => {
+        if (previous === 0) return current > 0 ? 100 : 0;
+        return ((current - previous) / previous) * 100;
+      };
 
       return res.json({
         totalUsers,
         activeAds,
         totalViews: totalViews._sum.views || 0,
-        revenue: revenue._sum.price || 0,
-        // Calculate growth mocks for MVP
+        revenue: mmr, // Keep revenue key for compatibility if needed, but frontend uses mmr
+        mmr,
+        churnRate: parseFloat(churnRate.toFixed(1)),
         growth: {
-          users: 12, // +12%
-          ads: 8,
-          views: 15,
-          revenue: 20,
+          users: Math.round(calculateGrowth(totalUsers, prevTotalUsers)),
+          ads: Math.round(calculateGrowth(activeAds, prevActiveAds)),
+          views: 15, // Keep some mocks if we don't have historical views yet
+          revenue: Math.round(calculateGrowth(mmr, prevMmr)),
         },
       });
     } catch (error) {
@@ -40,19 +74,33 @@ class AdminDashboardController {
 
   async getCharts(req: Request, res: Response) {
     try {
-      // Mock data for charts - in real app would use groupBy or raw query
-      // Users Growth (last 7 days)
-      const now = new Date();
+      const days = 7;
       const labels = [];
       const userData = [];
       const adData = [];
 
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(now.getDate() - i);
-        labels.push(d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }));
-        userData.push(Math.floor(Math.random() * 10) + 1); // Mock
-        adData.push(Math.floor(Math.random() * 5)); // Mock
+      for (let i = days - 1; i >= 0; i--) {
+        const start = new Date();
+        start.setHours(0, 0, 0, 0);
+        start.setDate(start.getDate() - i);
+
+        const end = new Date(start);
+        end.setHours(23, 59, 59, 999);
+
+        const label = start.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+        labels.push(label);
+
+        const [userCount, adCount] = await Promise.all([
+          prisma.users.count({
+            where: { created_at: { gte: start, lte: end } },
+          }),
+          prisma.spaces.count({
+            where: { created_at: { gte: start, lte: end } },
+          }),
+        ]);
+
+        userData.push(userCount);
+        adData.push(adCount);
       }
 
       return res.json({
@@ -61,9 +109,11 @@ class AdminDashboardController {
         adsSeries: [{ name: "Novos Anúncios", data: adData }],
       });
     } catch (error) {
+      console.error(error);
       return res.status(500).json({ message: "Erro ao buscar dados de gráficos" });
     }
   }
+
   async getLists(req: Request, res: Response) {
     try {
       const [latestUsers, latestAds, mostVisitedAds, latestSubscriptions] = await Promise.all([
@@ -124,11 +174,17 @@ class AdminDashboardController {
         region: u.spaces[0] ? `${u.spaces[0].city}/${u.spaces[0].state}` : "N/A",
       }));
 
+      // Format subscriptions for frontend (Mapping ACTIVE to active for status badge color if needed)
+      const formattedSubscriptions = latestSubscriptions.map(s => ({
+        ...s,
+        status: s.status.toLowerCase(),
+      }));
+
       return res.json({
         latestUsers: formattedUsers,
         latestAds,
         mostVisitedAds,
-        latestSubscriptions,
+        latestSubscriptions: formattedSubscriptions,
       });
     } catch (error) {
       console.error(error);

@@ -28,9 +28,14 @@ export default class AdminSpaceController {
   }
 
   static async updateStatus(req: Request, res: Response) {
-    const { id } = req.params;
-    const { status } = req.body;
-    await adminSpaceRepository.updateStatus(id, status);
-    return res.status(204).send();
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      await adminSpaceRepository.updateStatus(id, status);
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Error in AdminSpaceController.updateStatus:", error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
   }
 }

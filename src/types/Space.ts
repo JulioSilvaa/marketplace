@@ -1,4 +1,4 @@
-export type spaceStatus = "active" | "inactive";
+export type spaceStatus = "active" | "inactive" | "suspended";
 
 export type IAddress = {
   street: string;

@@ -247,6 +247,13 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     });
   }
 
+  async updateStatus(id: string, status: "active" | "inactive" | "suspended"): Promise<void> {
+    await prisma.spaces.update({
+      where: { id },
+      data: { status },
+    });
+  }
+
   async delete(id: string): Promise<void> {
     await prisma.spaces.update({
       where: { id },
