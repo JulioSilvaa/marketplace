@@ -36,6 +36,8 @@ export class UpdateSubscription {
         subscription.activate();
       } else if (input.status === SubscriptionStatus.SUSPENDED) {
         subscription.suspend();
+      } else if (input.status === SubscriptionStatus.CANCELLED) {
+        subscription.cancel();
       }
       // For other statuses, we'd need additional methods in the entity
     }
