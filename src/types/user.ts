@@ -1,11 +1,11 @@
 export enum UserRole {
-  PROPRIETARIO,
-  CLIENTE,
+  PROPRIETARIO = "admin",
+  CLIENTE = "user",
 }
 
 export enum UserIsActive {
-  ATIVO,
-  INATIVO,
+  ATIVO = "active",
+  INATIVO = "inactive",
 }
 
 export type IUser = {
@@ -13,10 +13,11 @@ export type IUser = {
   email: string;
   name: string;
   phone: string;
-  role: UserRole;
   checked: boolean;
   password: string;
   status: UserIsActive;
+  role: UserRole;
+  stripe_customer_id?: string;
 
   created_at?: Date;
   updated_at?: Date;
