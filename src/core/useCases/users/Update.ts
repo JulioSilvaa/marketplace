@@ -1,4 +1,4 @@
-import { IUser } from "../../../types/user";
+import { IUser, UserIsActive, UserRole } from "../../../types/user";
 import { IUserRepository } from "../../repositories/IUserRepository";
 
 export interface UpdateUserDTO {
@@ -6,8 +6,8 @@ export interface UpdateUserDTO {
   name?: string;
   email?: string;
   phone?: string;
-  role?: number;
-  status?: number;
+  role?: UserRole;
+  status?: UserIsActive;
 }
 
 export class UpdateUser {

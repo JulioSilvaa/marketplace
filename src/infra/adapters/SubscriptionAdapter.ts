@@ -1,4 +1,5 @@
-import { subscriptions } from "../../../generated/prisma/client";
+import { subscriptions } from "@prisma/client";
+
 import { SubscriptionListOutputDTO } from "../../core/dtos/SubscriptionListOutputDTO";
 import { SubscriptionOutputDTO } from "../../core/dtos/SubscriptionOutputDTO";
 import { SubscriptionEntity } from "../../core/entities/SubscriptionEntity";

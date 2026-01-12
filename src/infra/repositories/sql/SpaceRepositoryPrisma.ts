@@ -1,4 +1,5 @@
-import { spaces } from "../../../../generated/prisma/client";
+import { spaces } from "@prisma/client";
+
 import { SpaceEntity } from "../../../core/entities/SpaceEntity";
 import { ISpaceRepository } from "../../../core/repositories/ISpaceRepository";
 import { prisma } from "../../../lib/prisma";

@@ -1,4 +1,5 @@
-import { spaces } from "../../../generated/prisma/client";
+import { spaces } from "@prisma/client";
+
 import { SpaceListOutputDTO } from "../../core/dtos/SpaceListOutputDTO";
 import { SpaceOutputDTO } from "../../core/dtos/SpaceOutputDTO";
 import { SpaceEntity } from "../../core/entities/SpaceEntity";
