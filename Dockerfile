@@ -37,6 +37,7 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
 COPY --from=production-deps --chown=nodejs:nodejs /app/node_modules ./node_modules
+COPY --from=build --chown=nodejs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build --chown=nodejs:nodejs /app/dist ./dist
 COPY --from=build --chown=nodejs:nodejs /app/prisma ./prisma
 COPY --from=build --chown=nodejs:nodejs /app/prisma.config.ts ./prisma.config.ts
