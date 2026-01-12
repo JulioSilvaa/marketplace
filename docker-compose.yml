@@ -1,35 +1,4 @@
 services:
-#   postgres:
-#     image: postgres:16-alpine
-#     container_name: postgres
-#     ports:
-#       - "5432:5432"
-#     environment:
-#       POSTGRES_USER: ${POSTGRES_USER:-lazer_user}
-#       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_this_password}
-#       POSTGRES_DB: ${POSTGRES_DB:-lazer}
-#     volumes:
-#       - postgres_data:/var/lib/postgresql/data
-#     networks:
-#       - app-network
-#     healthcheck:
-#       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lazer_user} -d ${POSTGRES_DB:-lazer}"]
-#       interval: 10s
-#       timeout: 5s
-#       retries: 5
-#       start_period: 10s
-#     deploy:
-#       resources:
-#         limits:
-#           cpus: '1'
-#           memory: 512M
-#         reservations:
-#           cpus: '0.5'
-#           memory: 256M
-#     profiles:
-#       - dev
-#       - prod
-
   app-dev:
     image: node:20-alpine
     container_name: app-dev
@@ -109,6 +78,9 @@ services:
     networks:
       - app-network
     restart: always
+    # depends_on:
+    #   postgres:
+    #     condition: service_healthy
     deploy:
       resources:
         limits:
