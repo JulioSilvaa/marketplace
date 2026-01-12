@@ -1,7 +1,10 @@
+import { HandleStripeWebhook } from "../../core/useCases/stripe/HandleStripeWebhook";
 import { CreateSubscription } from "../../core/useCases/subscriptions/Create";
 import { CreateCheckoutSession } from "../../core/useCases/subscriptions/CreateCheckoutSession";
 import { FindAllSubscriptions } from "../../core/useCases/subscriptions/FindAll";
 import { FindByUserIdSubscription } from "../../core/useCases/subscriptions/FindByUserId";
+import { GetAvailablePlan } from "../../core/useCases/subscriptions/GetAvailablePlan";
+import { GetCurrentPricing } from "../../core/useCases/subscriptions/GetCurrentPricing";
 import { UpdateSubscription } from "../../core/useCases/subscriptions/Update";
 import { SpaceRepositoryPrisma } from "../repositories/sql/SpaceRepositoryPrisma";
 import { SubscriptionRepositoryPrisma } from "../repositories/sql/SubscriptionRepositoryPrisma";
@@ -33,6 +36,30 @@ export class SubscriptionUseCaseFactory {
   static makeCreateCheckoutSession(): CreateCheckoutSession {
     const spaceRepository = new SpaceRepositoryPrisma();
     const stripeService = new StripeService();
-    return new CreateCheckoutSession(spaceRepository, stripeService);
+    const userRepository = new UserRepositoryPrisma();
+    const subscriptionRepository = new SubscriptionRepositoryPrisma();
+    return new CreateCheckoutSession(
+      spaceRepository,
+      stripeService,
+      userRepository,
+      subscriptionRepository
+    );
+  }
+
+  static makeGetAvailablePlan(): GetAvailablePlan {
+    const subscriptionRepository = new SubscriptionRepositoryPrisma();
+    return new GetAvailablePlan(subscriptionRepository);
+  }
+
+  static makeGetCurrentPricing(): GetCurrentPricing {
+    const subscriptionRepository = new SubscriptionRepositoryPrisma();
+    return new GetCurrentPricing(subscriptionRepository);
+  }
+
+  static makeHandleStripeWebhook(): HandleStripeWebhook {
+    const subscriptionRepository = new SubscriptionRepositoryPrisma();
+    const spaceRepository = new SpaceRepositoryPrisma();
+    const userRepository = new UserRepositoryPrisma();
+    return new HandleStripeWebhook(subscriptionRepository, spaceRepository, userRepository);
   }
 }

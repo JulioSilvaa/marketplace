@@ -22,6 +22,14 @@ import UserRouter from "../routes/UserRouter";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Verificação de chaves do Stripe na inicialização
+if (!process.env.STRIPE_SECRET_KEY) {
+  console.warn("⚠️ ALERTA: STRIPE_SECRET_KEY não configurada no .env");
+}
+if (!process.env.STRIPE_WEBHOOK_SECRET) {
+  console.warn("⚠️ ALERTA: STRIPE_WEBHOOK_SECRET não configurada no .env");
+}
+
 // Middlewares globais
 app.use(
   cors({
@@ -29,8 +37,11 @@ app.use(
     credentials: true, // Permite envio de cookies
   })
 );
+
+// Rota de Webhook do Stripe (deve vir antes do body-parser JSON)
+// Suporta tanto /webhooks/stripe quanto /api/webhooks/stripe
 app.post(
-  "/webhooks/stripe",
+  ["/webhooks/stripe", "/api/webhooks/stripe"],
   express.raw({ type: "application/json" }),
   WebhookController.handleStripeWebhook
 );

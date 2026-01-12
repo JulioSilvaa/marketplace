@@ -12,6 +12,8 @@ export class SubscriptionAdapter {
       plan: data.plan,
       price: data.price,
       status: data.status as SubscriptionStatus,
+      stripe_subscription_id: data.stripe_subscription_id || undefined,
+      space_id: data.space_id || undefined,
       trial_until: data.trial_until || undefined,
       next_billing_date: data.next_billing_date || undefined,
     });
@@ -24,6 +26,8 @@ export class SubscriptionAdapter {
       plan: subscription.plan,
       price: subscription.price,
       status: subscription.status,
+      stripe_subscription_id: subscription.stripe_subscription_id,
+      space_id: subscription.space_id,
       trial_until: subscription.trial_until?.toISOString(),
       next_billing_date: subscription.next_billing_date?.toISOString(),
       created_at: subscription.created_at?.toISOString(),

@@ -96,6 +96,20 @@ class SubscriptionController {
       return res.status(500).json({ message: "Erro ao criar sessão de checkout" });
     }
   }
+
+  async getCurrentPricing(req: Request, res: Response) {
+    try {
+      const getCurrentPricing = SubscriptionUseCaseFactory.makeGetCurrentPricing();
+      const output = await getCurrentPricing.execute();
+
+      return res.status(200).json(output);
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message });
+      }
+      return res.status(500).json({ message: "Erro ao buscar informações de preços" });
+    }
+  }
 }
 
 export default new SubscriptionController();

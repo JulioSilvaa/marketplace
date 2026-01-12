@@ -6,8 +6,9 @@ import AuthMiddleware from "../middlewares/AuthMiddleware";
 
 const router = Router();
 
-// Todas as rotas protegidas (requerem autenticação)
-// Futuramente: apenas SUPER_ADMIN poderá acessar
+// Todas as rotas (algumas podem ser públicas)
+router.get("/current-pricing", ExpressAdapter.create(SubscriptionController.getCurrentPricing));
+
 router.get(
   "/",
   AuthMiddleware.auth,
