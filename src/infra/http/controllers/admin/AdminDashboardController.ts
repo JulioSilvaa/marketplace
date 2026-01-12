@@ -174,16 +174,28 @@ class AdminDashboardController {
         region: u.spaces[0] ? `${u.spaces[0].city}/${u.spaces[0].state}` : "N/A",
       }));
 
-      // Format subscriptions for frontend (Mapping ACTIVE to active for status badge color if needed)
+      // Format subscriptions for frontend
       const formattedSubscriptions = latestSubscriptions.map(s => ({
         ...s,
         status: s.status.toLowerCase(),
+        users: s.users || { name: "Usuário Removido", email: "N/A" },
+      }));
+
+      // Format ads to ensure user data exists
+      const formattedLatestAds = latestAds.map(ad => ({
+        ...ad,
+        users: ad.users || { name: "Anunciante Removido", email: "N/A" },
+      }));
+
+      const formattedMostVisitedAds = mostVisitedAds.map(ad => ({
+        ...ad,
+        users: ad.users || { name: "Anunciante Removido" },
       }));
 
       return res.json({
         latestUsers: formattedUsers,
-        latestAds,
-        mostVisitedAds,
+        latestAds: formattedLatestAds,
+        mostVisitedAds: formattedMostVisitedAds,
         latestSubscriptions: formattedSubscriptions,
       });
     } catch (error) {
