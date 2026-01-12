@@ -1,5 +1,5 @@
 import { IUserRepository } from "../../../core/repositories/IUserRepository";
-import { IUser } from "../../../types/user";
+import { IUser, UserIsActive } from "../../../types/user";
 
 export class UserRepositoryInMemory implements IUserRepository {
   private users: IUser[] = [];
@@ -44,8 +44,8 @@ export class UserRepositoryInMemory implements IUserRepository {
         return false;
       }
       if (filters.isActive !== undefined) {
-        const isActive = user.status === 0; // Assuming 0 is ATIVO
-        if (filters.isActive !== isActive) {
+        const filterStatus = filters.isActive ? UserIsActive.ATIVO : UserIsActive.INATIVO;
+        if (user.status !== filterStatus) {
           return false;
         }
       }

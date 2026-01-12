@@ -4,24 +4,36 @@ import { IUser } from "../../../types/user";
 import { UserAdapter } from "../../adapters/UserAdapter";
 
 export class UserRepositoryPrisma implements IUserRepository {
+  private prismaClient: any;
+
+  constructor(prismaClient?: any) {
+    this.prismaClient = prismaClient || prisma;
+  }
+
   async create(data: IUser): Promise<void> {
-    await prisma.users.create({
-      data: {
-        id: data.id,
-        email: data.email,
-        name: data.name,
-        phone: data.phone,
-        password: data.password,
-        role: UserAdapter.toPrismaRole(data.role),
-        checked: data.checked,
-        status: UserAdapter.toPrismaStatus(data.status),
-      },
-    });
+    try {
+      await this.prismaClient.users.create({
+        data: {
+          id: data.id,
+          email: data.email,
+          name: data.name,
+          phone: data.phone,
+          password: data.password,
+          role: data.role,
+          checked: data.checked,
+          status: data.status,
+          stripe_customer_id: data.stripe_customer_id,
+        },
+      });
+    } catch (error) {
+      console.error("UserRepositoryPrisma.create error:", error);
+      throw error;
+    }
   }
 
   async findByEmail(email: string): Promise<IUser | null> {
     if (!email) return null;
-    const user = await prisma.users.findUnique({
+    const user = await this.prismaClient.users.findUnique({
       where: { email },
     });
 
@@ -31,13 +43,13 @@ export class UserRepositoryPrisma implements IUserRepository {
   }
 
   async findById(id: string): Promise<IUser | null> {
-    const user = await prisma.users.findUnique({
+    const user = await this.prismaClient.users.findUnique({
       where: { id },
     });
 
-    if (!user) return null;
+    if (user) return UserAdapter.toDomain(user);
 
-    return UserAdapter.toDomain(user);
+    return null;
   }
 
   async update(id: string, data: Partial<IUser>): Promise<void> {

@@ -29,6 +29,35 @@ export class SpaceRepositoryInMemory implements ISpaceRepository {
     }
   }
 
+  async updateStatus(id: string, status: "active" | "inactive" | "suspended"): Promise<void> {
+    const index = this.spaces.findIndex(s => s.id === id);
+    if (index !== -1) {
+      const space = this.spaces[index];
+      const updatedSpace = SpaceEntity.create({
+        id: space.id,
+        owner_id: space.owner_id,
+        category_id: space.category_id,
+        title: space.title,
+        description: space.description,
+        address: space.address,
+        capacity: space.capacity,
+        price_per_weekend: space.price_per_weekend,
+        price_per_day: space.price_per_day,
+        comfort: space.comfort,
+        images: space.images,
+        status: status,
+        contact_whatsapp: space.contact_whatsapp,
+        contact_phone: space.contact_phone,
+        contact_email: space.contact_email,
+        contact_instagram: space.contact_instagram,
+        contact_facebook: space.contact_facebook,
+        created_at: space.created_at,
+        updated_at: space.updated_at,
+      });
+      this.spaces[index] = updatedSpace;
+    }
+  }
+
   async delete(id: string): Promise<void> {
     const index = this.spaces.findIndex(s => s.id === id);
     if (index !== -1) {

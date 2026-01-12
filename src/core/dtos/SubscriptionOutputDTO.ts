@@ -6,6 +6,8 @@ export interface SubscriptionOutputDTO {
   plan: string;
   price: number;
   status: SubscriptionStatus;
+  stripe_subscription_id?: string;
+  space_id?: string;
   trial_until?: string; // ISO date string
   next_billing_date?: string; // ISO date string
   created_at?: string; // ISO date string

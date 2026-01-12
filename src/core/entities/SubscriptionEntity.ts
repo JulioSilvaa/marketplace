@@ -8,6 +8,8 @@ export class SubscriptionEntity {
   private _status: SubscriptionStatus;
   private readonly _trial_until?: Date;
   private _next_billing_date?: Date;
+  private readonly _stripe_subscription_id?: string;
+  private readonly _space_id?: string;
   private readonly _created_at: Date;
   private _updated_at: Date;
 
@@ -19,6 +21,8 @@ export class SubscriptionEntity {
     this._status = props.status || SubscriptionStatus.TRIAL;
     this._trial_until = props.trial_until;
     this._next_billing_date = props.next_billing_date;
+    this._stripe_subscription_id = (props as any).stripe_subscription_id;
+    this._space_id = (props as any).space_id;
     this._created_at = props.created_at || new Date();
     this._updated_at = props.updated_at || new Date();
 
@@ -55,6 +59,14 @@ export class SubscriptionEntity {
 
   public get next_billing_date(): Date | undefined {
     return this._next_billing_date;
+  }
+
+  public get stripe_subscription_id(): string | undefined {
+    return this._stripe_subscription_id;
+  }
+
+  public get space_id(): string | undefined {
+    return this._space_id;
   }
 
   public get created_at(): Date {
@@ -94,6 +106,14 @@ export class SubscriptionEntity {
       this._status = SubscriptionStatus.SUSPENDED;
       this._updated_at = new Date();
     }
+  }
+
+  public cancel(): void {
+    if (this._status === SubscriptionStatus.CANCELLED) {
+      return;
+    }
+    this._status = SubscriptionStatus.CANCELLED;
+    this._updated_at = new Date();
   }
 
   public updateBillingDate(newDate: Date): void {

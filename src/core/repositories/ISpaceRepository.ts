@@ -35,5 +35,6 @@ export interface ISpaceRepository {
   count(filters?: SpaceFilters): Promise<number>;
   search(filters?: SpaceFilters): Promise<{ data: SpaceWithRating[]; total: number }>;
   update(space: SpaceEntity): Promise<void>;
+  updateStatus(id: string, status: "active" | "inactive" | "suspended"): Promise<void>;
   delete(id: string): Promise<void>;
 }

@@ -58,7 +58,7 @@ export class StripeService implements IPaymentService {
         },
       ],
       mode: "payment", // One-time payment
-      success_url: `${process.env.FRONTEND_URL}/dashboard?payment_success=true&space_id=${spaceId}`,
+      success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}&space_id=${spaceId}`,
       cancel_url: `${process.env.FRONTEND_URL}/dashboard?payment_canceled=true`,
       client_reference_id: userId,
       metadata: {
@@ -74,49 +74,53 @@ export class StripeService implements IPaymentService {
   async createCheckoutSession(
     spaceId: string,
     userId: string,
-    interval: "month" | "year"
+    interval: "month" | "year" = "month",
+    priceId?: string,
+    customerEmail?: string
   ): Promise<{ url: string | null }> {
     if (!this.stripe) {
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
       return { url: `${frontendUrl}/dashboard?payment_success=true&space_id=${spaceId}&mock=true` };
     }
 
-    const price = interval === "month" ? this.MONTHLY_PRICE : this.YEARLY_PRICE;
-    const productName = interval === "month" ? "Assinatura Mensal" : "Assinatura Anual";
+    const line_items = priceId
+      ? [{ price: priceId, quantity: 1 }]
+      : [
+          {
+            price_data: {
+              currency: "brl",
+              product_data: {
+                name:
+                  interval === "month"
+                    ? "Assinatura Mensal - Anúncio"
+                    : "Assinatura Anual - Anúncio",
+                metadata: { space_id: spaceId },
+              },
+              unit_amount: interval === "month" ? this.MONTHLY_PRICE : this.YEARLY_PRICE,
+              recurring: { interval: interval },
+            },
+            quantity: 1,
+          },
+        ];
 
-    // Metadata to track the space and user
     const session = await this.stripe.checkout.sessions.create({
       payment_method_types: ["card"],
-      line_items: [
-        {
-          price_data: {
-            currency: "brl",
-            product_data: {
-              name: `${productName} - Anúncio`,
-              metadata: {
-                space_id: spaceId,
-              },
-            },
-            unit_amount: price,
-            recurring: {
-              interval: interval,
-            },
-          },
-          quantity: 1,
-        },
-      ],
+      customer_email: customerEmail,
+      line_items,
       mode: "subscription",
-      success_url: `${process.env.FRONTEND_URL}/dashboard/meus-anuncios?payment_success=true&space_id=${spaceId}`,
-      cancel_url: `${process.env.FRONTEND_URL}/dashboard/meus-anuncios?payment_canceled=true`,
+      success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL}/anuncio/${spaceId}`,
       client_reference_id: userId,
       metadata: {
         space_id: spaceId,
         user_id: userId,
+        plan_type: priceId === process.env.STRIPE_PRICE_ID_FOUNDER ? "founder" : "normal",
       },
       subscription_data: {
         metadata: {
           space_id: spaceId,
           user_id: userId,
+          plan_type: priceId === process.env.STRIPE_PRICE_ID_FOUNDER ? "founder" : "normal",
         },
       },
     });
