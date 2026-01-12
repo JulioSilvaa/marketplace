@@ -1,8 +1,25 @@
 import { SubscriptionEntity } from "../../../core/entities/SubscriptionEntity";
 import { ISubscriptionRepository } from "../../../core/repositories/ISubscriptionRepository";
+import { SubscriptionStatus } from "../../../types/Subscription";
 
 export class SubscriptionRepositoryInMemory implements ISubscriptionRepository {
   public subscriptions: SubscriptionEntity[] = [];
+
+  async findByStripeSubscriptionId(
+    stripeSubscriptionId: string
+  ): Promise<SubscriptionEntity | null> {
+    const sub = this.subscriptions.find(s => s.stripe_subscription_id === stripeSubscriptionId);
+    return sub || null;
+  }
+
+  async findBySpaceId(spaceId: string): Promise<SubscriptionEntity | null> {
+    const sub = this.subscriptions.find(s => s.space_id === spaceId);
+    return sub || null;
+  }
+
+  async countByPlanAndStatus(plan: string, status: SubscriptionStatus): Promise<number> {
+    return this.subscriptions.filter(s => s.plan === plan && s.status === status).length;
+  }
 
   async create(subscription: SubscriptionEntity): Promise<SubscriptionEntity> {
     this.subscriptions.push(subscription);

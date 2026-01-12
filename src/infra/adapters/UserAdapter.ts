@@ -1,4 +1,5 @@
-import { users } from "../../../generated/prisma/client";
+import { users } from "@prisma/client";
+
 import { UserListOutputDTO } from "../../core/dtos/UserListOutputDTO";
 import { UserOutputDTO } from "../../core/dtos/UserOutputDTO";
 import { UserEntity } from "../../core/entities/UserEntity";
