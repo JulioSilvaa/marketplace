@@ -132,6 +132,14 @@ class AdminDashboardController {
                 state: true,
               },
             },
+            subscriptions: {
+              take: 1,
+              orderBy: { created_at: "desc" },
+              select: {
+                plan: true,
+                price: true,
+              },
+            },
           },
         }),
         prisma.spaces.findMany({
@@ -172,6 +180,8 @@ class AdminDashboardController {
         email: u.email,
         created_at: u.created_at,
         region: u.spaces[0] ? `${u.spaces[0].city}/${u.spaces[0].state}` : "N/A",
+        plan: u.subscriptions?.[0]?.plan,
+        planValue: u.subscriptions?.[0]?.price ? Number(u.subscriptions[0].price) : undefined,
       }));
 
       // Format subscriptions for frontend

@@ -13,5 +13,7 @@ export interface UserOutputDTO {
   updated_at?: string; // ISO date string
   region?: string;
   spaces?: { id: string; title: string; status: string }[];
+  plan?: string;
+  planValue?: number;
   // Note: password is intentionally excluded for security
 }

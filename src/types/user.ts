@@ -23,4 +23,6 @@ export type IUser = {
   updated_at?: Date;
   region?: string;
   spaces?: { id: string; title: string; status: string }[];
+  plan?: string;
+  planValue?: number;
 };
