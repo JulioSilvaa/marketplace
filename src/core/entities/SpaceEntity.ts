@@ -268,9 +268,11 @@ export class SpaceEntity {
   }
 
   private validateStatus(): void {
-    const validStatuses: spaceStatus[] = ["active", "inactive", "suspended"];
+    const validStatuses: spaceStatus[] = ["active", "inactive", "suspended", "deleted"];
     if (!validStatuses.includes(this._status)) {
-      throw new Error("O status do espaço é inválido. Use 'active', 'inactive' ou 'suspended'.");
+      throw new Error(
+        "O status do espaço é inválido. Use 'active', 'inactive', 'suspended' ou 'deleted'."
+      );
     }
   }
 }

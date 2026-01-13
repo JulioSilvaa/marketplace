@@ -84,7 +84,10 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
 
   async listByOwnerId(ownerId: string): Promise<SpaceEntity[]> {
     const spacesData = await prisma.spaces.findMany({
-      where: { owner_id: ownerId },
+      where: {
+        owner_id: ownerId,
+        status: { not: "deleted" },
+      },
     });
 
     return spacesData.map(s => SpaceAdapter.toEntity(s));
@@ -94,7 +97,10 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     ownerId: string
   ): Promise<import("../../../core/repositories/ISpaceRepository").SpaceWithMetrics[]> {
     const spacesData = await prisma.spaces.findMany({
-      where: { owner_id: ownerId },
+      where: {
+        owner_id: ownerId,
+        status: { not: "deleted" }, // Exclude deleted spaces
+      },
       include: {
         reviews: {
           select: {
@@ -258,7 +264,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
   async delete(id: string): Promise<void> {
     await prisma.spaces.update({
       where: { id },
-      data: { status: "inactive" },
+      data: { status: "deleted" },
     });
   }
 
