@@ -24,8 +24,8 @@ import UserRouter from "../routes/UserRouter";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configure Express to trust proxy headers (required for Render, Heroku, etc.)
-app.set("trust proxy", true);
+// Configura Express para confiar no primeiro proxy (Load Balancer do Render)
+app.set("trust proxy", 1);
 
 // Verificação de chaves do Stripe na inicialização
 if (!process.env.STRIPE_SECRET_KEY) {
