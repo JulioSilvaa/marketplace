@@ -1,7 +1,9 @@
+import compression from "compression";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
 
+import { connectRedis } from "../../cache/redis";
 // Stripe Webhook requires raw body. We must define it before express.json()
 import WebhookController from "../controllers/WebhookController";
 import AuthMiddleware from "../middlewares/AuthMiddleware";
@@ -35,6 +37,20 @@ app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
     credentials: true, // Permite envio de cookies
+  })
+);
+
+// Compression middleware - deve vir antes do body-parser
+app.use(
+  compression({
+    level: 6, // Nível de compressão (0-9)
+    threshold: 1024, // Comprimir apenas se > 1KB
+    filter: (req, res) => {
+      if (req.headers["x-no-compression"]) {
+        return false;
+      }
+      return compression.filter(req, res);
+    },
   })
 );
 
@@ -83,6 +99,21 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   return res.status(500).json({ error: "Internal Server Error" });
 });
 
-app.listen(PORT, () => {
-  console.error(`Rodando na porta ${PORT}`);
-});
+// Initialize Redis and start server
+const startServer = async () => {
+  try {
+    // Connect to Redis (non-blocking - app will continue if Redis is unavailable)
+    await connectRedis().catch((err: Error) => {
+      console.warn("⚠️  Failed to connect to Redis, continuing without cache:", err.message);
+    });
+
+    app.listen(PORT, () => {
+      console.error(`Rodando na porta ${PORT}`);
+    });
+  } catch (error) {
+    console.error("❌ Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();
