@@ -1,6 +1,4 @@
 import crypto from "crypto";
-import fs from "fs";
-import path from "path";
 import Stripe from "stripe";
 
 import { SubscriptionStatus } from "../../../types/Subscription";
@@ -9,11 +7,10 @@ import { ISpaceRepository } from "../../repositories/ISpaceRepository";
 import { ISubscriptionRepository } from "../../repositories/ISubscriptionRepository";
 import { IUserRepository } from "../../repositories/IUserRepository";
 
-// Helper for file logging
+// Helper for logging
 function logToFile(message: string) {
-  const logPath = path.resolve(process.cwd(), "webhook.log");
   const timestamp = new Date().toISOString();
-  fs.appendFileSync(logPath, `[${timestamp}] ${message}\n`);
+  console.log(`[${timestamp}] [HandleStripeWebhook] ${message}`);
 }
 
 export class HandleStripeWebhook {
