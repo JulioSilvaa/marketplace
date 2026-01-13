@@ -24,6 +24,9 @@ import UserRouter from "../routes/UserRouter";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Configure Express to trust proxy headers (required for Render, Heroku, etc.)
+app.set("trust proxy", true);
+
 // Verificação de chaves do Stripe na inicialização
 if (!process.env.STRIPE_SECRET_KEY) {
   console.warn("⚠️ ALERTA: STRIPE_SECRET_KEY não configurada no .env");
@@ -39,6 +42,11 @@ app.use(
     credentials: true, // Permite envio de cookies
   })
 );
+
+// Health check endpoint (must be before rate limiting to avoid deployment timeouts)
+app.get(["/health", "/api/health"], (req: Request, res: Response) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
 
 // Compression middleware - deve vir antes do body-parser
 app.use(
@@ -70,10 +78,6 @@ app.use(cookieParser()); // Middleware para ler cookies
 app.set("trust proxy", true);
 
 app.use(globalLimiter); // Rate limiting global (1000 req/15min)
-
-app.get("/health", (req: Request, res: Response) => {
-  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
-});
 
 // Rotas públicas (não requerem autenticação)
 app.use("/auth", AuthRouter);
