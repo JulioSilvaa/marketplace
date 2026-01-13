@@ -28,7 +28,7 @@ export class GetAvailablePlan {
       return {
         available: true,
         plan: "founder",
-        price: 25,
+        price: 30,
         priceId: founderPriceId,
       };
     }

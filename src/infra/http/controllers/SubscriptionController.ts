@@ -61,6 +61,24 @@ class SubscriptionController {
     }
   }
 
+  async findAllByUserId(req: Request, res: Response) {
+    try {
+      const { userId } = req.params;
+
+      const findAllByUserId = SubscriptionUseCaseFactory.makeFindAllByUserId();
+      const subscriptions = await findAllByUserId.execute(userId);
+
+      const output = SubscriptionAdapter.toListOutputDTO(subscriptions);
+
+      return res.status(200).json({ subscriptions: output.data });
+    } catch (error) {
+      if (error instanceof Error) {
+        return res.status(400).json({ message: error.message });
+      }
+      return res.status(500).json({ message: "Erro ao buscar assinaturas" });
+    }
+  }
+
   async update(req: Request, res: Response) {
     try {
       const { id } = req.params;

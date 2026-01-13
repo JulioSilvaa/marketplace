@@ -17,7 +17,9 @@ export default class AdminSpaceController {
         ownerId as string
       );
       const response = {
-        data: result.data.map(item => SpaceAdapter.toOutputDTO(item.space, undefined, item.owner)),
+        data: result.data.map(item =>
+          SpaceAdapter.toOutputDTO(item.space, undefined, item.owner, false, item.subscription)
+        ),
         total: result.total,
       };
       return res.json(response);

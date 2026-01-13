@@ -36,4 +36,9 @@ export interface SpaceOutputDTO {
     instagram_url?: string;
     email?: string;
   };
+  subscription?: {
+    plan: string;
+    price: number;
+    status: string;
+  };
 }

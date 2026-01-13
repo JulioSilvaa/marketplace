@@ -2,6 +2,7 @@ import { HandleStripeWebhook } from "../../core/useCases/stripe/HandleStripeWebh
 import { CreateSubscription } from "../../core/useCases/subscriptions/Create";
 import { CreateCheckoutSession } from "../../core/useCases/subscriptions/CreateCheckoutSession";
 import { FindAllSubscriptions } from "../../core/useCases/subscriptions/FindAll";
+import { FindAllByUserId } from "../../core/useCases/subscriptions/FindAllByUserId";
 import { FindByUserIdSubscription } from "../../core/useCases/subscriptions/FindByUserId";
 import { GetAvailablePlan } from "../../core/useCases/subscriptions/GetAvailablePlan";
 import { GetCurrentPricing } from "../../core/useCases/subscriptions/GetCurrentPricing";
@@ -21,6 +22,11 @@ export class SubscriptionUseCaseFactory {
   static makeFindByUserIdSubscription(): FindByUserIdSubscription {
     const subscriptionRepository = new SubscriptionRepositoryPrisma();
     return new FindByUserIdSubscription(subscriptionRepository);
+  }
+
+  static makeFindAllByUserId(): FindAllByUserId {
+    const subscriptionRepository = new SubscriptionRepositoryPrisma();
+    return new FindAllByUserId(subscriptionRepository);
   }
 
   static makeUpdateSubscription(): UpdateSubscription {

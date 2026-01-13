@@ -53,7 +53,8 @@ export class SpaceAdapter {
       contacts_count?: number;
     },
     ownerData?: any,
-    simplified: boolean = false
+    simplified: boolean = false,
+    subscriptionData?: { plan: string; price: number; status: string }
   ): SpaceOutputDTO {
     return {
       id: space.id!,
@@ -91,6 +92,13 @@ export class SpaceAdapter {
             facebook_url: ownerData.facebook_url,
             instagram_url: ownerData.instagram_url,
             email: ownerData.email,
+          }
+        : undefined,
+      subscription: subscriptionData
+        ? {
+            plan: subscriptionData.plan,
+            price: Number(subscriptionData.price),
+            status: subscriptionData.status,
           }
         : undefined,
     };

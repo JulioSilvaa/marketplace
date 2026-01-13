@@ -30,10 +30,10 @@ async function main() {
 
     const founderPrice = await stripe.prices.create({
       product: founderProduct.id,
-      unit_amount: 2500, // R$ 25.00
+      unit_amount: 3000, // R$ 30.00
       currency: "brl",
       recurring: { interval: "month" },
-      nickname: "Assinatura Mensal Fundador",
+      nickname: "Assinatura Mensal Fundador R$30",
     });
 
     console.log("✅ Plano Fundador criado com sucesso!");
