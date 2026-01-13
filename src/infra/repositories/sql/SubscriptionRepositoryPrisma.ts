@@ -62,6 +62,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
   async findBySpaceId(spaceId: string): Promise<SubscriptionEntity | null> {
     const subData = await this.prismaClient.subscriptions.findFirst({
       where: { space_id: spaceId },
+      orderBy: { created_at: "desc" },
     });
 
     if (!subData) return null;
