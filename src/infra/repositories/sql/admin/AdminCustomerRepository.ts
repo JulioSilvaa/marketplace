@@ -35,6 +35,15 @@ export class AdminCustomerRepository implements IAdminCustomerRepository {
               state: true,
             },
           },
+          subscriptions: {
+            take: 1,
+            orderBy: { created_at: "desc" },
+            select: {
+              plan: true,
+              price: true,
+              status: true,
+            },
+          },
         },
       }),
       prisma.users.count({ where }),

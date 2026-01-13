@@ -46,8 +46,13 @@ export class UserAdapter {
         (data as any).spaces?.map((s: any) => ({
           id: s.id,
           title: s.title,
-          status: s.status === "active" ? "active" : "inactive", // Simplify status mapping
+          // Map status from Prisma string to domain
+          status: s.status === "active" ? "active" : "inactive",
         })) || [],
+      plan: (data as any).subscriptions?.[0]?.plan,
+      planValue: (data as any).subscriptions?.[0]?.price
+        ? Number((data as any).subscriptions[0].price)
+        : undefined,
     };
   }
 
@@ -66,6 +71,8 @@ export class UserAdapter {
       status: user.status === UserIsActive.ATIVO ? "active" : "inactive",
       region: user.region,
       spaces: user.spaces,
+      plan: user.plan,
+      planValue: user.planValue,
 
       created_at: user.created_at?.toISOString(),
       updated_at: user.updated_at?.toISOString(),
