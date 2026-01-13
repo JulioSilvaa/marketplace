@@ -74,9 +74,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser()); // Middleware para ler cookies
 
-// Configura Express para confiar em proxies (necessário no Render)
-app.set("trust proxy", true);
-
 app.use(globalLimiter); // Rate limiting global (1000 req/15min)
 
 // Rotas públicas (não requerem autenticação)
