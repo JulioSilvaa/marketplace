@@ -12,6 +12,11 @@ export const getRedisClient = (): Redis => {
     redisClient = new Redis(redisUrl, {
       maxRetriesPerRequest: 3,
       retryStrategy(times) {
+        // Desiste após 3 tentativas
+        if (times > 3) {
+          console.warn("⚠️  Redis connection failed after 3 attempts. Giving up.");
+          return null;
+        }
         const delay = Math.min(times * 50, 2000);
         return delay;
       },
@@ -46,12 +51,19 @@ export const getRedisClient = (): Redis => {
  * Connect to Redis
  */
 export const connectRedis = async (): Promise<void> => {
+  // Se REDIS_URL não estiver configurada, não tenta conectar
+  if (!process.env.REDIS_URL) {
+    console.warn("⚠️  REDIS_URL not configured. Running without cache.");
+    return;
+  }
+
   try {
     const client = getRedisClient();
     await client.connect();
   } catch (error) {
     console.error("❌ Failed to connect to Redis:", error);
-    throw error;
+    // Não joga erro - permite que a aplicação continue sem cache
+    console.warn("⚠️  Continuing without Redis cache");
   }
 };
 
