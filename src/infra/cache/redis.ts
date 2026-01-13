@@ -21,6 +21,8 @@ export const getRedisClient = (): Redis => {
         return delay;
       },
       lazyConnect: true,
+      // Suporte a TLS para Upstash e outros serviços gerenciados
+      tls: redisUrl.startsWith("rediss://") ? {} : undefined,
     });
 
     redisClient.on("error", err => {
