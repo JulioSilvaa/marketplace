@@ -11,3 +11,4 @@ dist
 /generated/prisma
 /generated
 user.test.http
+.env.test
