@@ -32,7 +32,9 @@ export class StripeService implements IPaymentService {
 
   async createActivationCheckoutSession(
     spaceId: string,
-    userId: string
+    userId: string,
+    price: number = 5000,
+    planType: string = "activation"
   ): Promise<{ url: string | null }> {
     if (!this.stripe) {
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -46,13 +48,16 @@ export class StripeService implements IPaymentService {
           price_data: {
             currency: "brl",
             product_data: {
-              name: "Ativação de Anúncio - Taxa Única",
+              name:
+                planType === "founder"
+                  ? "Plano Fundador - Taxa Única"
+                  : "Ativação de Anúncio - Taxa Única",
               description: "Pagamento único para tornar seu anúncio visível na plataforma.",
               metadata: {
                 space_id: spaceId,
               },
             },
-            unit_amount: this.ACTIVATION_PRICE,
+            unit_amount: price,
           },
           quantity: 1,
         },
@@ -64,7 +69,8 @@ export class StripeService implements IPaymentService {
       metadata: {
         space_id: spaceId,
         user_id: userId,
-        type: "activation",
+        type: planType,
+        plan_type: planType, // Adding redundant key to ensure webhook catches it
       },
     });
 
@@ -76,7 +82,8 @@ export class StripeService implements IPaymentService {
     userId: string,
     interval: "month" | "year" = "month",
     priceId?: string,
-    customerEmail?: string
+    customerEmail?: string,
+    cancelUrl?: string
   ): Promise<{ url: string | null }> {
     if (!this.stripe) {
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -109,7 +116,7 @@ export class StripeService implements IPaymentService {
       line_items,
       mode: "subscription",
       success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL}/anuncio/${spaceId}`,
+      cancel_url: cancelUrl || `${process.env.FRONTEND_URL}/anuncio/${spaceId}`,
       client_reference_id: userId,
       metadata: {
         space_id: spaceId,

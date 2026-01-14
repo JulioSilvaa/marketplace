@@ -60,7 +60,34 @@ export class CreateCheckoutSession {
     // If interval is not provided or explicitly 'activation', verify if we should use activation flow.
     // Assuming default behavior for now: if no interval, it is activation.
     if (interval === "activation") {
-      return this.paymentService.createActivationCheckoutSession(spaceId, userId);
+      const getAvailablePlan = new GetAvailablePlan(this.subscriptionRepository);
+      const plan = await getAvailablePlan.execute();
+
+      // Since Founder Plan (and Standard) are now subscriptions, we utilize the subscription flow.
+      // We pass the explicit priceId retrieved from GetAvailablePlan.
+      if (plan.priceId) {
+        // Get user email for pre-filling
+        const user = await this.userRepository.findById(userId);
+
+        return this.paymentService.createCheckoutSession(
+          spaceId,
+          userId,
+          "month", // Founder is monthly
+          plan.priceId,
+          user?.email,
+          `${process.env.FRONTEND_URL}/dashboard?payment_canceled=true` // Return to dashboard on cancel
+        );
+      }
+
+      // Fallback for one-time activation if no priceId (legacy?)
+      const priceInCents = plan.price * 100;
+
+      return this.paymentService.createActivationCheckoutSession(
+        spaceId,
+        userId,
+        priceInCents,
+        plan.plan
+      );
     }
 
     const user = await this.userRepository.findById(userId);
@@ -76,7 +103,8 @@ export class CreateCheckoutSession {
       userId,
       interval || "month",
       plan.priceId,
-      user.email
+      user.email,
+      `${process.env.FRONTEND_URL}/dashboard?payment_canceled=true` // Always return to dashboard on cancel
     );
   }
 }

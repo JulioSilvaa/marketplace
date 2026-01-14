@@ -3,6 +3,7 @@ import { SubscriptionEntity } from "../entities/SubscriptionEntity";
 export interface ISubscriptionRepository {
   create(subscription: SubscriptionEntity): Promise<SubscriptionEntity>;
   findByUserId(userId: string): Promise<SubscriptionEntity | null>;
+  findAllByUserId(userId: string): Promise<SubscriptionEntity[]>;
   findById(id: string): Promise<SubscriptionEntity | null>;
   findByStripeSubscriptionId(stripeSubscriptionId: string): Promise<SubscriptionEntity | null>;
   findBySpaceId(spaceId: string): Promise<SubscriptionEntity | null>;

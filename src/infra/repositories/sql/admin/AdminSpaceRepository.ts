@@ -10,7 +10,7 @@ export class AdminSpaceRepository implements IAdminSpaceRepository {
     search?: string,
     status?: string,
     ownerId?: string
-  ): Promise<{ data: { space: SpaceEntity; owner: any }[]; total: number }> {
+  ): Promise<{ data: { space: SpaceEntity; owner: any; subscription?: any }[]; total: number }> {
     const skip = (page - 1) * limit;
     const where: any = {};
 
@@ -34,7 +34,13 @@ export class AdminSpaceRepository implements IAdminSpaceRepository {
         skip,
         take: limit,
         orderBy: { created_at: "desc" },
-        include: { users: true },
+        include: {
+          users: true,
+          subscriptions: {
+            take: 1,
+            orderBy: { created_at: "desc" },
+          },
+        },
       }),
       prisma.spaces.count({ where }),
     ]);
@@ -43,7 +49,9 @@ export class AdminSpaceRepository implements IAdminSpaceRepository {
       data: spaces.map(s => ({
         space: SpaceAdapter.toEntity(s),
         owner: s.users,
+        subscription: (s as any).subscriptions?.[0], // Assuming subscriptions relation exists and is fetched
       })),
+
       total,
     };
   }

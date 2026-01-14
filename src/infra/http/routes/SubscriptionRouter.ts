@@ -25,6 +25,11 @@ router.get(
   AuthMiddleware.auth,
   ExpressAdapter.create(SubscriptionController.findByUserId)
 );
+router.get(
+  "/user/:userId/all",
+  AuthMiddleware.auth,
+  ExpressAdapter.create(SubscriptionController.findAllByUserId)
+);
 router.patch("/:id", AuthMiddleware.auth, ExpressAdapter.create(SubscriptionController.update));
 
 export default router;
