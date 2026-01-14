@@ -14,7 +14,7 @@ export class SpaceEntity {
   private readonly _comfort: string[];
   private readonly _specifications?: Record<string, any>;
   private readonly _images: string[];
-  private readonly _status: spaceStatus;
+  private _status: spaceStatus;
   private readonly _contact_whatsapp?: string;
   private readonly _contact_phone?: string;
   private readonly _contact_email?: string;
@@ -22,7 +22,7 @@ export class SpaceEntity {
   private readonly _contact_facebook?: string;
   private readonly _contact_whatsapp_alternative?: string;
   private readonly _created_at?: Date;
-  private readonly _updated_at?: Date;
+  private _updated_at?: Date;
 
   constructor(props: IEspace) {
     this._id = props.id;
@@ -274,5 +274,24 @@ export class SpaceEntity {
         "O status do espaço é inválido. Use 'active', 'inactive', 'suspended' ou 'deleted'."
       );
     }
+  }
+  public activate(): void {
+    this._status = "active";
+    this._updated_at = new Date();
+  }
+
+  public deactivate(): void {
+    this._status = "inactive";
+    this._updated_at = new Date();
+  }
+
+  public suspend(): void {
+    this._status = "suspended";
+    this._updated_at = new Date();
+  }
+
+  public markAsDeleted(): void {
+    this._status = "deleted";
+    this._updated_at = new Date();
   }
 }

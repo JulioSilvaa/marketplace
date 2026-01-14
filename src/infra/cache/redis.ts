@@ -33,13 +33,9 @@ export const getRedisClient = (): Redis => {
       console.log("✅ Redis connected successfully");
     });
 
-    redisClient.on("ready", () => {
-      console.log("✅ Redis ready to accept commands");
-    });
+    // Removed: redisClient.on("ready") log to reduce noise
 
-    redisClient.on("close", () => {
-      console.warn("⚠️  Redis connection closed");
-    });
+    // Removed: redisClient.on("close") log to reduce noise
 
     redisClient.on("reconnecting", () => {
       console.log("🔄 Redis reconnecting...");
