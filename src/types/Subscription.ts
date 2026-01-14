@@ -16,6 +16,7 @@ export type ISubscription = {
   space_id?: string;
   trial_until?: Date; // trial_ate DATE
   next_billing_date?: Date; // next_winning DATE
+  cancel_at_period_end?: boolean;
   created_at?: Date; // criado_em TIMESTAMPTZ DEFAULT NOW()
   updated_at?: Date; // updated_in TIMESTAMPTZ DEFAULT NOW()
 };

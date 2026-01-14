@@ -1,6 +1,7 @@
 import { SubscriptionStatus } from "../../../types/Subscription";
 import { SubscriptionEntity } from "../../entities/SubscriptionEntity";
 import { ISubscriptionRepository } from "../../repositories/ISubscriptionRepository";
+import { IPaymentService } from "../../services/IPaymentService";
 
 export interface UpdateSubscriptionDTO {
   id: string;
@@ -8,10 +9,14 @@ export interface UpdateSubscriptionDTO {
   price?: number;
   status?: SubscriptionStatus;
   next_billing_date?: Date;
+  cancel_at_period_end?: boolean;
 }
 
 export class UpdateSubscription {
-  constructor(private subscriptionRepository: ISubscriptionRepository) {}
+  constructor(
+    private subscriptionRepository: ISubscriptionRepository,
+    private paymentService: IPaymentService
+  ) {}
 
   async execute(input: UpdateSubscriptionDTO): Promise<void> {
     // Find by id instead of user_id
@@ -44,6 +49,22 @@ export class UpdateSubscription {
 
     if (input.next_billing_date !== undefined) {
       subscription.updateBillingDate(input.next_billing_date);
+    }
+
+    if (input.cancel_at_period_end !== undefined) {
+      if (input.cancel_at_period_end && subscription.stripe_subscription_id) {
+        const success = await this.paymentService.cancelSubscription(
+          subscription.stripe_subscription_id
+        );
+        if (!success) {
+          // Log warning but proceed with local update? Or throw?
+          // Proceeding to ensure DB reflects user intent even if Stripe fails (manual sync needed potentially)
+          console.warn(
+            `Failed to cancel Stripe subscription ${subscription.stripe_subscription_id}`
+          );
+        }
+      }
+      subscription.setCancellation(input.cancel_at_period_end);
     }
 
     await this.subscriptionRepository.update(subscription);

@@ -31,7 +31,8 @@ export class SubscriptionUseCaseFactory {
 
   static makeUpdateSubscription(): UpdateSubscription {
     const subscriptionRepository = new SubscriptionRepositoryPrisma();
-    return new UpdateSubscription(subscriptionRepository);
+    const stripeService = new StripeService();
+    return new UpdateSubscription(subscriptionRepository, stripeService);
   }
 
   static makeFindAllSubscriptions(): FindAllSubscriptions {

@@ -14,4 +14,6 @@ export interface IPaymentService {
     price?: number,
     planType?: string
   ): Promise<{ url: string | null }>;
+
+  cancelSubscription(subscriptionId: string): Promise<boolean>;
 }
