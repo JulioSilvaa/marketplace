@@ -34,7 +34,7 @@ export class WebhookController {
       res.status(200).send({ received: true });
     } catch (err: any) {
       log(`Erro Fatal no WebhookController: ${err.message}`);
-      console.error(`Erro no webhook: ${err.message}`);
+      // console.error(`Erro no webhook: ${err.message}`);
       res.status(400).send(`Webhook Error: ${err.message}`);
     }
   }
