@@ -10,6 +10,7 @@ export interface SubscriptionOutputDTO {
   space_id?: string;
   trial_until?: string; // ISO date string
   next_billing_date?: string; // ISO date string
+  cancel_at_period_end?: boolean;
   created_at?: string; // ISO date string
   updated_at?: string; // ISO date string
 }

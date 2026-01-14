@@ -62,7 +62,9 @@ export class HandleStripeWebhook {
         // Update existing subscription status
         switch (status) {
           case SubscriptionStatus.ACTIVE:
-            existingSub.activate();
+            if (existingSub.status !== SubscriptionStatus.ACTIVE) {
+              existingSub.activate();
+            }
             break;
           case SubscriptionStatus.CANCELLED:
             existingSub.cancel();

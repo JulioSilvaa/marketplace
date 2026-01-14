@@ -17,6 +17,7 @@ export class SubscriptionAdapter {
       space_id: data.space_id || undefined,
       trial_until: data.trial_until || undefined,
       next_billing_date: data.next_billing_date || undefined,
+      cancel_at_period_end: data.cancel_at_period_end,
     });
   }
 
@@ -31,6 +32,7 @@ export class SubscriptionAdapter {
       space_id: subscription.space_id,
       trial_until: subscription.trial_until?.toISOString(),
       next_billing_date: subscription.next_billing_date?.toISOString(),
+      cancel_at_period_end: subscription.cancel_at_period_end,
       created_at: subscription.created_at?.toISOString(),
       updated_at: subscription.updated_at?.toISOString(),
     };
