@@ -135,6 +135,21 @@ export class StripeService implements IPaymentService {
     return { url: session.url };
   }
 
+  async cancelSubscription(subscriptionId: string): Promise<boolean> {
+    if (!this.stripe) return true;
+
+    try {
+      await this.stripe.subscriptions.update(subscriptionId, {
+        cancel_at_period_end: true,
+      });
+      return true;
+    } catch (err) {
+      console.error("Error canceling stripe subscription:", err);
+      // If error is "No such subscription", maybe it's already deleted or test data
+      return false;
+    }
+  }
+
   // Adding webhook handler logic here as public method, though usually controller calls it.
   // We need to return the constructEvent result.
   constructEvent(payload: Buffer, signature: string): Stripe.Event {
