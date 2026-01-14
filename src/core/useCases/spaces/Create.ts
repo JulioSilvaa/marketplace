@@ -27,7 +27,7 @@ export class CreateSpace {
     const space = SpaceEntity.create({
       ...input,
       id: crypto.randomUUID(),
-      status: "active",
+      status: "inactive",
     });
 
     await this.spaceRepository.create(space);
