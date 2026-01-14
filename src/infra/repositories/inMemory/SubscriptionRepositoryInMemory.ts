@@ -31,6 +31,10 @@ export class SubscriptionRepositoryInMemory implements ISubscriptionRepository {
     return sub || null;
   }
 
+  async findAllByUserId(userId: string): Promise<SubscriptionEntity[]> {
+    return this.subscriptions.filter(s => s.user_id === userId);
+  }
+
   async findById(id: string): Promise<SubscriptionEntity | null> {
     const sub = this.subscriptions.find(s => s.id === id);
     return sub || null;
