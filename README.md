@@ -311,6 +311,42 @@ curl http://localhost:${PORT}/health
 
 ---
 
+## 🧪 Testes e Qualidade
+
+O projeto utiliza **Vitest** para testes unitários e de integração, com um ambiente isolado via Docker para garantir a segurança dos dados.
+
+### Ambiente de Testes (Docker)
+
+Para evitar poluir ou deletar seu banco de dados de desenvolvimento, utilizamos um container Postgres dedicado para testes na porta **5433**.
+
+1. **Configuração Inicial (Rodar uma vez):**
+
+   ```bash
+   npm run test:setup
+   ```
+
+   _Isso sobe o container `db-test` e aplica as migrations._
+
+2. **Rodar Testes:**
+
+   ```bash
+   npm run test:dev
+   ```
+
+   _Roda a suíte de testes usando o banco isolado._
+
+3. **Parar Ambiente de Testes:**
+   ```bash
+   npm run test:down
+   ```
+
+### Estratégia de Testes
+
+- **Banco Isolado:** Testes de integração limpam o banco (`marketplace_test`) antes de rodar, sem afetar o `lazer` (dev).
+- **CI/CD:** Os scripts são compatíveis com pipelines de CI (GitHub Actions), usando variáveis de ambiente injetadas automaticamente.
+
+---
+
 ## 📱 Funcionalidades
 
 ### 🔐 Segurança
@@ -380,6 +416,9 @@ curl http://localhost:${PORT}/health
 - ✅ Período de trial configurável
 - ✅ Controle de próxima cobrança
 - ✅ Status de assinatura (ativa/cancelada/vencida)
+- ✅ **Webhooks do Stripe**: Processamento assíncrono de eventos (pagamento, renovação, cancelamento)
+- ✅ **Billing Portal**: Links para gestão de assinatura pelo próprio Stripe
+- ✅ **Cancelamento Agendado**: Suporte a cancelamento ao fim do período (`cancel_at_period_end`)
 
 ### 📊 Métricas e atividade
 

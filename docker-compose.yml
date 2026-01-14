@@ -13,7 +13,22 @@ services:
       retries: 3
     profiles:
       - dev
+      - dev
       - prod
+
+  db-test:
+    image: postgres:15-alpine
+    container_name: lazer-db-test
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=marketplace_test
+    networks:
+      - app-network
+    profiles:
+      - test
 
   app-dev:
     image: node:20-alpine
