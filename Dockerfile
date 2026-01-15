@@ -24,6 +24,10 @@ FROM base AS production-deps
 
 RUN apk add --no-cache openssl
 
+# Copy prisma schema before install so postinstall can run prisma generate
+COPY prisma ./prisma
+COPY prisma.config.ts ./prisma.config.ts
+
 RUN yarn install --frozen-lockfile --production=true && \
     yarn cache clean
 
