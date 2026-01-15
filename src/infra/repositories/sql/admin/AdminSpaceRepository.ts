@@ -46,7 +46,7 @@ export class AdminSpaceRepository implements IAdminSpaceRepository {
     ]);
 
     return {
-      data: spaces.map(s => ({
+      data: spaces.map((s: any) => ({
         space: SpaceAdapter.toEntity(s),
         owner: s.users,
         subscription: (s as any).subscriptions?.[0], // Assuming subscriptions relation exists and is fetched

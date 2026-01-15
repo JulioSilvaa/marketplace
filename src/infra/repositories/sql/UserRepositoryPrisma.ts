@@ -71,7 +71,7 @@ export class UserRepositoryPrisma implements IUserRepository {
 
   async findAll(): Promise<IUser[]> {
     const users = await prisma.users.findMany();
-    return users.map(user => UserAdapter.toDomain(user));
+    return users.map((user: any) => UserAdapter.toDomain(user));
   }
 
   async search(filters: { name?: string; email?: string; isActive?: boolean }): Promise<IUser[]> {
@@ -99,7 +99,7 @@ export class UserRepositoryPrisma implements IUserRepository {
       where,
     });
 
-    return users.map(user => UserAdapter.toDomain(user));
+    return users.map((user: any) => UserAdapter.toDomain(user));
   }
 
   async delete(id: string): Promise<void> {

@@ -50,7 +50,7 @@ export class AdminCustomerRepository implements IAdminCustomerRepository {
     ]);
 
     return {
-      data: users.map(u => UserAdapter.toDomain(u)),
+      data: users.map((u: any) => UserAdapter.toDomain(u)),
       total,
     };
   }
