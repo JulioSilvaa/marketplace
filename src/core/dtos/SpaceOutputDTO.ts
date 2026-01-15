@@ -40,5 +40,6 @@ export interface SpaceOutputDTO {
     plan: string;
     price: number;
     status: string;
+    coupon_code?: string;
   };
 }

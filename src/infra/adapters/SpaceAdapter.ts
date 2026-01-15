@@ -54,7 +54,7 @@ export class SpaceAdapter {
     },
     ownerData?: any,
     simplified: boolean = false,
-    subscriptionData?: { plan: string; price: number; status: string }
+    subscriptionData?: { plan: string; price: number; status: string; coupon_code?: string }
   ): SpaceOutputDTO {
     return {
       id: space.id!,
@@ -99,6 +99,7 @@ export class SpaceAdapter {
             plan: subscriptionData.plan,
             price: Number(subscriptionData.price),
             status: subscriptionData.status,
+            coupon_code: subscriptionData.coupon_code,
           }
         : undefined,
     };

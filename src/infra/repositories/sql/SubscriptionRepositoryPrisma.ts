@@ -22,6 +22,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
         status: subscription.status,
         trial_until: subscription.trial_until,
         next_billing_date: subscription.next_billing_date,
+        coupon_code: subscription.coupon_code,
       },
     });
     return subscription;
@@ -93,6 +94,7 @@ export class SubscriptionRepositoryPrisma implements ISubscriptionRepository {
         next_billing_date: subscription.next_billing_date,
         stripe_subscription_id: subscription.stripe_subscription_id,
         cancel_at_period_end: subscription.cancel_at_period_end,
+        coupon_code: subscription.coupon_code,
       },
     });
   }

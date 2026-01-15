@@ -88,6 +88,13 @@ export class HandleStripeWebhook {
           existingSub.setCancellation(subscription.cancel_at_period_end);
         }
 
+        // Update coupon code if present
+        const subAny = subscription as any;
+        if (subAny.discount && subAny.discount.coupon) {
+          const couponName = subAny.discount.coupon.name || subAny.discount.coupon.id;
+          existingSub.setCouponCode(couponName);
+        }
+
         await this.subscriptionRepository.update(existingSub);
       }
     } catch (error) {
@@ -151,6 +158,44 @@ export class HandleStripeWebhook {
           ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
           : undefined,
     });
+
+    // Tentar obter o cupom diretamente da assinatura do Stripe agora
+    if (stripe_subscription_id) {
+      try {
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+        const stripeSub = await stripe.subscriptions.retrieve(stripe_subscription_id, {
+          expand: ["latest_invoice.discounts"],
+        });
+        const subAny = stripeSub as any;
+        let couponName = null;
+
+        if (subAny.discount && subAny.discount.coupon) {
+          couponName = subAny.discount.coupon.name || subAny.discount.coupon.id;
+        } else if (
+          subAny.latest_invoice &&
+          subAny.latest_invoice.discounts &&
+          subAny.latest_invoice.discounts.length > 0
+        ) {
+          const firstDiscount = subAny.latest_invoice.discounts[0];
+          if (typeof firstDiscount === "object") {
+            if (firstDiscount.coupon) {
+              couponName = firstDiscount.coupon.name || firstDiscount.coupon.id;
+            } else if ((firstDiscount as any).source && (firstDiscount as any).source.coupon) {
+              const srcCoupon = (firstDiscount as any).source.coupon;
+              couponName =
+                typeof srcCoupon === "string" ? srcCoupon : srcCoupon.name || srcCoupon.id;
+            }
+          }
+        }
+
+        if (couponName) {
+          subscription.setCouponCode(couponName);
+          logToFile(`[Webhook] Cupom encontrado na criação: ${couponName}`);
+        }
+      } catch (stripeErr: any) {
+        logToFile(`[Webhook Warning] Erro ao buscar assinatura no Stripe: ${stripeErr.message}`);
+      }
+    }
 
     try {
       await this.subscriptionRepository.create(subscription);

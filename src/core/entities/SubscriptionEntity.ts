@@ -11,6 +11,7 @@ export class SubscriptionEntity {
   private _cancel_at_period_end: boolean;
   private readonly _stripe_subscription_id?: string;
   private readonly _space_id?: string;
+  private readonly _coupon_code?: string;
   private readonly _created_at: Date;
   private _updated_at: Date;
 
@@ -25,6 +26,7 @@ export class SubscriptionEntity {
     this._cancel_at_period_end = props.cancel_at_period_end || false;
     this._stripe_subscription_id = (props as any).stripe_subscription_id;
     this._space_id = (props as any).space_id;
+    this._coupon_code = (props as any).coupon_code;
     this._created_at = props.created_at || new Date();
     this._updated_at = props.updated_at || new Date();
 
@@ -73,6 +75,10 @@ export class SubscriptionEntity {
 
   public get space_id(): string | undefined {
     return this._space_id;
+  }
+
+  public get coupon_code(): string | undefined {
+    return this._coupon_code;
   }
 
   public get created_at(): Date {
@@ -136,6 +142,12 @@ export class SubscriptionEntity {
 
   public setCancellation(shouldCancel: boolean) {
     this._cancel_at_period_end = shouldCancel;
+    this._updated_at = new Date();
+  }
+
+  public setCouponCode(code: string | undefined) {
+    // @ts-expect-error - _cancel_at_period_end is private but needed for mapping
+    this._coupon_code = code;
     this._updated_at = new Date();
   }
 
