@@ -54,7 +54,13 @@ export class SpaceAdapter {
     },
     ownerData?: any,
     simplified: boolean = false,
-    subscriptionData?: { plan: string; price: number; status: string; coupon_code?: string }
+    subscriptionData?: {
+      plan: string;
+      price: number;
+      status: string;
+      coupon_code?: string;
+      coupon_name?: string;
+    }
   ): SpaceOutputDTO {
     return {
       id: space.id!,
@@ -100,6 +106,7 @@ export class SpaceAdapter {
             price: Number(subscriptionData.price),
             status: subscriptionData.status,
             coupon_code: subscriptionData.coupon_code,
+            coupon_name: subscriptionData.coupon_name,
           }
         : undefined,
     };
@@ -123,7 +130,8 @@ export class SpaceAdapter {
         reviews_count: spaceWithRating.reviews_count,
       },
       spaceWithRating.owner,
-      simplified
+      simplified,
+      spaceWithRating.subscription as any
     );
   }
 

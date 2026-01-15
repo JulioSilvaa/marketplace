@@ -162,4 +162,33 @@ export class StripeService implements IPaymentService {
 
     return this.stripe.webhooks.constructEvent(payload, signature, secret);
   }
+
+  async getCouponNameByCode(code: string): Promise<string | null> {
+    if (!this.stripe) return null;
+    try {
+      // First try as a Promotion Code (what user typically types)
+      const promoCodes = await this.stripe.promotionCodes.list({
+        code: code,
+        limit: 1,
+        expand: ["data.coupon"],
+      });
+
+      if (promoCodes.data.length > 0) {
+        const promo = promoCodes.data[0];
+        return ((promo as any).coupon as Stripe.Coupon).name || null;
+      }
+
+      // If not, try as a direct Coupon ID
+      try {
+        const coupon = await this.stripe.coupons.retrieve(code);
+        return coupon.name || null;
+      } catch (err) {
+        // Not a valid coupon ID either
+        return null;
+      }
+    } catch (err) {
+      console.error("Error fetching coupon name:", err);
+      return null;
+    }
+  }
 }
