@@ -149,3 +149,8 @@ export const isCacheAvailable = async (): Promise<boolean> => {
     return false;
   }
 };
+
+/**
+ * Export redis client instance for direct access
+ */
+export const redis = getRedisClient();
