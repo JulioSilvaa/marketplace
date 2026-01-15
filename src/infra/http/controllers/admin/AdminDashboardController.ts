@@ -18,7 +18,12 @@ class AdminDashboardController {
         totalViews,
         mmrData,
         prevMmrData,
-        canceledLast30,
+        newMmrData,
+        churnedMmrData,
+        activeSubscriptionsCount,
+        prevActiveSubscriptionsCount, // Valid approximation for active 30 days ago
+        newSubscriptionsCount,
+        canceledSubscriptionsCount,
         inactiveAds,
         suspendedAds,
         deletedAds,
@@ -29,58 +34,108 @@ class AdminDashboardController {
         prisma.spaces.count({ where: { status: "active" } }),
         prisma.spaces.count({ where: { status: "active", created_at: { lt: last7Days } } }),
         prisma.spaces.aggregate({ _sum: { views: true } }),
+        // Total MMR
         prisma.subscriptions.aggregate({
           _sum: { price: true },
           where: { status: "active" },
         }),
+        // Previous MMR (Approx for Growth calc - simple logic)
         prisma.subscriptions.aggregate({
           _sum: { price: true },
-          where: { status: "active", created_at: { lt: last7Days } },
+          where: { status: "active", created_at: { lt: last30Days } }, // This isn't perfect for "MMR 30 days ago" but serves as a baseline for "old" revenue vs new
         }),
+        // New MMR (Revenue from subs created in last 30d)
+        prisma.subscriptions.aggregate({
+          _sum: { price: true },
+          where: { status: "active", created_at: { gte: last30Days } },
+        }),
+        // Churned MMR (Revenue lost in last 30d)
+        prisma.subscriptions.aggregate({
+          _sum: { price: true },
+          where: {
+            OR: [{ status: { in: ["cancelled", "cancelada"] } }, { cancel_at_period_end: true }],
+            updated_at: { gte: last30Days },
+          },
+        }),
+        // Active Subs Count (Current)
+        prisma.subscriptions.count({ where: { status: "active" } }),
+        // Active Subs Count (Older than 30d) - Start of Period Proxy? No, this is just "Existing before 30d".
+        // Better Start of Period metric: Current Active + Cancelled(Last30) - New(Last30)
+        // We will calc in memory. We just need the raw counts here.
+        prisma.subscriptions.count({ where: { status: "active", created_at: { lt: last30Days } } }),
+
+        // New Subs Count (Last 30d)
+        prisma.subscriptions.count({
+          where: { status: "active", created_at: { gte: last30Days } },
+        }),
+
+        // Canceled Subs Count (Last 30d)
         prisma.subscriptions.count({
           where: {
             OR: [{ status: { in: ["cancelled", "cancelada"] } }, { cancel_at_period_end: true }],
             updated_at: { gte: last30Days },
           },
         }),
+
         prisma.spaces.count({ where: { status: "inactive" } }),
-        prisma.spaces.count({ where: { status: "suspended" } }), // Ads canceled by user (suspended space)
+        prisma.spaces.count({ where: { status: "suspended" } }),
         prisma.spaces.count({ where: { status: "deleted" } }),
         prisma.subscriptions.count({
-          where: {
-            OR: [{ status: "cancelled" }, { cancel_at_period_end: true }],
-          },
+          where: { OR: [{ status: "cancelled" }, { cancel_at_period_end: true }] },
         }),
       ]);
 
       const mmr = mmrData._sum.price || 0;
-      const prevMmr = prevMmrData._sum.price || 0;
+      const prevMmr = prevMmrData._sum.price || 0; // Only captures older retained revenue, not true "MMR 30 days ago" history without snapshots.
 
-      // Calculate Churn Rate: (Canceled in last 30d / Total Active)
-      // Protection against division by zero
-      const churnRate = activeAds > 0 ? (canceledLast30 / activeAds) * 100 : 0;
+      const newMmr = newMmrData._sum.price || 0;
+      const churnedMmr = churnedMmrData._sum.price || 0;
+
+      // --- Churn Rate Calculations ---
+      // Customer Churn Rate = Cancelled Customers / Customers at Start of Period
+      // Start Customers = (End Customers[Active] + Cancelled Customers[Last30]) - New Customers[Last30]
+      const currentActiveSubs = activeSubscriptionsCount;
+      const startOfPeriodSubs =
+        currentActiveSubs + canceledSubscriptionsCount - newSubscriptionsCount;
+
+      const customerChurnRate =
+        startOfPeriodSubs > 0 ? (canceledSubscriptionsCount / startOfPeriodSubs) * 100 : 0;
+
+      // Revenue Churn Rate = Churned MMR / MMR at Start of Period
+      // Start MMR = (End MMR[Active] + Churned MMR[Last30]) - New MMR[Last30]
+      const startOfPeriodMmr = mmr + churnedMmr - newMmr;
+
+      const revenueChurnRate = startOfPeriodMmr > 0 ? (churnedMmr / startOfPeriodMmr) * 100 : 0;
 
       const calculateGrowth = (current: number, previous: number) => {
         if (previous === 0) return current > 0 ? 100 : 0;
         return ((current - previous) / previous) * 100;
       };
 
+      // MMR Growth (Month over Month approx)
+      // Real growth = (New MMR - Churned MMR) / Start MMR
+      const mmrCheckGrowth =
+        startOfPeriodMmr > 0 ? ((newMmr - churnedMmr) / startOfPeriodMmr) * 100 : 0;
+
       return res.json({
         totalUsers,
         activeAds,
         inactiveAds,
-        canceledAds: suspendedAds, // Valid mapping based on webhook logic
+        canceledAds: suspendedAds,
         deletedAds,
         canceledPlans,
         totalViews: totalViews._sum.views || 0,
         revenue: mmr,
         mmr,
-        churnRate: parseFloat(churnRate.toFixed(1)),
+        newMmr,
+        churnedMmr,
+        churnRate: parseFloat(customerChurnRate.toFixed(1)), // Keeping generic name for compatibility
+        revenueChurnRate: parseFloat(revenueChurnRate.toFixed(1)),
         growth: {
           users: Math.round(calculateGrowth(totalUsers, prevTotalUsers)),
           ads: Math.round(calculateGrowth(activeAds, prevActiveAds)),
-          views: 15, // Keep some mocks if we don't have historical views yet
-          revenue: Math.round(calculateGrowth(mmr, prevMmr)),
+          views: 15,
+          revenue: parseFloat(mmrCheckGrowth.toFixed(1)), // Use the calculated MoM growth
         },
       });
     } catch (error) {
