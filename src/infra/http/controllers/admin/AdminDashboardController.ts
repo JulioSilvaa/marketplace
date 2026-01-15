@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import Stripe from "stripe";
 
 import { prisma } from "../../../../lib/prisma";
 
@@ -246,6 +247,39 @@ class AdminDashboardController {
         }),
       ]);
 
+      // Resolve Coupon Names
+      const uniqueCoupons = [
+        ...new Set(
+          latestSubscriptions.map(s => s.coupon_code).filter(c => c !== null && c !== undefined)
+        ),
+      ];
+      const couponMap: Record<string, string> = {};
+
+      if (uniqueCoupons.length > 0 && process.env.STRIPE_SECRET_KEY) {
+        try {
+          const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+            apiVersion: "2025-01-27.acacia" as any,
+          });
+
+          await Promise.all(
+            uniqueCoupons.map(async code => {
+              if (!code) return;
+              try {
+                // Try to retrieve as a coupon ID
+                const coupon = await stripe.coupons.retrieve(code);
+                couponMap[code] = coupon.name || code;
+              } catch (error) {
+                // If not found (e.g., it's a promo code string like 'BLACKFRIDAY' that isn't a coupon ID), keep original
+                couponMap[code] = code;
+              }
+            })
+          );
+        } catch (err) {
+          console.error("Error resolving coupons:", err);
+          // Fallback: keep codes as they are
+        }
+      }
+
       const formattedUsers = latestUsers.map(u => ({
         id: u.id,
         name: u.name,
@@ -261,6 +295,7 @@ class AdminDashboardController {
         ...s,
         status: s.status.toLowerCase(),
         users: s.users || { name: "Usuário Removido", email: "N/A" },
+        coupon_code: s.coupon_code ? couponMap[s.coupon_code] || s.coupon_code : null,
       }));
 
       // Format ads to ensure user data exists
