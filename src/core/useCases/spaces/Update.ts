@@ -1,5 +1,7 @@
 import { IAddress, spaceStatus } from "../../../types/Space";
+import { ActivityEvent } from "../../entities/ActivityEvent";
 import { SpaceEntity } from "../../entities/SpaceEntity";
+import { IEventRepository } from "../../repositories/IEventRepository";
 import { ISpaceRepository } from "../../repositories/ISpaceRepository";
 
 export interface UpdateSpaceDTO {
@@ -24,7 +26,10 @@ export interface UpdateSpaceDTO {
 }
 
 export class UpdateSpace {
-  constructor(private spaceRepository: ISpaceRepository) {}
+  constructor(
+    private spaceRepository: ISpaceRepository,
+    private eventRepository: IEventRepository
+  ) {}
 
   async execute(input: UpdateSpaceDTO): Promise<void> {
     const existingSpace = await this.spaceRepository.findById(input.id);
@@ -62,5 +67,77 @@ export class UpdateSpace {
     });
 
     await this.spaceRepository.update(updatedSpace);
+
+    // ACTIVITY LOGGING
+
+    // 1. Status Change (Pause/Resume)
+    if (input.status && input.status !== existingSpace.status) {
+      await this.eventRepository.create({
+        listing_id: existingSpace.id!,
+        user_id: existingSpace.owner_id,
+        event_type: "status_change",
+        metadata: {
+          oldStatus: existingSpace.status,
+          newStatus: input.status,
+        },
+      });
+    }
+
+    // 2. Price Update
+    const oldPrice = existingSpace.price_per_weekend || existingSpace.price_per_day;
+    const newPrice = input.price_per_weekend || input.price_per_day;
+    // Simple check: if prices input changed.
+    const priceChanged =
+      (input.price_per_day && input.price_per_day !== existingSpace.price_per_day) ||
+      (input.price_per_weekend && input.price_per_weekend !== existingSpace.price_per_weekend);
+
+    if (priceChanged) {
+      // Calculate % change if applicable
+      const pOld = oldPrice || 0;
+      const pNew = newPrice || 0;
+      let changePercent = 0;
+      if (pOld > 0) changePercent = Math.round(((pNew - pOld) / pOld) * 100);
+
+      await this.eventRepository.create({
+        listing_id: existingSpace.id!,
+        user_id: existingSpace.owner_id,
+        event_type: "price_updated",
+        metadata: {
+          oldPrice: pOld,
+          newPrice: pNew,
+          priceChangePercent: changePercent,
+        },
+      });
+    }
+
+    // 3. Description/Title Update
+    if (
+      (input.description && input.description !== existingSpace.description) ||
+      (input.title && input.title !== existingSpace.title)
+    ) {
+      await this.eventRepository.create({
+        listing_id: existingSpace.id!,
+        user_id: existingSpace.owner_id,
+        event_type: "description_updated",
+        metadata: {
+          changedField: input.title !== existingSpace.title ? "title" : "description",
+        },
+      });
+    }
+
+    // 4. Photos Update
+    if (input.images && JSON.stringify(input.images) !== JSON.stringify(existingSpace.images)) {
+      const added = input.images.length > existingSpace.images.length;
+      // Simple logic
+      await this.eventRepository.create({
+        listing_id: existingSpace.id!,
+        user_id: existingSpace.owner_id,
+        event_type: "photos_updated",
+        metadata: {
+          photoAction: added ? "added" : "removed", // or updated
+          photoCount: input.images.length,
+        },
+      });
+    }
   }
 }
