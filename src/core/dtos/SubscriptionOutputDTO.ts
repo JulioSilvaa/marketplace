@@ -11,6 +11,7 @@ export interface SubscriptionOutputDTO {
   trial_until?: string; // ISO date string
   next_billing_date?: string; // ISO date string
   cancel_at_period_end?: boolean;
+  coupon_code?: string;
   created_at?: string; // ISO date string
   updated_at?: string; // ISO date string
 }

@@ -17,6 +17,7 @@ export type ISubscription = {
   trial_until?: Date; // trial_ate DATE
   next_billing_date?: Date; // next_winning DATE
   cancel_at_period_end?: boolean;
+  coupon_code?: string;
   created_at?: Date; // criado_em TIMESTAMPTZ DEFAULT NOW()
   updated_at?: Date; // updated_in TIMESTAMPTZ DEFAULT NOW()
 };
