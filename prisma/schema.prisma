@@ -201,3 +201,18 @@ model admin_users {
 
   @@index([email])
 }
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String   // e.g., 'LOGIN', 'CREATE_SPACE'
+  resourceId String?  // ID of the affected resource (Space ID, etc.)
+  details    Json?    // Extra details (e.g., changed fields)
+  ip         String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
