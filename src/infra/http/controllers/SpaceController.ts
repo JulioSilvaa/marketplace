@@ -2,6 +2,7 @@
 import { Request, Response } from "express";
 
 import { SpaceAdapter } from "../../adapters/SpaceAdapter";
+import { AuditLogUseCaseFactory } from "../../factories/AuditLogUseCaseFactory";
 import { SpaceUseCaseFactory } from "../../factories/SpaceUseCaseFactory";
 import { redisService } from "../../services/RedisService";
 
@@ -96,6 +97,17 @@ class SpaceController {
       // Since new items appear at top, we really should just bust the whole search cache or at least common keys.
       // For simplicity in MVP, we might rely on TTL (5m) or Bust specific keys if we had them tracked.
       // Or we can just let it be eventually consistent (5 min delay for new ads on public query is acceptable).
+
+      // 📝 AUDIT LOG: Space Created
+      const createAuditLog = AuditLogUseCaseFactory.makeCreateAuditLog();
+      await createAuditLog.execute({
+        userId: owner_id,
+        action: "CREATE_SPACE",
+        resourceId: space.id,
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        details: { title: space.title, category_id: space.category_id },
+      });
 
       const output = SpaceAdapter.toOutputDTO(space);
 

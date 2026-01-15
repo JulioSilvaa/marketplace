@@ -21,4 +21,17 @@ export class EventRepositoryPrisma implements IEventRepository {
       skipDuplicates: true,
     });
   }
+
+  async create(event: ActivityEvent): Promise<void> {
+    await prisma.activity_events.create({
+      data: {
+        id: event.id || randomUUID(),
+        listing_id: event.listing_id,
+        user_id: event.user_id || undefined,
+        event_type: event.event_type,
+        metadata: (event.metadata as any) || undefined,
+        created_at: event.created_at || new Date(),
+      },
+    });
+  }
 }

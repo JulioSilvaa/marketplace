@@ -12,3 +12,5 @@ dist
 /generated
 user.test.http
 .env.test
+# Debug scripts
+check_*.ts

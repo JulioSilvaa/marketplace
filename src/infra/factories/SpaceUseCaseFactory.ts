@@ -4,6 +4,7 @@ import { FindAllSpaces } from "../../core/useCases/spaces/FindAll";
 import { FindByIdSpace } from "../../core/useCases/spaces/FindById";
 import { ListSpaces } from "../../core/useCases/spaces/List";
 import { UpdateSpace } from "../../core/useCases/spaces/Update";
+import { EventRepositoryPrisma } from "../repositories/sql/EventRepositoryPrisma";
 import { SpaceRepositoryPrisma } from "../repositories/sql/SpaceRepositoryPrisma";
 import { UserRepositoryPrisma } from "../repositories/sql/UserRepositoryPrisma";
 
@@ -31,7 +32,8 @@ export class SpaceUseCaseFactory {
 
   static makeUpdateSpace(): UpdateSpace {
     const spaceRepository = new SpaceRepositoryPrisma();
-    return new UpdateSpace(spaceRepository);
+    const eventRepository = new EventRepositoryPrisma();
+    return new UpdateSpace(spaceRepository, eventRepository);
   }
 
   static makeDeleteSpace(): DeleteSpace {

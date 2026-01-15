@@ -7,6 +7,7 @@ import { FindByUserIdSubscription } from "../../core/useCases/subscriptions/Find
 import { GetAvailablePlan } from "../../core/useCases/subscriptions/GetAvailablePlan";
 import { GetCurrentPricing } from "../../core/useCases/subscriptions/GetCurrentPricing";
 import { UpdateSubscription } from "../../core/useCases/subscriptions/Update";
+import { EventRepositoryPrisma } from "../repositories/sql/EventRepositoryPrisma";
 import { SpaceRepositoryPrisma } from "../repositories/sql/SpaceRepositoryPrisma";
 import { SubscriptionRepositoryPrisma } from "../repositories/sql/SubscriptionRepositoryPrisma";
 import { UserRepositoryPrisma } from "../repositories/sql/UserRepositoryPrisma";
@@ -67,6 +68,12 @@ export class SubscriptionUseCaseFactory {
     const subscriptionRepository = new SubscriptionRepositoryPrisma();
     const spaceRepository = new SpaceRepositoryPrisma();
     const userRepository = new UserRepositoryPrisma();
-    return new HandleStripeWebhook(subscriptionRepository, spaceRepository, userRepository);
+    const eventRepository = new EventRepositoryPrisma();
+    return new HandleStripeWebhook(
+      subscriptionRepository,
+      spaceRepository,
+      userRepository,
+      eventRepository
+    );
   }
 }

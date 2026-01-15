@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 import { LoginDTO } from "../../../core/dtos/LoginDTO";
+import { AuditLogUseCaseFactory } from "../../factories/AuditLogUseCaseFactory";
 import { AuthUseCaseFactory } from "../../factories/AuthUseCaseFactory";
 import { UserUseCaseFactory } from "../../factories/UserUseCaseFactory";
 
@@ -21,6 +22,16 @@ export default class AuthController {
 
       const loginUser = AuthUseCaseFactory.makeLoginUser();
       const result = (await loginUser.execute(loginData)) as any;
+
+      // 📝 AUDIT LOG: Login Success
+      const createAuditLog = AuditLogUseCaseFactory.makeCreateAuditLog();
+      await createAuditLog.execute({
+        userId: result.user.id,
+        action: "LOGIN",
+        ip: req.ip,
+        userAgent: req.headers["user-agent"],
+        details: { email: loginData.email },
+      });
 
       // Definir refresh token no cookie HttpOnly
       res.cookie(AuthController.COOKIE_NAME, result.refreshToken, AuthController.COOKIE_OPTIONS);

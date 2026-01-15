@@ -3,14 +3,17 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { SpaceEntity } from "../../../core/entities/SpaceEntity";
 import { UpdateSpace } from "../../../core/useCases/spaces/Update";
 import { SpaceRepositoryInMemory } from "../../../infra/repositories/inMemory/SpaceRepositoryInMemory";
+import { EventRepositoryInMemory } from "../../../infra/repositories/inMemory/EventRepositoryInMemory";
 
 describe("UpdateSpace UseCase", () => {
   let updateSpace: UpdateSpace;
   let spaceRepo: SpaceRepositoryInMemory;
+  let eventRepo: EventRepositoryInMemory;
 
   beforeEach(() => {
     spaceRepo = new SpaceRepositoryInMemory();
-    updateSpace = new UpdateSpace(spaceRepo);
+    eventRepo = new EventRepositoryInMemory();
+    updateSpace = new UpdateSpace(spaceRepo, eventRepo);
   });
 
   it("should update a space successfully", async () => {

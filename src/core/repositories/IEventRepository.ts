@@ -6,4 +6,5 @@ export interface IEventRepository {
    * @param events Array of activity events to create
    */
   createBatch(events: ActivityEvent[]): Promise<void>;
+  create(event: ActivityEvent): Promise<void>;
 }

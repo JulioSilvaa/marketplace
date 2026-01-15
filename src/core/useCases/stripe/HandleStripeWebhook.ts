@@ -3,6 +3,7 @@ import Stripe from "stripe";
 
 import { SubscriptionStatus } from "../../../types/Subscription";
 import { SubscriptionEntity } from "../../entities/SubscriptionEntity";
+import { IEventRepository } from "../../repositories/IEventRepository";
 import { ISpaceRepository } from "../../repositories/ISpaceRepository";
 import { ISubscriptionRepository } from "../../repositories/ISubscriptionRepository";
 import { IUserRepository } from "../../repositories/IUserRepository";
@@ -17,7 +18,8 @@ export class HandleStripeWebhook {
   constructor(
     private subscriptionRepository: ISubscriptionRepository,
     private spaceRepository: ISpaceRepository,
-    private userRepository: IUserRepository
+    private userRepository: IUserRepository,
+    private eventRepository: IEventRepository
   ) {}
 
   async execute(event: Stripe.Event) {
@@ -96,6 +98,23 @@ export class HandleStripeWebhook {
         }
 
         await this.subscriptionRepository.update(existingSub);
+
+        // LOG ACTIVITY EVENT
+        if (existingSub.space_id) {
+          const logStatus = status.toLowerCase(); // 'cancelled', 'active', 'suspended'
+          if (logStatus !== "active") {
+            // Only log interesting negative events or changes? Or all? User wants "canceled subscription"
+            await this.eventRepository.create({
+              listing_id: existingSub.space_id,
+              user_id: existingSub.user_id,
+              event_type: "subscription_updated",
+              metadata: {
+                status: logStatus,
+                stripe_status: subscription.status,
+              },
+            });
+          }
+        }
       }
     } catch (error) {
       console.error("Error updating subscription from webhook:", error);
@@ -120,8 +139,16 @@ export class HandleStripeWebhook {
     }
 
     if (session.mode === "payment" && session.payment_status === "paid") {
-      // Activation logic
-      // ...
+      // Log Payment / Activation
+      await this.eventRepository.create({
+        listing_id: space_id,
+        user_id: user_id,
+        event_type: "payment_succeeded",
+        metadata: {
+          amount: session.amount_total,
+          currency: session.currency,
+        },
+      });
     }
 
     // Define plan_type correctly
