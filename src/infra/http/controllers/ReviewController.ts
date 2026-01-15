@@ -69,16 +69,16 @@ export default class ReviewController {
       // Get user names for reviews
       const { prisma } = await import("../../../lib/prisma");
       const userIds = result.reviews
-        .map(r => r.props.user_id)
-        .filter((id): id is string => Boolean(id));
+        .map((r: any) => r.props.user_id)
+        .filter((id: any): id is string => Boolean(id));
       const users = await prisma.users.findMany({
         where: { id: { in: userIds } },
         select: { id: true, name: true },
       });
 
       return res.status(200).json({
-        reviews: result.reviews.map(r => {
-          const user = users.find(u => u.id === r.props.user_id);
+        reviews: result.reviews.map((r: any) => {
+          const user = users.find((u: any) => u.id === r.props.user_id);
           return {
             ...r.props,
             reviewer_name: r.props.reviewer_name || user?.name || "Usuário Anônimo",
@@ -141,7 +141,7 @@ export default class ReviewController {
         });
 
         return res.status(200).json({
-          reviews: reviews.map(r => ({
+          reviews: reviews.map((r: any) => ({
             id: r.id,
             user_id: r.user_id,
             reviewer_name: r.users?.name || "Usuário Anônimo",
@@ -176,7 +176,9 @@ export default class ReviewController {
       }
 
       // Get reviews for all user's spaces
-      const spaceIds = userSpaces.map(s => s.id).filter((id): id is string => id !== undefined);
+      const spaceIds = userSpaces
+        .map((s: any) => s.id)
+        .filter((id: any): id is string => id !== undefined);
       const { prisma } = await import("../../../lib/prisma");
       const { status } = req.query;
 
@@ -215,7 +217,7 @@ export default class ReviewController {
       });
 
       return res.status(200).json({
-        reviews: reviews.map(r => ({
+        reviews: reviews.map((r: any) => ({
           id: r.id,
           user_id: r.user_id,
           reviewer_name: r.users?.name || "Usuário Anônimo",

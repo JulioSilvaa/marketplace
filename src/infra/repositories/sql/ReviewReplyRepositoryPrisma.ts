@@ -36,7 +36,7 @@ export class ReviewReplyRepositoryPrisma implements IReviewReplyRepository {
       where: { review_id: { in: reviewIds } },
     });
 
-    return data.map(item => ReviewReplyEntity.create({ ...item }));
+    return data.map((item: any) => ReviewReplyEntity.create({ ...item }));
   }
 
   async update(id: string, replyText: string): Promise<void> {

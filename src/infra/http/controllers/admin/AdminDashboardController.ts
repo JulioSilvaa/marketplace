@@ -250,7 +250,9 @@ class AdminDashboardController {
       // Resolve Coupon Names
       const uniqueCoupons = [
         ...new Set(
-          latestSubscriptions.map(s => s.coupon_code).filter(c => c !== null && c !== undefined)
+          latestSubscriptions
+            .map((s: any) => s.coupon_code)
+            .filter((c: any) => c !== null && c !== undefined)
         ),
       ];
       const couponMap: Record<string, string> = {};
@@ -262,7 +264,7 @@ class AdminDashboardController {
           });
 
           await Promise.all(
-            uniqueCoupons.map(async code => {
+            uniqueCoupons.map(async (code: any) => {
               if (!code) return;
               try {
                 // Try to retrieve as a coupon ID
@@ -280,7 +282,7 @@ class AdminDashboardController {
         }
       }
 
-      const formattedUsers = latestUsers.map(u => ({
+      const formattedUsers = latestUsers.map((u: any) => ({
         id: u.id,
         name: u.name,
         email: u.email,
@@ -291,7 +293,7 @@ class AdminDashboardController {
       }));
 
       // Format subscriptions for frontend
-      const formattedSubscriptions = latestSubscriptions.map(s => ({
+      const formattedSubscriptions = latestSubscriptions.map((s: any) => ({
         ...s,
         status: s.status.toLowerCase(),
         users: s.users || { name: "Usuário Removido", email: "N/A" },
@@ -299,12 +301,12 @@ class AdminDashboardController {
       }));
 
       // Format ads to ensure user data exists
-      const formattedLatestAds = latestAds.map(ad => ({
+      const formattedLatestAds = latestAds.map((ad: any) => ({
         ...ad,
         users: ad.users || { name: "Anunciante Removido", email: "N/A" },
       }));
 
-      const formattedMostVisitedAds = mostVisitedAds.map(ad => ({
+      const formattedMostVisitedAds = mostVisitedAds.map((ad: any) => ({
         ...ad,
         users: ad.users || { name: "Anunciante Removido" },
       }));

@@ -195,8 +195,9 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
         params.push(`%${filters.search}%`);
       }
 
+      // ... (dentro do if filters...)
       const results = await prisma.$queryRawUnsafe<{ id: string }[]>(query, ...params);
-      spaceIds = results.map(r => r.id);
+      spaceIds = results.map((r: { id: string }) => r.id);
 
       if (spaceIds.length === 0) return 0;
     }
@@ -286,9 +287,11 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
 
     if (!spaceData) return null;
 
-    const ratings = spaceData.reviews.map(r => r.rating);
+    const ratings = spaceData.reviews.map((r: { rating: number }) => r.rating);
     const average_rating =
-      ratings.length > 0 ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length : null;
+      ratings.length > 0
+        ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length
+        : null;
 
     return {
       space: SpaceAdapter.toEntity(spaceData),
@@ -348,12 +351,6 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     }
 
     // 3. Range Filters (Price)
-    // Note: We check both price_per_day and price_per_weekend vs the filter per requirement logic
-    // Usually user filters "Price Min" means "Is there any price method >= Min?"
-    // Current Prisma implementation checked 'price_per_day'. We stick to that for consistency,
-    // or expand if needed. The previous implementation checked ONLY price_per_day inside the Prisma 'where'.
-    // "price_per_day: { gte: ... }"
-    // So we replicate that behavior.
     if (filters?.price_min !== undefined) {
       query += ` AND s.price_per_day >= $${params.length + 1}`;
       params.push(filters.price_min);
@@ -365,35 +362,28 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     }
 
     // 4. Ordering
-    // We must ensure stable ordering for slice to work
     query += ` ORDER BY s.created_at DESC`;
 
     // Execute Query
     const results = await prisma.$queryRawUnsafe<{ id: string }[]>(query, ...params);
-    const allIds = results.map(r => r.id);
+    const allIds = results.map((r: { id: string }) => r.id);
     const total = allIds.length;
 
     if (total === 0) {
       return { data: [], total: 0 };
     }
 
-    // 5. Pagination in Memory (Slicing IDs)
-    // This avoids passing 10k IDs to Prisma
-    const limit = filters?.limit || 100; // Default fallback matches controller
+    // 5. Pagination
+    const limit = filters?.limit || 100;
     const offset = filters?.offset || 0;
 
-    // Safety check for offset
     if (offset >= total) {
       return { data: [], total };
     }
 
     const pageIds = allIds.slice(offset, offset + limit);
 
-    // 6. Fetch Full Data for Page
-    // We already sorted IDs, but findMany(IN) doesn't guarantee order.
-    // We re-apply orderBy created_at to ensure the PAGE is sorted correctly.
-    // Since pageIds represents a contiguous block of sorted items,
-    // sorting them again by the same key yields the correct visual order.
+    // 6. Fetch Full Data
     const spacesData = await prisma.spaces.findMany({
       where: {
         id: { in: pageIds },
@@ -412,7 +402,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     });
 
     const data = spacesData.map((spaceData: any) => {
-      const ratings = spaceData.reviews.map((r: any) => r.rating);
+      const ratings = spaceData.reviews.map((r: { rating: number }) => r.rating);
       const average_rating =
         ratings.length > 0
           ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length

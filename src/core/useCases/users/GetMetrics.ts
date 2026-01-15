@@ -49,7 +49,7 @@ export class GetUserMetrics {
     // Process daily stats and totals
     const dailyMetricsMap = new Map<string, any>();
 
-    allEvents.forEach(event => {
+    allEvents.forEach((event: any) => {
       const type = event.event_type.toLowerCase();
 
       // Totals (all time or just last 30 days? Let's do all time for totals to match Previous UI)
@@ -84,7 +84,7 @@ export class GetUserMetrics {
       totalContacts: contactsCount,
       totalFavorites: favoritesCount,
       totalReviews: reviewsCount,
-      recentEvents: allEvents.slice(0, 50).map(event => ({
+      recentEvents: allEvents.slice(0, 50).map((event: any) => ({
         id: event.id,
         listing_id: event.listing_id,
         event_type: event.event_type,
