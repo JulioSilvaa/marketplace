@@ -19,6 +19,10 @@ class AdminDashboardController {
         mmrData,
         prevMmrData,
         canceledLast30,
+        inactiveAds,
+        suspendedAds,
+        deletedAds,
+        canceledPlans,
       ] = await Promise.all([
         prisma.users.count(),
         prisma.users.count({ where: { created_at: { lt: last7Days } } }),
@@ -35,8 +39,16 @@ class AdminDashboardController {
         }),
         prisma.subscriptions.count({
           where: {
-            status: { in: ["cancelled", "cancelada"] },
+            OR: [{ status: { in: ["cancelled", "cancelada"] } }, { cancel_at_period_end: true }],
             updated_at: { gte: last30Days },
+          },
+        }),
+        prisma.spaces.count({ where: { status: "inactive" } }),
+        prisma.spaces.count({ where: { status: "suspended" } }), // Ads canceled by user (suspended space)
+        prisma.spaces.count({ where: { status: "deleted" } }),
+        prisma.subscriptions.count({
+          where: {
+            OR: [{ status: "cancelled" }, { cancel_at_period_end: true }],
           },
         }),
       ]);
@@ -45,6 +57,7 @@ class AdminDashboardController {
       const prevMmr = prevMmrData._sum.price || 0;
 
       // Calculate Churn Rate: (Canceled in last 30d / Total Active)
+      // Protection against division by zero
       const churnRate = activeAds > 0 ? (canceledLast30 / activeAds) * 100 : 0;
 
       const calculateGrowth = (current: number, previous: number) => {
@@ -55,8 +68,12 @@ class AdminDashboardController {
       return res.json({
         totalUsers,
         activeAds,
+        inactiveAds,
+        canceledAds: suspendedAds, // Valid mapping based on webhook logic
+        deletedAds,
+        canceledPlans,
         totalViews: totalViews._sum.views || 0,
-        revenue: mmr, // Keep revenue key for compatibility if needed, but frontend uses mmr
+        revenue: mmr,
         mmr,
         churnRate: parseFloat(churnRate.toFixed(1)),
         growth: {
