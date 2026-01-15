@@ -56,6 +56,8 @@ model spaces {
   @@index([neighborhood])
   @@index([price_per_day])
   @@index([price_per_weekend])
+  @@index([created_at])
+  @@index([city, state])
 }
 
 model categories {
