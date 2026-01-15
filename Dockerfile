@@ -24,17 +24,8 @@ FROM base AS production-deps
 
 RUN apk add --no-cache openssl
 
-# Copy prisma schema before install
-COPY prisma ./prisma
-COPY prisma.config.ts ./prisma.config.ts
-
-# Install dependencies without running postinstall (which needs DATABASE_URL)
-RUN yarn install --frozen-lockfile --production=true --ignore-scripts && \
+RUN yarn install --frozen-lockfile --production=true && \
     yarn cache clean
-
-# Generate Prisma client with a dummy DATABASE_URL (only needed for generation)
-ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy?schema=public"
-RUN yarn prisma generate
 
 FROM node:20-alpine AS runner
 

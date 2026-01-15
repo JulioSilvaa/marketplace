@@ -13,8 +13,7 @@
     "test:ui": "npx vitest --ui",
     "build": "rimraf ./dist && npx prisma generate && tsc",
     "lint": "eslint .",
-    "prepare": "husky",
-    "postinstall": "prisma generate"
+    "prepare": "husky"
   },
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx}": [
