@@ -10,7 +10,6 @@
     "test:up": "docker compose --profile test up -d db-test && sleep 3",
     "test:down": "docker compose --profile test stop db-test",
     "test:setup": "npm run test:up && dotenv -e .env.test -- npx prisma db push",
-    "test:dev": "vitest",
     "test:ui": "npx vitest --ui",
     "build": "rimraf ./dist && npx prisma generate && tsc",
     "lint": "eslint .",
