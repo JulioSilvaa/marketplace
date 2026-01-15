@@ -275,7 +275,19 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
       where: { id },
       include: {
         category: true,
-        users: true,
+        users: {
+          include: {
+            subscriptions: {
+              where: {
+                status: "active",
+              },
+              orderBy: {
+                created_at: "desc",
+              },
+              take: 1,
+            },
+          },
+        },
         reviews: {
           select: {
             rating: true,
@@ -290,11 +302,20 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     const average_rating =
       ratings.length > 0 ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length : null;
 
+    const subscription = spaceData.users?.subscriptions?.[0]
+      ? {
+          plan: spaceData.users.subscriptions[0].plan,
+          status: spaceData.users.subscriptions[0].status,
+          price: spaceData.users.subscriptions[0].price,
+        }
+      : undefined;
+
     return {
       space: SpaceAdapter.toEntity(spaceData),
       average_rating,
       reviews_count: ratings.length,
       owner: spaceData.users,
+      subscription,
     };
   }
 
@@ -408,6 +429,19 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
             rating: true,
           },
         },
+        users: {
+          include: {
+            subscriptions: {
+              where: {
+                status: "active",
+              },
+              orderBy: {
+                created_at: "desc",
+              },
+              take: 1,
+            },
+          },
+        },
       },
     });
 
@@ -418,10 +452,19 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
           ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length
           : null;
 
+      const subscription = spaceData.users?.subscriptions?.[0]
+        ? {
+            plan: spaceData.users.subscriptions[0].plan,
+            status: spaceData.users.subscriptions[0].status,
+            price: spaceData.users.subscriptions[0].price,
+          }
+        : undefined;
+
       return {
         space: SpaceAdapter.toEntity(spaceData),
         average_rating,
         reviews_count: ratings.length,
+        subscription,
       };
     });
 

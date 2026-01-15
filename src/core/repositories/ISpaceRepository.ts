@@ -5,6 +5,10 @@ export interface SpaceWithRating {
   average_rating: number | null;
   reviews_count: number;
   owner?: any;
+  subscription?: {
+    plan: string;
+    status: string;
+  };
 }
 
 export interface SpaceWithMetrics extends SpaceWithRating {
