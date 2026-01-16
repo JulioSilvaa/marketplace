@@ -26,6 +26,8 @@ export interface SpaceFilters {
   neighborhood?: string;
   limit?: number;
   offset?: number;
+  sort?: string;
+  order?: "asc" | "desc";
 }
 
 export interface ISpaceRepository {
