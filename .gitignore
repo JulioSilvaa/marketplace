@@ -14,3 +14,6 @@ user.test.http
 .env.test
 # Debug scripts
 check_*.ts
+
+# Sensitive data
+prisma/seed.ts
