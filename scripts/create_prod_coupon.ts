@@ -46,9 +46,9 @@ async function main() {
   console.log("Criando Cupom de Desconto...");
 
   // EDITAR AQUI SE PRECISAR MUDAR O CÓDIGO
-  const COUPON_CODE = "PRIMEIRACOMPRA";
-  const COUPON_NAME = "Desconto de Primeira Compra";
-  const PERCENT_OFF = 20; // 20%
+  const COUPON_CODE = "DESCONTO50";
+  const COUPON_NAME = "Desconto de 50% (Especial)";
+  const PERCENT_OFF = 50; // 50%
   const DURATION = "once"; // 'once', 'repeating', 'forever'
 
   await createCoupon(COUPON_CODE, COUPON_NAME, PERCENT_OFF, DURATION);
