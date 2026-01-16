@@ -88,6 +88,9 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
         owner_id: ownerId,
         status: { not: "deleted" },
       },
+      include: {
+        category: true,
+      },
     });
 
     return spacesData.map(s => SpaceAdapter.toEntity(s));
@@ -102,6 +105,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
         status: { not: "deleted" }, // Exclude deleted spaces
       },
       include: {
+        category: true,
         reviews: {
           select: {
             rating: true,
@@ -275,19 +279,16 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
       where: { id },
       include: {
         category: true,
-        users: {
-          include: {
-            subscriptions: {
-              where: {
-                status: "active",
-              },
-              orderBy: {
-                created_at: "desc",
-              },
-              take: 1,
-            },
+        subscriptions: {
+          where: {
+            status: "active",
           },
+          orderBy: {
+            created_at: "desc",
+          },
+          take: 5,
         },
+        users: true,
         reviews: {
           select: {
             rating: true,
@@ -302,11 +303,16 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     const average_rating =
       ratings.length > 0 ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length : null;
 
-    const subscription = spaceData.users?.subscriptions?.[0]
+    // Use SPACE subscriptions
+    const subscriptions = spaceData.subscriptions || [];
+    const founderSubscription = subscriptions.find((s: any) => s.plan.toLowerCase() === "founder");
+    const activeSubscription = founderSubscription || subscriptions[0];
+
+    const subscription = activeSubscription
       ? {
-          plan: spaceData.users.subscriptions[0].plan,
-          status: spaceData.users.subscriptions[0].status,
-          price: spaceData.users.subscriptions[0].price,
+          plan: activeSubscription.plan,
+          status: activeSubscription.status,
+          price: activeSubscription.price,
         }
       : undefined;
 
@@ -424,24 +430,21 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
       },
       include: {
         category: true,
+        subscriptions: {
+          where: {
+            status: "active",
+          },
+          orderBy: {
+            created_at: "desc",
+          },
+          take: 5,
+        },
         reviews: {
           select: {
             rating: true,
           },
         },
-        users: {
-          include: {
-            subscriptions: {
-              where: {
-                status: "active",
-              },
-              orderBy: {
-                created_at: "desc",
-              },
-              take: 1,
-            },
-          },
-        },
+        users: true, // Keep users for owner info if needed, but remove nested subscriptions
       },
     });
 
@@ -452,11 +455,18 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
           ? ratings.reduce((sum: number, rating: number) => sum + rating, 0) / ratings.length
           : null;
 
-      const subscription = spaceData.users?.subscriptions?.[0]
+      // Use SPACE subscriptions, not USER subscriptions
+      const subscriptions = spaceData.subscriptions || [];
+      const founderSubscription = subscriptions.find(
+        (s: any) => s.plan.toLowerCase() === "founder"
+      );
+      const activeSubscription = founderSubscription || subscriptions[0];
+
+      const subscription = activeSubscription
         ? {
-            plan: spaceData.users.subscriptions[0].plan,
-            status: spaceData.users.subscriptions[0].status,
-            price: spaceData.users.subscriptions[0].price,
+            plan: activeSubscription.plan,
+            status: activeSubscription.status,
+            price: activeSubscription.price,
           }
         : undefined;
 

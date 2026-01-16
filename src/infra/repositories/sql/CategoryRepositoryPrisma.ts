@@ -1,0 +1,10 @@
+import { CategoryEntity } from "../../../core/entities/CategoryEntity";
+import { ICategoryRepository } from "../../../core/repositories/ICategoryRepository";
+import { prisma } from "../../../lib/prisma";
+
+export class CategoryRepositoryPrisma implements ICategoryRepository {
+  async findAll(): Promise<CategoryEntity[]> {
+    const categories = await prisma.categories.findMany();
+    return categories.map(c => new CategoryEntity(c.id, c.name));
+  }
+}

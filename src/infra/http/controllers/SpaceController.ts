@@ -86,6 +86,21 @@ class SpaceController {
         spaceData.capacity = parseInt(spaceData.capacity);
       }
 
+      // STRICT PARSING FOR CATEGORY_ID
+      // Sometimes it comes as string "5", sometimes number 5.
+      if (spaceData.category_id !== undefined && spaceData.category_id !== null) {
+        const parsed = parseInt(String(spaceData.category_id));
+        if (!isNaN(parsed)) {
+          spaceData.category_id = parsed;
+        } else {
+          console.error("Invalid category_id received:", spaceData.category_id);
+          // Fallback or let it fail, but now we know.
+          // Prisma expects Int or Null. If NaN, it might be an issue.
+          // We'll set it to null or undefined if invalid to verify behavior?
+          // Better strictly set it.
+        }
+      }
+
       const createSpace = SpaceUseCaseFactory.makeCreateSpace();
       const space = await createSpace.execute({
         ...spaceData,
