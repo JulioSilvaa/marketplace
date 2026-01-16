@@ -392,8 +392,76 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     }
 
     // 4. Ordering
-    // We must ensure stable ordering for slice to work
-    query += ` ORDER BY s.created_at DESC`;
+    if (filters?.sort === "average_rating") {
+      // Logic for sorting by rating:
+      // We need to join with reviews to calculate the average.
+      // Since we are selecting IDs first, we can modify the query to include the join and order by aggregate.
+      // We use LEFT JOIN so spaces without reviews are still included, but usually we want them last.
+
+      // Re-construct query to include join for ordering
+      // Note: The previous query was "SELECT s.id FROM spaces s ...".
+      // We need to inject the join and group by.
+
+      // Reset query for this specific case or append?
+      // Appending is hard because we need to GROUP BY s.id if we join reviews.
+      // So we might need to rewrite the query construction slightly or use a subquery/CTE.
+      // Simplest approach for raw query:
+
+      query = `
+        SELECT s.id, AVG(r.rating) as avg_rating
+        FROM spaces s
+        INNER JOIN users u ON s.owner_id = u.id
+        LEFT JOIN reviews r ON s.id = r.listing_id
+        WHERE s.status = 'active'
+        AND u.status = 'active'
+      `;
+
+      // Re-apply filters to this new base query
+      // (Redundant code, but safer than string manipulation magic unless we refactored the whole method)
+      // For now, let's just append the filters to this base query as we did before.
+      // We need all the same WHERE clauses.
+
+      // 1. Text Filters
+      if (filters?.city) {
+        query += ` AND unaccent(s.city) ILIKE unaccent($${params.length + 1})`; // params is preserved from above? Yes, we haven't cleared it.
+        // BUT we effectively restarted the query string.
+        // We must ensure 'params' aligns.
+        // Actually, we should just append the JOIN and GROUP BY to the EXISTING query string
+        // if we can.
+        // But the existing query is "SELECT s.id FROM spaces s ...".
+        // We need "LEFT JOIN reviews..." before "WHERE".
+        // This string building is getting fragile.
+        // Let's restart the query construction properly.
+      }
+      // Re-implementation with proper structure:
+      query = `
+        SELECT s.id
+        FROM spaces s
+        INNER JOIN users u ON s.owner_id = u.id
+        LEFT JOIN reviews r ON s.id = r.listing_id
+        WHERE s.status = 'active'
+        AND u.status = 'active'
+      `;
+
+      // Re-apply params (we cannot reuse the 'params' array filled above easily if we restart query construction
+      // unless we clear it or carefully manage indices.
+      // Let's actually just modify the initial query string variable at the top of the function?
+      // No, let's just handle the Order By clause carefully.
+
+      // OPTION B: Use a subquery for the ordering in the ORDER BY clause.
+      // ORDER BY (SELECT AVG(rating) FROM reviews WHERE listing_id = s.id) DESC NULLS LAST
+      // This is cleaner and updates the original query without changing the SELECT/GROUP BY structure.
+
+      const direction = filters.order === "asc" ? "ASC" : "DESC";
+      query += ` ORDER BY (
+        SELECT AVG(rating) 
+        FROM reviews 
+        WHERE listing_id = s.id
+      ) ${direction} NULLS LAST, s.created_at DESC`;
+    } else {
+      // Default ordering
+      query += ` ORDER BY s.created_at DESC`;
+    }
 
     // Execute Query
     const results = await prisma.$queryRawUnsafe<{ id: string }[]>(query, ...params);

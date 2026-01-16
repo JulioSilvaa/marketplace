@@ -188,6 +188,8 @@ class SpaceController {
           : undefined;
       const search = req.query.search as string;
       const neighborhood = req.query.neighborhood as string;
+      const sort = req.query.sort as string;
+      const order = (req.query.order as "asc" | "desc") || "desc";
 
       const findAllSpaces = SpaceUseCaseFactory.makeFindAllSpaces();
       const spacesWithRatings = await findAllSpaces.executeWithRatings({
@@ -200,6 +202,8 @@ class SpaceController {
         price_max,
         search,
         neighborhood,
+        sort,
+        order,
       });
 
       const output = SpaceAdapter.toListOutputDTOWithRatings(spacesWithRatings.data);
