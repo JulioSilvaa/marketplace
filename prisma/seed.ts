@@ -24,6 +24,26 @@ async function main() {
   } else {
     console.log(`Admin user already exists: ${email}`);
   }
+
+  // Seed Categories
+  const categories = [
+    { name: "Salão de Festas" },
+    { name: "Chácara" },
+    { name: "Área de Lazer" },
+    { name: "Buffet" },
+    { name: "Decoração" },
+    { name: "Fotografia" },
+    { name: "Som e Iluminação" },
+  ];
+
+  for (const cat of categories) {
+    await prisma.categories.upsert({
+      where: { name: cat.name },
+      update: {},
+      create: { name: cat.name },
+    });
+  }
+  console.log("Categories seeded!");
 }
 
 main()

@@ -16,6 +16,7 @@ import AdminCustomerRouter from "../routes/admin/AdminCustomerRouter";
 import AdminDashboardRouter from "../routes/admin/AdminDashboardRouter";
 import AdminSpaceRouter from "../routes/admin/AdminSpaceRouter";
 import AuthRouter from "../routes/AuthRouter";
+import CategoryRouter from "../routes/CategoryRouter";
 import EventRouter from "../routes/EventRouter";
 import ReviewReplyRouter from "../routes/ReviewReplyRouter";
 import ReviewRouter from "../routes/ReviewRouter";
@@ -83,6 +84,7 @@ app.use("/auth", AuthRouter);
 
 // Rotas com autenticação gerenciada internamente por cada router
 app.use("/api/user", UserRouter);
+app.use("/api/categories", CategoryRouter);
 app.use("/api/spaces", SpacesRouter);
 app.use("/api/listings", SpacesRouter); // Alias for compatibility
 app.use("/api/subscription", SubscriptionRouter);
