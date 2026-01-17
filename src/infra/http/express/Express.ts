@@ -22,6 +22,7 @@ import ReviewReplyRouter from "../routes/ReviewReplyRouter";
 import ReviewRouter from "../routes/ReviewRouter";
 import SpacesRouter from "../routes/SpacesRouter";
 import SubscriptionRouter from "../routes/SubscriptionRouter";
+import UploadRouter from "../routes/UploadRouter";
 import UserRouter from "../routes/UserRouter";
 
 const app = express();
@@ -96,6 +97,7 @@ app.use("/api/admin/auth", AdminAuthRouter);
 app.use("/api/admin/dashboard", AdminDashboardRouter);
 app.use("/api/admin/users", AdminCustomerRouter);
 app.use("/api/admin/ads", AdminSpaceRouter);
+app.use("/api/upload", UploadRouter);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err);
