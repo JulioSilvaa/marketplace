@@ -115,6 +115,7 @@ export class StripeService implements IPaymentService {
       customer_email: customerEmail,
       line_items,
       mode: "subscription",
+      currency: "brl", // Force default currency
       allow_promotion_codes: true, // Habilitar cupons de desconto
       success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `${process.env.FRONTEND_URL}/anuncio/${spaceId}`,
