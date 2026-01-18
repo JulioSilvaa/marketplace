@@ -43,10 +43,10 @@ COPY --from=build --chown=nodejs:nodejs /app/prisma ./prisma
 COPY --from=build --chown=nodejs:nodejs /app/prisma.config.ts ./prisma.config.ts
 COPY --chown=nodejs:nodejs package.json yarn.lock ./
 
+ENV NODE_ENV=production
+
 USER nodejs
 
 EXPOSE 3000
 
-
-
-CMD ["sh", "-c", "yarn prisma migrate deploy && yarn prod"]
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node dist/src/infra/http/express/Express.js"]
