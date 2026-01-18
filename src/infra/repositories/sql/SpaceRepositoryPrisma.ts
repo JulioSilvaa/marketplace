@@ -438,7 +438,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
         SELECT s.id
         FROM spaces s
         INNER JOIN users u ON s.owner_id = u.id
-        LEFT JOIN reviews r ON s.id = r.listing_id
+        LEFT JOIN reviews r ON s.id = r.space_id
         WHERE s.status = 'active'
         AND u.status = 'active'
       `;
@@ -456,7 +456,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
       query += ` ORDER BY (
         SELECT AVG(rating) 
         FROM reviews 
-        WHERE listing_id = s.id
+        WHERE space_id = s.id
       ) ${direction} NULLS LAST, s.created_at DESC`;
     } else {
       // Default ordering
