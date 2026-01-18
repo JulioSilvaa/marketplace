@@ -64,6 +64,8 @@ export class StripeService implements IPaymentService {
         },
       ],
       mode: "payment", // One-time payment
+      currency: "brl", // Force currency
+      payment_method_options: { card: { request_three_d_secure: "automatic" } }, // Explicit card options
       success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}&space_id=${spaceId}`,
       cancel_url: `${process.env.FRONTEND_URL}/dashboard?payment_canceled=true`,
       client_reference_id: userId,
