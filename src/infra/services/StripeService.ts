@@ -53,6 +53,7 @@ export class StripeService implements IPaymentService {
                   ? "Plano Fundador - Taxa Única"
                   : "Ativação de Anúncio - Taxa Única",
               description: "Pagamento único para tornar seu anúncio visível na plataforma.",
+              images: [`${process.env.FRONTEND_URL}/favicon.png`], // Add Logo
               metadata: {
                 space_id: spaceId,
               },
@@ -101,6 +102,7 @@ export class StripeService implements IPaymentService {
                   interval === "month"
                     ? "Assinatura Mensal - Anúncio"
                     : "Assinatura Anual - Anúncio",
+                images: [`${process.env.FRONTEND_URL}/favicon.png`], // Add Logo
                 metadata: { space_id: spaceId },
               },
               unit_amount: interval === "month" ? this.MONTHLY_PRICE : this.YEARLY_PRICE,
@@ -115,6 +117,7 @@ export class StripeService implements IPaymentService {
       customer_email: customerEmail,
       line_items,
       mode: "subscription",
+      currency: "brl", // Force default currency
       allow_promotion_codes: true, // Habilitar cupons de desconto
       success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `${process.env.FRONTEND_URL}/anuncio/${spaceId}`,
