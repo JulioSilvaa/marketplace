@@ -19,6 +19,7 @@ export class GetCurrentPricing {
       plan_type: result.plan,
       price: result.price,
       spots_remaining: result.plan === "founder" ? spotsRemaining : 0,
+      total_spots: maxFounderSpots,
       message:
         result.plan === "founder"
           ? "Primeiros 20 anunciantes pagam metade pra sempre!"
