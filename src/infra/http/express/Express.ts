@@ -40,9 +40,16 @@ if (!process.env.STRIPE_WEBHOOK_SECRET) {
 }
 
 // Middlewares globais
+// Middlewares globais
+console.log("🔒 CORS Setup - Env FRONTEND_URL:", process.env.FRONTEND_URL);
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: [
+      process.env.FRONTEND_URL || "",
+      "https://eventspace-seven.vercel.app",
+      "http://localhost:5173",
+    ].filter(Boolean), // Remove strings vazias
     credentials: true, // Permite envio de cookies
   })
 );
