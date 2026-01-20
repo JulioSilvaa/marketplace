@@ -51,6 +51,7 @@ app.use(
       process.env.FRONTEND_URL || "",
       "https://eventspace-seven.vercel.app",
       "http://localhost:5173",
+      "http://localhost:5174",
     ].filter(Boolean), // Remove strings vazias
     credentials: true, // Permite envio de cookies
   })

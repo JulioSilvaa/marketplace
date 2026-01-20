@@ -25,6 +25,7 @@ export type IEspace = {
   comfort: string[];
   specifications?: Record<string, any>;
   images: string[];
+  type?: "SPACE" | "SERVICE" | "EQUIPMENT";
   status: spaceStatus;
   contact_whatsapp?: string;
   contact_phone?: string;

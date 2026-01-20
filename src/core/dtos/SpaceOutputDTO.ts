@@ -15,6 +15,8 @@ export interface SpaceOutputDTO {
   comfort: string[];
   specifications?: Record<string, any>;
   images: string[];
+  type?: string;
+  category_type?: string;
   status: spaceStatus;
   created_at?: string;
   updated_at?: string;

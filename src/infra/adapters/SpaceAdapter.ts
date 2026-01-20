@@ -31,6 +31,7 @@ export class SpaceAdapter {
       comfort: data.comfort,
       specifications: (data.specifications as Record<string, any>) || undefined,
       images: data.images,
+      type: (data as any).type,
       status: data.status as spaceStatus,
       contact_whatsapp: data.contact_whatsapp || undefined,
       contact_phone: data.contact_phone || undefined,
@@ -77,6 +78,8 @@ export class SpaceAdapter {
       comfort: space.comfort,
       specifications: space.specifications,
       images: simplified && space.images.length > 0 ? [space.images[0]] : space.images,
+      type: space.type,
+      category_type: space.type?.toLowerCase(),
       status: space.status,
       created_at: space.created_at?.toISOString(),
       updated_at: space.updated_at?.toISOString(),
@@ -92,22 +95,22 @@ export class SpaceAdapter {
       contact_whatsapp_alternative: space.contact_whatsapp_alternative,
       owner: ownerData
         ? {
-            name: ownerData.name,
-            phone: ownerData.phone,
-            whatsapp: ownerData.whatsapp,
-            facebook_url: ownerData.facebook_url,
-            instagram_url: ownerData.instagram_url,
-            email: ownerData.email,
-          }
+          name: ownerData.name,
+          phone: ownerData.phone,
+          whatsapp: ownerData.whatsapp,
+          facebook_url: ownerData.facebook_url,
+          instagram_url: ownerData.instagram_url,
+          email: ownerData.email,
+        }
         : undefined,
       subscription: subscriptionData
         ? {
-            plan: subscriptionData.plan,
-            price: Number(subscriptionData.price),
-            status: subscriptionData.status,
-            coupon_code: subscriptionData.coupon_code,
-            coupon_name: subscriptionData.coupon_name,
-          }
+          plan: subscriptionData.plan,
+          price: Number(subscriptionData.price),
+          status: subscriptionData.status,
+          coupon_code: subscriptionData.coupon_code,
+          coupon_name: subscriptionData.coupon_name,
+        }
         : undefined,
     };
   }

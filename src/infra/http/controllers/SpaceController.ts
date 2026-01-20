@@ -189,6 +189,7 @@ class SpaceController {
       const search = req.query.search as string;
       const neighborhood = req.query.neighborhood as string;
       const sort = req.query.sort as string;
+      const type = req.query.type as string;
       const order = (req.query.order as "asc" | "desc") || "desc";
 
       const findAllSpaces = SpaceUseCaseFactory.makeFindAllSpaces();
@@ -204,6 +205,7 @@ class SpaceController {
         neighborhood,
         sort,
         order,
+        type,
       });
 
       const output = SpaceAdapter.toListOutputDTOWithRatings(spacesWithRatings.data);

@@ -311,6 +311,46 @@ const adsData = [
     neighborhood: "Uva",
     active: true,
   },
+  // Services
+  {
+    title: "Buffet Sabores da Vovó",
+    description: "O melhor da comida caseira para seu evento. Churrasco completo e guarnições.",
+    price_per_weekend: 50.0, // Price per person placeholder
+    price_per_day: 50.0,
+    category_name: "Buffet",
+    type: "SERVICE",
+    images: ["https://images.unsplash.com/photo-1555244162-803834f70033?w=800&q=80"],
+    city: "São Carlos",
+    state: "SP",
+    neighborhood: "Centro",
+    active: true,
+  },
+  {
+    title: "DJ Lucas - Som e Iluminação",
+    description: "Estrutura completa de som e iluminação para festas e casamentos.",
+    price_per_weekend: 1500.0,
+    price_per_day: 800.0,
+    category_name: "DJ",
+    type: "SERVICE",
+    images: ["https://images.unsplash.com/photo-1516280440614-6697288d5d38?w=800&q=80"],
+    city: "São Carlos",
+    state: "SP",
+    neighborhood: "Vila Prado",
+    active: true,
+  },
+  {
+    title: "Segurança Total VIP",
+    description: "Equipe de segurança treinada para eventos corporativos e sociais.",
+    price_per_weekend: 200.0, // Per guard
+    price_per_day: 200.0,
+    category_name: "Segurança",
+    type: "SERVICE",
+    images: ["https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=800&q=80"],
+    city: "São Carlos",
+    state: "SP",
+    neighborhood: "Centro",
+    active: true,
+  },
 ];
 
 async function main() {
@@ -384,7 +424,8 @@ async function main() {
         status: "active",
         specifications: {},
         comfort: ["Wifi", "Estacionamento"],
-        images: ad.images, // CORRECT: string[]
+        images: ad.images,
+        type: (ad as any).type || "SPACE", // Default to SPACE
       },
     });
     console.log(`Created: ${ad.title}`);
