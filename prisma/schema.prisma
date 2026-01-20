@@ -10,10 +10,23 @@ datasource db {
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+
+enum Role {
+  user
+  admin
+}
+
+enum ListingType {
+  SPACE
+  SERVICE
+  EQUIPMENT
+}
+
 model spaces {
-  id                String   @id
+  id                String       @id
   owner_id          String
   category_id       Int?
+  type              ListingType  @default(SPACE)
   title             String
   description       String
   capacity          Int?
@@ -22,8 +35,8 @@ model spaces {
   comfort           String[]
   specifications    Json?
   images            String[]
-  status            String   @default("active")
-  views             Int      @default(0)
+  status            String       @default("active")
+  views             Int          @default(0)
   street            String
   number            String
   complement        String?
@@ -37,15 +50,15 @@ model spaces {
   contact_email     String?
   contact_instagram String?
   contact_facebook  String?
-  contact_whatsapp_alternative String?
-  created_at        DateTime @default(now())
-  updated_at        DateTime @default(now()) @updatedAt
-  users             users             @relation(fields: [owner_id], references: [id], onDelete: Cascade)
-  category          categories?       @relation(fields: [category_id], references: [id])
+  created_at        DateTime     @default(now())
+  updated_at        DateTime     @default(now()) @updatedAt
+  users             users        @relation(fields: [owner_id], references: [id], onDelete: Cascade)
+  category          categories?  @relation(fields: [category_id], references: [id])
   reviews           Review[]
   activity_events   activity_events[]
   review_replies    review_replies[]
   subscriptions     subscriptions[]
+  contact_whatsapp_alternative String?
 
   @@index([owner_id])
   @@index([status])
@@ -58,7 +71,32 @@ model spaces {
   @@index([price_per_weekend])
   @@index([created_at])
   @@index([city, state])
+  @@index([type])
 }
+
+model Sponsor {
+  id                 String   @id @default(uuid())
+  name               String
+  banner_desktop_url String
+  banner_mobile_url  String
+  link_url           String
+  tier               String   // 'GOLD', 'SILVER', 'BRONZE'
+  display_location   String   // 'HOME_HERO', 'SEARCH_FEED', 'SIDEBAR'
+  status             String   @default("active") // 'active', 'inactive', 'paused'
+  priority           Int      @default(0)
+  views_count        Int      @default(0)
+  clicks_count       Int      @default(0)
+  start_date         DateTime @default(now())
+  end_date           DateTime?
+  created_at         DateTime @default(now())
+  updated_at         DateTime @default(now()) @updatedAt
+
+  @@index([status])
+  @@index([tier])
+  @@index([display_location])
+}
+
+
 
 model categories {
   id    Int      @id @default(autoincrement())
@@ -154,10 +192,6 @@ enum Status {
   inactive
 }
 
-enum Role {
-  user
-  admin
-}
 
 /// This model stores activity events for analytics
 model activity_events {
