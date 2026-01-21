@@ -70,7 +70,9 @@ export class UpdateSpace {
 
     // ACTIVITY LOGGING
 
-    // 1. Status Change (Pause/Resume)
+    // ACTIVITY LOGGING
+
+    // 1. Status Change (Pause/Resume) - Keep separate as it's a distinct lifecycle event
     if (input.status && input.status !== existingSpace.status) {
       await this.eventRepository.create({
         listing_id: existingSpace.id!,
@@ -83,59 +85,84 @@ export class UpdateSpace {
       });
     }
 
-    // 2. Price Update
-    const oldPrice = existingSpace.price_per_weekend || existingSpace.price_per_day;
-    const newPrice = input.price_per_weekend || input.price_per_day;
-    // Simple check: if prices input changed.
-    const priceChanged =
-      (input.price_per_day && input.price_per_day !== existingSpace.price_per_day) ||
-      (input.price_per_weekend && input.price_per_weekend !== existingSpace.price_per_weekend);
-
-    if (priceChanged) {
-      // Calculate % change if applicable
-      const pOld = oldPrice || 0;
-      const pNew = newPrice || 0;
-      let changePercent = 0;
-      if (pOld > 0) changePercent = Math.round(((pNew - pOld) / pOld) * 100);
-
-      await this.eventRepository.create({
-        listing_id: existingSpace.id!,
-        user_id: existingSpace.owner_id,
-        event_type: "price_updated",
-        metadata: {
-          oldPrice: pOld,
-          newPrice: pNew,
-          priceChangePercent: changePercent,
-        },
-      });
-    }
-
-    // 3. Description/Title Update
-    if (
-      (input.description && input.description !== existingSpace.description) ||
-      (input.title && input.title !== existingSpace.title)
-    ) {
-      await this.eventRepository.create({
-        listing_id: existingSpace.id!,
-        user_id: existingSpace.owner_id,
-        event_type: "description_updated",
-        metadata: {
-          changedField: input.title !== existingSpace.title ? "title" : "description",
-        },
-      });
-    }
-
-    // 4. Photos Update
+    // 2. Photos Update - Keep separate logic
     if (input.images && JSON.stringify(input.images) !== JSON.stringify(existingSpace.images)) {
       const added = input.images.length > existingSpace.images.length;
-      // Simple logic
       await this.eventRepository.create({
         listing_id: existingSpace.id!,
         user_id: existingSpace.owner_id,
         event_type: "photos_updated",
         metadata: {
-          photoAction: added ? "added" : "removed", // or updated
+          photoAction: added ? "added" : "removed",
           photoCount: input.images.length,
+        },
+      });
+    }
+
+    // 3. General Fields Update (Consolidated)
+    const changedFields: string[] = [];
+
+    // Basic Fields
+    if (input.title && input.title !== existingSpace.title) changedFields.push("title");
+    if (input.description && input.description !== existingSpace.description)
+      changedFields.push("description");
+    if (input.capacity && input.capacity !== existingSpace.capacity) changedFields.push("capacity");
+
+    // Price
+    const oldPrice = existingSpace.price_per_weekend || existingSpace.price_per_day;
+    const newPrice = input.price_per_weekend || input.price_per_day;
+    if (
+      (input.price_per_day && input.price_per_day !== existingSpace.price_per_day) ||
+      (input.price_per_weekend && input.price_per_weekend !== existingSpace.price_per_weekend)
+    ) {
+      changedFields.push("price");
+      // Also fire legacy price_updated logic if needed, but listing_updated should suffice for "Recent Activity" list
+      // If specific analytics depend on price_updated, we could keep it.
+      // For now, consolidating into changedFields metadata seems cleaner for the user request "all fields".
+    }
+
+    // Address (Deep comparison or simple JSON stringify)
+    if (input.address && JSON.stringify(input.address) !== JSON.stringify(existingSpace.address)) {
+      changedFields.push("address");
+    }
+
+    // Amenities/Comfort
+    if (
+      input.comfort &&
+      JSON.stringify(input.comfort.sort()) !== JSON.stringify(existingSpace.comfort.sort())
+    ) {
+      changedFields.push("comfort");
+    }
+
+    // Specifications
+    if (
+      input.specifications &&
+      JSON.stringify(input.specifications) !== JSON.stringify(existingSpace.specifications)
+    ) {
+      changedFields.push("specifications");
+    }
+
+    // Contacts
+    if (
+      (input.contact_whatsapp && input.contact_whatsapp !== existingSpace.contact_whatsapp) ||
+      (input.contact_phone && input.contact_phone !== existingSpace.contact_phone) ||
+      (input.contact_email && input.contact_email !== existingSpace.contact_email) ||
+      (input.contact_instagram && input.contact_instagram !== existingSpace.contact_instagram) ||
+      (input.contact_facebook && input.contact_facebook !== existingSpace.contact_facebook) ||
+      (input.contact_whatsapp_alternative &&
+        input.contact_whatsapp_alternative !== existingSpace.contact_whatsapp_alternative)
+    ) {
+      changedFields.push("contact");
+    }
+
+    if (changedFields.length > 0) {
+      await this.eventRepository.create({
+        listing_id: existingSpace.id!,
+        user_id: existingSpace.owner_id,
+        event_type: "listing_updated",
+        metadata: {
+          changedFields: changedFields,
+          totalChanges: changedFields.length,
         },
       });
     }
