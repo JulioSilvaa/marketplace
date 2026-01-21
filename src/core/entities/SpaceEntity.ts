@@ -250,8 +250,28 @@ export class SpaceEntity {
       // Comfort must be an array, but can be empty
       throw new Error("Formato de comodidades inválido.");
     }
+
+    // Se for SERVICE ou EQUIPMENT, permite lista vazia
+    if (this._type === "SERVICE" || this._type === "EQUIPMENT") {
+      return;
+    }
+
+    // Se for SPACE (ou undefined/default), exige pelo menos um item SE a lista for vazia?
+    // A validação original reclamava se tinha string vazia DENTRO do array, ou se o array era vazio?
+    // O código original: if (this._comfort.some(c => !c || c.trim() === "")) throw "Os itens... nao podem ser vazios" -> isso valida itens vazios.
+    // Mas o erro do usuário diz "É necessário listar pelo menos um item".
+    // Vou garantir que para ESPAÇO precise de pelo menos 1 item, E que não tenha strings vazias.
+
+    // Validação original (mantida para itens vazios)
     if (this._comfort.some(c => !c || c.trim() === "")) {
-      throw new Error("Os itens de conforto não podem ser vazios.");
+      throw new Error("Os itens de conforto não podem ser vazios (strings vazias).");
+    }
+
+    // Validação de obrigatoriedade (apenas para Espaços)
+    // Se o usuário reclama de "so cabe aos espaços", então espaços PRECISAM ter?
+    // Vou assumir que sim.
+    if (this._comfort.length === 0) {
+      throw new Error("É necessário listar pelo menos um item de conforto para Espaços.");
     }
   }
 
