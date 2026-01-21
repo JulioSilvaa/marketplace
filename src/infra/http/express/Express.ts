@@ -21,11 +21,13 @@ import EventRouter from "../routes/EventRouter";
 import ReviewReplyRouter from "../routes/ReviewReplyRouter";
 import ReviewRouter from "../routes/ReviewRouter";
 import SpacesRouter from "../routes/SpacesRouter";
+import SponsorRouter from "../routes/SponsorRouter";
 import SubscriptionRouter from "../routes/SubscriptionRouter";
 import UploadRouter from "../routes/UploadRouter";
 import UserRouter from "../routes/UserRouter";
 
 const app = express();
+
 const PORT = process.env.PORT || 3000;
 
 // Configura Express para confiar no primeiro proxy (Load Balancer do Render)
@@ -49,6 +51,7 @@ app.use(
       process.env.FRONTEND_URL || "",
       "https://eventspace-seven.vercel.app",
       "http://localhost:5173",
+      "http://localhost:5174",
     ].filter(Boolean), // Remove strings vazias
     credentials: true, // Permite envio de cookies
   })
@@ -99,6 +102,7 @@ app.use("/api/subscription", SubscriptionRouter);
 app.use("/api/reviews", ReviewRouter);
 app.use("/api/events", EventRouter);
 app.use("/api/reviews/replies", ReviewReplyRouter);
+app.use("/api/sponsors", SponsorRouter);
 
 app.use("/api/admin/auth", AdminAuthRouter);
 app.use("/api/admin/dashboard", AdminDashboardRouter);

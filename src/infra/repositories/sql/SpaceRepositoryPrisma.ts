@@ -12,6 +12,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
         id: space.id!,
         owner_id: space.owner_id!,
         category_id: space.category_id,
+        type: (space.type as any) ?? "SPACE",
         title: space.title,
         description: space.description,
         capacity: space.capacity ?? null,
@@ -41,6 +42,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
       id: space.id!,
       owner_id: space.owner_id!,
       category_id: space.category_id || null, // Ensure category_id is passed
+      type: (space.type as any) ?? "SPACE",
       title: space.title,
       description: space.description,
       capacity: space.capacity ?? null, // Prisma expects null for optional
@@ -213,9 +215,9 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
         price_per_day:
           filters?.price_min !== undefined || filters?.price_max !== undefined
             ? {
-                gte: filters?.price_min,
-                lte: filters?.price_max,
-              }
+              gte: filters?.price_min,
+              lte: filters?.price_max,
+            }
             : undefined,
         users: {
           status: "active",
@@ -231,6 +233,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
       where: { id: space.id },
       data: {
         category_id: space.category_id,
+        type: (space.type as any),
         title: space.title,
         description: space.description,
         capacity: space.capacity,
@@ -310,10 +313,10 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
 
     const subscription = activeSubscription
       ? {
-          plan: activeSubscription.plan,
-          status: activeSubscription.status,
-          price: activeSubscription.price,
-        }
+        plan: activeSubscription.plan,
+        status: activeSubscription.status,
+        price: activeSubscription.price,
+      }
       : undefined;
 
     return {
@@ -375,95 +378,49 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     }
 
     // 3. Range Filters (Price)
-    // Note: We check both price_per_day and price_per_weekend vs the filter per requirement logic
-    // Usually user filters "Price Min" means "Is there any price method >= Min?"
-    // Current Prisma implementation checked 'price_per_day'. We stick to that for consistency,
-    // or expand if needed. The previous implementation checked ONLY price_per_day inside the Prisma 'where'.
-    // "price_per_day: { gte: ... }"
-    // So we replicate that behavior.
+    // Use COALESCE(price_per_weekend, price_per_day) as effective price
     if (filters?.price_min !== undefined) {
-      query += ` AND s.price_per_day >= $${params.length + 1}`;
+      query += ` AND COALESCE(s.price_per_weekend, s.price_per_day) >= $${params.length + 1}`;
       params.push(filters.price_min);
     }
 
     if (filters?.price_max !== undefined) {
-      query += ` AND s.price_per_day <= $${params.length + 1}`;
+      query += ` AND COALESCE(s.price_per_weekend, s.price_per_day) <= $${params.length + 1}`;
       params.push(filters.price_max);
     }
 
-    // 4. Ordering
+    // 4. Type Filter
+    if (filters?.type) {
+      // Postgres Enum requires casting or exact match. We use string comparison for simplicity if driver handles it,
+      // or cast to ::text if needed. Let's try explicit upper case matching.
+      // Depending on Prisma setup, raw query enum matching can be tricky.
+      // Safe approach: s.type::text = $X
+      const typeUpper = filters.type.toUpperCase();
+      query += ` AND s.type::text = $${params.length + 1}`;
+      params.push(typeUpper);
+    }
+
+    // 5. Ordering
     if (filters?.sort === "average_rating") {
-      // Logic for sorting by rating:
-      // We need to join with reviews to calculate the average.
-      // Since we are selecting IDs first, we can modify the query to include the join and order by aggregate.
-      // We use LEFT JOIN so spaces without reviews are still included, but usually we want them last.
-
-      // Re-construct query to include join for ordering
-      // Note: The previous query was "SELECT s.id FROM spaces s ...".
-      // We need to inject the join and group by.
-
-      // Reset query for this specific case or append?
-      // Appending is hard because we need to GROUP BY s.id if we join reviews.
-      // So we might need to rewrite the query construction slightly or use a subquery/CTE.
-      // Simplest approach for raw query:
-
-      query = `
-        SELECT s.id, AVG(r.rating) as avg_rating
-        FROM spaces s
-        INNER JOIN users u ON s.owner_id = u.id
-        LEFT JOIN reviews r ON s.id = r.listing_id
-        WHERE s.status = 'active'
-        AND u.status = 'active'
-      `;
-
-      // Re-apply filters to this new base query
-      // (Redundant code, but safer than string manipulation magic unless we refactored the whole method)
-      // For now, let's just append the filters to this base query as we did before.
-      // We need all the same WHERE clauses.
-
-      // 1. Text Filters
-      if (filters?.city) {
-        query += ` AND unaccent(s.city) ILIKE unaccent($${params.length + 1})`; // params is preserved from above? Yes, we haven't cleared it.
-        // BUT we effectively restarted the query string.
-        // We must ensure 'params' aligns.
-        // Actually, we should just append the JOIN and GROUP BY to the EXISTING query string
-        // if we can.
-        // But the existing query is "SELECT s.id FROM spaces s ...".
-        // We need "LEFT JOIN reviews..." before "WHERE".
-        // This string building is getting fragile.
-        // Let's restart the query construction properly.
-      }
-      // Re-implementation with proper structure:
-      query = `
-        SELECT s.id
-        FROM spaces s
-        INNER JOIN users u ON s.owner_id = u.id
-        LEFT JOIN reviews r ON s.id = r.space_id
-        WHERE s.status = 'active'
-        AND u.status = 'active'
-      `;
-
-      // Re-apply params (we cannot reuse the 'params' array filled above easily if we restart query construction
-      // unless we clear it or carefully manage indices.
-      // Let's actually just modify the initial query string variable at the top of the function?
-      // No, let's just handle the Order By clause carefully.
-
-      // OPTION B: Use a subquery for the ordering in the ORDER BY clause.
-      // ORDER BY (SELECT AVG(rating) FROM reviews WHERE listing_id = s.id) DESC NULLS LAST
-      // This is cleaner and updates the original query without changing the SELECT/GROUP BY structure.
-
       const direction = filters.order === "asc" ? "ASC" : "DESC";
       query += ` ORDER BY (
         SELECT AVG(rating) 
         FROM reviews 
         WHERE space_id = s.id
       ) ${direction} NULLS LAST, s.created_at DESC`;
+    } else if (filters?.sort === "price") {
+      const direction = filters.order === "asc" ? "ASC" : "DESC";
+      query += ` ORDER BY COALESCE(s.price_per_weekend, s.price_per_day) ${direction} NULLS LAST`;
     } else {
-      // Default ordering
-      query += ` ORDER BY s.created_at DESC`;
+      // Default ordering (created_at)
+      const sortField = filters?.sort === 'created_at' ? 'created_at' : 'created_at';
+      const direction = filters?.order === "asc" ? "ASC" : "DESC";
+      query += ` ORDER BY s.${sortField} ${direction}`;
     }
 
     // Execute Query
+    console.log("EXECUTING SEARCH QUERY:", query);
+    console.log("PARAMS:", params);
     const results = await prisma.$queryRawUnsafe<{ id: string }[]>(query, ...params);
     const allIds = results.map(r => r.id);
     const total = allIds.length;
@@ -532,10 +489,10 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
 
       const subscription = activeSubscription
         ? {
-            plan: activeSubscription.plan,
-            status: activeSubscription.status,
-            price: activeSubscription.price,
-          }
+          plan: activeSubscription.plan,
+          status: activeSubscription.status,
+          price: activeSubscription.price,
+        }
         : undefined;
 
       return {
@@ -546,7 +503,16 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
       };
     });
 
-    return { data, total };
+    // 7. Sort the fetched objects to match the order of pageIds (since findMany(in) doesn't guarantee order)
+    // Create a map for O(1) lookup
+    const spacesMap = new Map(data.map((item: any) => [item.space.id, item]));
+
+    // Reorder based on pageIds
+    const orderedData = pageIds
+      .map((id) => spacesMap.get(id))
+      .filter((item): item is typeof data[0] => item !== undefined);
+
+    return { data: orderedData, total };
   }
 
   async findAllWithRatings(

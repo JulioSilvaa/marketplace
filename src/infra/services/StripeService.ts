@@ -23,10 +23,10 @@ export class StripeService implements IPaymentService {
 
     this.stripe = apiKey
       ? new Stripe(apiKey, {
-          apiVersion: "2025-01-27.acacia", // Updated to a valid version string if needed, or keep existing. "2025-12-15.clover" seemed fake? Using '2023-10-16' is standard. Let's keep what was there or standard.
-          // Actually "2025-12-15.clover" looks like a placeholder I should probably fix if it enters invalid state.
-          // But let's trust the existing code unless it errors.
-        } as any)
+        apiVersion: "2025-01-27.acacia", // Updated to a valid version string if needed, or keep existing. "2025-12-15.clover" seemed fake? Using '2023-10-16' is standard. Let's keep what was there or standard.
+        // Actually "2025-12-15.clover" looks like a placeholder I should probably fix if it enters invalid state.
+        // But let's trust the existing code unless it errors.
+      } as any)
       : (null as any);
   }
 
@@ -96,23 +96,23 @@ export class StripeService implements IPaymentService {
     const line_items = priceId
       ? [{ price: priceId, quantity: 1 }]
       : [
-          {
-            price_data: {
-              currency: "brl",
-              product_data: {
-                name:
-                  interval === "month"
-                    ? "Assinatura Mensal - Anúncio"
-                    : "Assinatura Anual - Anúncio",
-                images: [`${process.env.FRONTEND_URL}/favicon.png`], // Add Logo
-                metadata: { space_id: spaceId },
-              },
-              unit_amount: interval === "month" ? this.MONTHLY_PRICE : this.YEARLY_PRICE,
-              recurring: { interval: interval },
+        {
+          price_data: {
+            currency: "brl",
+            product_data: {
+              name:
+                interval === "month"
+                  ? "Assinatura Mensal - Anúncio"
+                  : "Assinatura Anual - Anúncio",
+              images: [`${process.env.FRONTEND_URL}/favicon.png`], // Add Logo
+              metadata: { space_id: spaceId },
             },
-            quantity: 1,
+            unit_amount: interval === "month" ? this.MONTHLY_PRICE : this.YEARLY_PRICE,
+            recurring: { interval: interval },
           },
-        ];
+          quantity: 1,
+        },
+      ];
 
     const session = await this.stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -139,6 +139,56 @@ export class StripeService implements IPaymentService {
     });
 
     return { url: session.url };
+  }
+
+  async createSponsorCheckoutSession(
+    sponsorId: string,
+    userId: string,
+    tier: string,
+    priceId: string,
+    customerEmail?: string
+  ): Promise<{ url: string | null; sessionId: string }> {
+    if (!this.stripe) {
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+      // Mock return for local dev without stripe key
+      return {
+        url: `${frontendUrl}/dashboard?payment_success=true&sponsor_id=${sponsorId}&mock=true`,
+        sessionId: "mock_session_id"
+      };
+    }
+
+    const session = await this.stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      customer_email: customerEmail,
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1
+        }
+      ],
+      mode: "subscription",
+      currency: "brl",
+      allow_promotion_codes: true,
+      success_url: `${process.env.FRONTEND_URL}/dashboard?payment_success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL}/checkout/sponsor?canceled=true`,
+      client_reference_id: userId,
+      metadata: {
+        sponsor_id: sponsorId,
+        user_id: userId,
+        tier: tier,
+        type: "sponsor"
+      },
+      subscription_data: {
+        metadata: {
+          sponsor_id: sponsorId,
+          user_id: userId,
+          tier: tier,
+          type: "sponsor"
+        }
+      }
+    });
+
+    return { url: session.url, sessionId: session.id };
   }
 
   async cancelSubscription(subscriptionId: string): Promise<boolean> {

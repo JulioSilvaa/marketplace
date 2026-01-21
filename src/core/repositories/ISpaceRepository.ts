@@ -28,6 +28,7 @@ export interface SpaceFilters {
   offset?: number;
   sort?: string;
   order?: "asc" | "desc";
+  type?: string;
 }
 
 export interface ISpaceRepository {
