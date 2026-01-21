@@ -89,8 +89,20 @@ describe("SpaceEntity", () => {
     it("deve lançar erro se o array de comfort for vazio", () => {
       const invalidProps = { ...mockValidSpaceProps, comfort: [] };
       expect(() => SpaceEntity.create(invalidProps)).toThrow(
-        "É necessário listar pelo menos um item de conforto."
+        "É necessário listar pelo menos um item de conforto para Espaços."
       );
+    });
+
+    it("NÃO deve lançar erro se comfort for vazio para SERVICE", () => {
+      const validServiceProps = { ...mockValidSpaceProps, type: "SERVICE" as const, comfort: [] };
+      const space = SpaceEntity.create(validServiceProps);
+      expect(space).toBeInstanceOf(SpaceEntity);
+    });
+
+    it("NÃO deve lançar erro se comfort for vazio para EQUIPMENT", () => {
+      const validEquipProps = { ...mockValidSpaceProps, type: "EQUIPMENT" as const, comfort: [] };
+      const space = SpaceEntity.create(validEquipProps);
+      expect(space).toBeInstanceOf(SpaceEntity);
     });
 
     it("deve lançar erro se as imagens não tiverem URL válido", () => {
