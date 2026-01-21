@@ -68,6 +68,8 @@ class SpaceController {
 
       // Parsear dados do formulário
       let spaceData = req.body;
+      console.log("🛠️ SpaceController: req.body.type received:", spaceData.type);
+      console.log("🛠️ SpaceController: All body keys:", Object.keys(spaceData));
 
       // Se vier como string (multipart/form-data), fazer parse
       if (typeof spaceData.address === "string") {
