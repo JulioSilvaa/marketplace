@@ -32,6 +32,7 @@ model spaces {
   capacity          Int?
   price_per_weekend Float?
   price_per_day     Float?
+  price_unit        String?      @default("day") // 'day', 'hour', 'person', 'unit', etc.
   comfort           String[]
   specifications    Json?
   images            String[]
@@ -102,7 +103,19 @@ model categories {
   id    Int         @id @default(autoincrement())
   name  String      @unique
   type  ListingType @default(SPACE)
+  allowed_pricing_models pricing_models[] // Relation to pricing models
   spaces spaces[]
+}
+
+model pricing_models {
+  id          String   @id @default(uuid())
+  key         String   @unique // e.g. 'daily', 'hourly'
+  label       String   // e.g. 'Por Dia'
+  description String?
+  unit        String?  // e.g. 'dia', 'pessoa'
+  categories  categories[]
+  
+  @@index([key])
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
