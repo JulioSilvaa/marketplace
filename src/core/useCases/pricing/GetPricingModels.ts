@@ -1,4 +1,4 @@
-import { IPricingModelRepository } from "../repositories/IPricingModelRepository";
+import { IPricingModelRepository } from "../../repositories/IPricingModelRepository";
 
 export class GetPricingModels {
   constructor(private pricingModelRepository: IPricingModelRepository) {}
