@@ -4,7 +4,11 @@ import { prisma } from "../../../lib/prisma";
 
 export class CategoryRepositoryPrisma implements ICategoryRepository {
   async findAll(): Promise<CategoryEntity[]> {
-    const categories = await prisma.categories.findMany();
+    const categories = await prisma.categories.findMany({
+      include: {
+        allowed_pricing_models: true,
+      },
+    });
     return categories.map(
       c =>
         new CategoryEntity(

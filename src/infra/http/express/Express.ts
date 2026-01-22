@@ -18,6 +18,7 @@ import AdminSpaceRouter from "../routes/admin/AdminSpaceRouter";
 import AuthRouter from "../routes/AuthRouter";
 import CategoryRouter from "../routes/CategoryRouter";
 import EventRouter from "../routes/EventRouter";
+import { pricingModelRouter } from "../routes/PricingModelRouter";
 import ReviewReplyRouter from "../routes/ReviewReplyRouter";
 import ReviewRouter from "../routes/ReviewRouter";
 import SpacesRouter from "../routes/SpacesRouter";
@@ -103,6 +104,7 @@ app.use("/api/reviews", ReviewRouter);
 app.use("/api/events", EventRouter);
 app.use("/api/reviews/replies", ReviewReplyRouter);
 app.use("/api/sponsors", SponsorRouter);
+app.use("/api/pricing-models", pricingModelRouter);
 
 app.use("/api/admin/auth", AdminAuthRouter);
 app.use("/api/admin/dashboard", AdminDashboardRouter);
