@@ -32,6 +32,7 @@ model spaces {
   capacity          Int?
   price_per_weekend Float?
   price_per_day     Float?
+  price_unit        String?      @default("day") // 'day', 'hour', 'person', 'unit', etc.
   comfort           String[]
   specifications    Json?
   images            String[]
@@ -102,6 +103,7 @@ model categories {
   id    Int         @id @default(autoincrement())
   name  String      @unique
   type  ListingType @default(SPACE)
+  allowed_pricing_models Json? // ['day', 'hour', 'person']
   spaces spaces[]
 }
 

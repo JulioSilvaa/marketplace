@@ -8,6 +8,7 @@ export interface CreateSpaceDTO {
   capacity: number;
   price_per_weekend?: number;
   price_per_day?: number;
+  price_unit?: string;
   comfort: string[];
   images: string[];
   contact_whatsapp?: string;
