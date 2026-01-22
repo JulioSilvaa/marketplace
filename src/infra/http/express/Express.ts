@@ -12,9 +12,11 @@ import AuthMiddleware from "../middlewares/AuthMiddleware";
 import { globalLimiter } from "../middlewares/RateLimitMiddleware";
 // Rotas de Admin
 import AdminAuthRouter from "../routes/admin/AdminAuthRouter";
+import AdminConfigRouter from "../routes/admin/AdminConfigRouter";
 import AdminCustomerRouter from "../routes/admin/AdminCustomerRouter";
 import AdminDashboardRouter from "../routes/admin/AdminDashboardRouter";
 import AdminSpaceRouter from "../routes/admin/AdminSpaceRouter";
+import AdminSubscriptionRouter from "../routes/admin/AdminSubscriptionRouter";
 import AuthRouter from "../routes/AuthRouter";
 import CategoryRouter from "../routes/CategoryRouter";
 import EventRouter from "../routes/EventRouter";
@@ -110,6 +112,8 @@ app.use("/api/admin/auth", AdminAuthRouter);
 app.use("/api/admin/dashboard", AdminDashboardRouter);
 app.use("/api/admin/users", AdminCustomerRouter);
 app.use("/api/admin/ads", AdminSpaceRouter);
+app.use("/api/admin/config", AdminConfigRouter);
+app.use("/api/admin/subscriptions", AdminSubscriptionRouter);
 app.use("/api/upload", UploadRouter);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
