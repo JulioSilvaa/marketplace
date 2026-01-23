@@ -5,7 +5,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { NextFunction, Request, Response } from "express";
 
-// import { connectRedis } from "../../cache/redis"; // DESABILITADO TEMPORARIAMENTE
+import { connectRedis } from "../../cache/redis";
 // Stripe Webhook requires raw body. We must define it before express.json()
 import WebhookController from "../controllers/WebhookController";
 import AuthMiddleware from "../middlewares/AuthMiddleware";
@@ -129,10 +129,10 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 // Initialize Redis and start server
 const startServer = async () => {
   try {
-    // Redis DESABILITADO temporariamente
-    // await connectRedis().catch((err: Error) => {
-    //   console.warn("⚠️  Failed to connect to Redis, continuing without cache:", err.message);
-    // });
+    // Redis Connection
+    await connectRedis().catch((err: Error) => {
+      console.warn("⚠️  Failed to connect to Redis, continuing without cache:", err.message);
+    });
 
     app.listen(PORT, () => {
       console.error(`Rodando na porta ${PORT}`);
