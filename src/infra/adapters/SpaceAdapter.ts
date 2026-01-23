@@ -66,6 +66,7 @@ export class SpaceAdapter {
     return {
       id: space.id!,
       owner_id: space.owner_id!,
+      category_id: space.category_id,
       category_name: space.category_name,
       title: space.title,
       description: space.description,
@@ -95,22 +96,22 @@ export class SpaceAdapter {
       contact_whatsapp_alternative: space.contact_whatsapp_alternative,
       owner: ownerData
         ? {
-          name: ownerData.name,
-          phone: ownerData.phone,
-          whatsapp: ownerData.whatsapp,
-          facebook_url: ownerData.facebook_url,
-          instagram_url: ownerData.instagram_url,
-          email: ownerData.email,
-        }
+            name: ownerData.name,
+            phone: ownerData.phone,
+            whatsapp: ownerData.whatsapp,
+            facebook_url: ownerData.facebook_url,
+            instagram_url: ownerData.instagram_url,
+            email: ownerData.email,
+          }
         : undefined,
       subscription: subscriptionData
         ? {
-          plan: subscriptionData.plan,
-          price: Number(subscriptionData.price),
-          status: subscriptionData.status,
-          coupon_code: subscriptionData.coupon_code,
-          coupon_name: subscriptionData.coupon_name,
-        }
+            plan: subscriptionData.plan,
+            price: Number(subscriptionData.price),
+            status: subscriptionData.status,
+            coupon_code: subscriptionData.coupon_code,
+            coupon_name: subscriptionData.coupon_name,
+          }
         : undefined,
     };
   }
