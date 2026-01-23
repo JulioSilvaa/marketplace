@@ -22,6 +22,7 @@ export type IEspace = {
   capacity?: number;
   price_per_weekend?: number;
   price_per_day?: number;
+  price_unit?: string;
   comfort: string[];
   specifications?: Record<string, any>;
   images: string[];
