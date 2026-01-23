@@ -3,7 +3,7 @@ import { Router } from "express";
 import ExpressAdapter from "../../adapters/ExpressAdapter";
 import SpaceController from "../controllers/SpaceController";
 import AuthMiddleware from "../middlewares/AuthMiddleware";
-// import { cacheMiddleware } from "../middlewares/cache.middleware"; // DESABILITADO TEMPORARIAMENTE
+import { cacheMiddleware } from "../middlewares/cache.middleware";
 import { uploadImages } from "../middlewares/uploadMiddleware";
 
 const router = Router();
@@ -11,9 +11,9 @@ const router = Router();
 // 1. Rotas de ação/busca (mais específicas)
 // router.get("/search", ExpressAdapter.create(SpaceController.search));
 
-// 2. Rotas públicas (sem autenticação) - SEM CACHE TEMPORARIAMENTE
-router.get("/", ExpressAdapter.create(SpaceController.getSpaces));
-router.get("/all", ExpressAdapter.create(SpaceController.getSpaces));
+// 2. Rotas públicas (sem autenticação)
+router.get("/", cacheMiddleware(300), ExpressAdapter.create(SpaceController.getSpaces));
+router.get("/all", cacheMiddleware(300), ExpressAdapter.create(SpaceController.getSpaces));
 router.get(
   "/:id/check-ownership",
   AuthMiddleware.auth,

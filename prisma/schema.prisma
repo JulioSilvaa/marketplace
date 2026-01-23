@@ -73,6 +73,8 @@ model spaces {
   @@index([created_at])
   @@index([city, state])
   @@index([type])
+  @@index([status, city, category_id]) // Otimização para filtros combinados
+  @@index([status, price_per_day])     // Otimização para filtro de preço
 }
 
 model Sponsor {
