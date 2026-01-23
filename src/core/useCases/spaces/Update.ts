@@ -24,6 +24,7 @@ export interface UpdateSpaceDTO {
   contact_facebook?: string;
   contact_whatsapp_alternative?: string;
   type?: "SPACE" | "SERVICE" | "EQUIPMENT";
+  price_unit?: string;
 }
 
 export class UpdateSpace {
@@ -66,6 +67,7 @@ export class UpdateSpace {
       contact_whatsapp_alternative:
         input.contact_whatsapp_alternative ?? existingSpace.contact_whatsapp_alternative,
       type: input.type ?? existingSpace.type,
+      price_unit: input.price_unit ?? existingSpace.price_unit,
     });
 
     await this.spaceRepository.update(updatedSpace);
