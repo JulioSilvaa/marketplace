@@ -11,6 +11,7 @@ export class SpaceEntity {
   private readonly _capacity?: number;
   private readonly _price_per_weekend?: number;
   private readonly _price_per_day?: number;
+  private readonly _price_unit?: string;
   private readonly _comfort: string[];
   private readonly _specifications?: Record<string, any>;
   private readonly _images: string[];
@@ -36,6 +37,7 @@ export class SpaceEntity {
     this._capacity = props.capacity;
     this._price_per_weekend = props.price_per_weekend;
     this._price_per_day = props.price_per_day;
+    this._price_unit = props.price_unit;
     this._comfort = props.comfort;
     this._specifications = props.specifications;
     this._images = props.images;
@@ -98,6 +100,10 @@ export class SpaceEntity {
 
   public get price_per_day(): number | undefined {
     return this._price_per_day;
+  }
+
+  public get price_unit(): string | undefined {
+    return this._price_unit;
   }
 
   public get comfort(): string[] {

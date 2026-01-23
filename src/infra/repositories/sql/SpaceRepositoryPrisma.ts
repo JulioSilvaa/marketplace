@@ -18,6 +18,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
         capacity: space.capacity ?? null,
         price_per_weekend: space.price_per_weekend,
         price_per_day: space.price_per_day,
+        price_unit: (space as any).price_unit || "day",
         comfort: space.comfort,
         specifications: space.specifications ?? undefined,
         images: space.images,
@@ -215,9 +216,9 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
         price_per_day:
           filters?.price_min !== undefined || filters?.price_max !== undefined
             ? {
-              gte: filters?.price_min,
-              lte: filters?.price_max,
-            }
+                gte: filters?.price_min,
+                lte: filters?.price_max,
+              }
             : undefined,
         users: {
           status: "active",
@@ -233,12 +234,13 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
       where: { id: space.id },
       data: {
         category_id: space.category_id,
-        type: (space.type as any),
+        type: space.type as any,
         title: space.title,
         description: space.description,
         capacity: space.capacity,
         price_per_weekend: space.price_per_weekend,
         price_per_day: space.price_per_day,
+        price_unit: (space as any).price_unit,
         comfort: space.comfort,
         specifications: space.specifications ?? undefined,
         images: space.images,
@@ -313,10 +315,10 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
 
     const subscription = activeSubscription
       ? {
-        plan: activeSubscription.plan,
-        status: activeSubscription.status,
-        price: activeSubscription.price,
-      }
+          plan: activeSubscription.plan,
+          status: activeSubscription.status,
+          price: activeSubscription.price,
+        }
       : undefined;
 
     return {
@@ -413,7 +415,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
       query += ` ORDER BY COALESCE(s.price_per_weekend, s.price_per_day) ${direction} NULLS LAST`;
     } else {
       // Default ordering (created_at)
-      const sortField = filters?.sort === 'created_at' ? 'created_at' : 'created_at';
+      const sortField = filters?.sort === "created_at" ? "created_at" : "created_at";
       const direction = filters?.order === "asc" ? "ASC" : "DESC";
       query += ` ORDER BY s.${sortField} ${direction}`;
     }
@@ -489,10 +491,10 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
 
       const subscription = activeSubscription
         ? {
-          plan: activeSubscription.plan,
-          status: activeSubscription.status,
-          price: activeSubscription.price,
-        }
+            plan: activeSubscription.plan,
+            status: activeSubscription.status,
+            price: activeSubscription.price,
+          }
         : undefined;
 
       return {
@@ -509,8 +511,8 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
 
     // Reorder based on pageIds
     const orderedData = pageIds
-      .map((id) => spacesMap.get(id))
-      .filter((item): item is typeof data[0] => item !== undefined);
+      .map(id => spacesMap.get(id))
+      .filter((item): item is (typeof data)[0] => item !== undefined);
 
     return { data: orderedData, total };
   }

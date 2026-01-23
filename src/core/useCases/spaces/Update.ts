@@ -24,6 +24,7 @@ export interface UpdateSpaceDTO {
   contact_facebook?: string;
   contact_whatsapp_alternative?: string;
   type?: "SPACE" | "SERVICE" | "EQUIPMENT";
+  price_unit?: string;
 }
 
 export class UpdateSpace {

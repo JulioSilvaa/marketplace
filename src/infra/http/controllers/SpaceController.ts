@@ -107,6 +107,7 @@ class SpaceController {
       const space = await createSpace.execute({
         ...spaceData,
         owner_id,
+        price_unit: spaceData.price_type || spaceData.price_unit || "day",
         images: imageUrls.length > 0 ? imageUrls : spaceData.images || [],
       });
 
@@ -323,6 +324,11 @@ class SpaceController {
           // Para outros tipos, podemos usar price_per_day como padrão
           data.price_per_day = data.price;
         }
+      }
+
+      // Map price_type to price_unit for database storage
+      if (data.price_type) {
+        data.price_unit = data.price_type;
       }
 
       const updateSpace = SpaceUseCaseFactory.makeUpdateSpace();
