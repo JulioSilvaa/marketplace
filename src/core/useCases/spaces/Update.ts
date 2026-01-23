@@ -67,7 +67,18 @@ export class UpdateSpace {
       contact_whatsapp_alternative:
         input.contact_whatsapp_alternative ?? existingSpace.contact_whatsapp_alternative,
       type: input.type ?? existingSpace.type,
+      price_unit: input.price_unit ?? existingSpace.price_unit,
     });
+
+    console.log("🔍 DEBUG UpdateSpace - Input:", JSON.stringify(input));
+    console.log(
+      "🔍 DEBUG UpdateSpace - UpdatedEntity:",
+      JSON.stringify({
+        id: updatedSpace.id,
+        price_unit: updatedSpace.price_unit, // Getter usage
+        // force access to private if needed for debug? No, getter works.
+      })
+    );
 
     await this.spaceRepository.update(updatedSpace);
 

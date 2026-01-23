@@ -331,6 +331,8 @@ class SpaceController {
         data.price_unit = data.price_type;
       }
 
+      console.log("🔍 DEBUG Controller updateSpace body:", req.body);
+
       const updateSpace = SpaceUseCaseFactory.makeUpdateSpace();
       await updateSpace.execute({ id, owner_id, category_id: data.category_id, ...data });
 

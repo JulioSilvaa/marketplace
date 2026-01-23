@@ -230,6 +230,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
   }
 
   async update(space: SpaceEntity): Promise<void> {
+    console.log("🔍 DEBUG Repository update - price_unit to save:", (space as any).price_unit);
     await prisma.spaces.update({
       where: { id: space.id },
       data: {
