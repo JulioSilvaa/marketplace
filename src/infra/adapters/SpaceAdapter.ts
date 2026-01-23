@@ -76,7 +76,7 @@ export class SpaceAdapter {
       price_per_weekend: space.price_per_weekend,
       price_per_day: space.price_per_day,
       price: space.price_per_weekend || space.price_per_day || 0,
-      price_type: space.price_unit || (space.price_per_weekend ? "weekend" : "daily"),
+      price_type: space.price_unit || "diaria", // Fallback only for totally broken data, or can strictly be space.price_unit
       comfort: space.comfort,
       specifications: space.specifications,
       images: simplified && space.images.length > 0 ? [space.images[0]] : space.images,
