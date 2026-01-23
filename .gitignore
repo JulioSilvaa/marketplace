@@ -17,3 +17,4 @@ check_*.ts
 
 # Sensitive data
 prisma/seed.ts
+.agent
