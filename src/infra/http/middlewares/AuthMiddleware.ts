@@ -8,15 +8,19 @@ interface IPayload {
 class AuthMiddleware {
   auth(req: Request, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization;
+    let token = "";
 
-    if (!authHeader) {
-      return res.status(401).json({ message: "Token não fornecido" });
+    if (authHeader) {
+      const parts = authHeader.split(" ");
+      if (parts.length === 2) {
+        token = parts[1];
+      }
+    } else if (req.cookies && req.cookies["accessToken"]) {
+      token = req.cookies["accessToken"];
     }
 
-    const [, token] = authHeader.split(" ");
-
     if (!token) {
-      return res.status(401).json({ message: "Token inválido" });
+      return res.status(401).json({ message: "Token não fornecido" });
     }
 
     if (!process.env.JWT_ACCESS_SECRET) {

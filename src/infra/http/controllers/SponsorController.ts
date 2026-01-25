@@ -74,7 +74,7 @@ class SponsorController {
           status: "pending_payment",
           start_date: new Date(), // Will be updated on activation? Or starts now but invisible?
           // end_date will be set by webhook on payment success
-        }
+        },
       });
 
       // 3. Create Stripe Checkout Session
@@ -89,9 +89,8 @@ class SponsorController {
       return res.json({
         id: sponsor.id,
         checkoutUrl: session.url,
-        sessionId: session.sessionId
+        sessionId: session.sessionId,
       });
-
     } catch (error) {
       console.error("Sponsor checkout error:", error);
       return res.status(500).json({ error: "Internal server error during sponsor checkout" });

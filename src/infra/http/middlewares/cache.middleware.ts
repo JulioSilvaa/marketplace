@@ -30,11 +30,8 @@ export const cacheMiddleware = (ttl: number = 300) => {
       const cached = await cacheGet(cacheKey);
 
       if (cached) {
-        console.log(`✅ Cache HIT: ${cacheKey}`);
         return res.json(cached);
       }
-
-      console.log(`❌ Cache MISS: ${cacheKey}`);
 
       // Store original res.json function
       const originalJson = res.json.bind(res);

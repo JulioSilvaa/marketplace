@@ -230,7 +230,6 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
   }
 
   async update(space: SpaceEntity): Promise<void> {
-    console.log("🔍 DEBUG Repository update - price_unit to save:", (space as any).price_unit);
     await prisma.spaces.update({
       where: { id: space.id },
       data: {
@@ -422,8 +421,7 @@ export class SpaceRepositoryPrisma implements ISpaceRepository {
     }
 
     // Execute Query
-    console.log("EXECUTING SEARCH QUERY:", query);
-    console.log("PARAMS:", params);
+    // Execute Query
     const results = await prisma.$queryRawUnsafe<{ id: string }[]>(query, ...params);
     const allIds = results.map(r => r.id);
     const total = allIds.length;

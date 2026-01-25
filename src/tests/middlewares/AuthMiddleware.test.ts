@@ -65,7 +65,7 @@ describe("AuthMiddleware", () => {
 
     expect(mockResponse.status).toHaveBeenCalledWith(401);
     expect(mockResponse.json).toHaveBeenCalledWith({
-      message: "Token inválido",
+      message: "Token não fornecido",
     });
     expect(mockNext).not.toHaveBeenCalled();
   });

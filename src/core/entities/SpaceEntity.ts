@@ -52,9 +52,6 @@ export class SpaceEntity {
     this._created_at = props.created_at;
     this._updated_at = props.updated_at;
 
-    console.log("🛠️ SpaceEntity Constructor: props.type =", props.type);
-    console.log("🛠️ SpaceEntity Constructor: this._type =", this._type);
-
     this.validate();
   }
 
