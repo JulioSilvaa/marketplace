@@ -23,10 +23,10 @@ export class StripeService implements IPaymentService {
 
     this.stripe = apiKey
       ? new Stripe(apiKey, {
-        apiVersion: "2025-01-27.acacia", // Updated to a valid version string if needed, or keep existing. "2025-12-15.clover" seemed fake? Using '2023-10-16' is standard. Let's keep what was there or standard.
-        // Actually "2025-12-15.clover" looks like a placeholder I should probably fix if it enters invalid state.
-        // But let's trust the existing code unless it errors.
-      } as any)
+          apiVersion: "2025-01-27.acacia", // Updated to a valid version string if needed, or keep existing. "2025-12-15.clover" seemed fake? Using '2023-10-16' is standard. Let's keep what was there or standard.
+          // Actually "2025-12-15.clover" looks like a placeholder I should probably fix if it enters invalid state.
+          // But let's trust the existing code unless it errors.
+        } as any)
       : (null as any);
   }
 
@@ -96,23 +96,23 @@ export class StripeService implements IPaymentService {
     const line_items = priceId
       ? [{ price: priceId, quantity: 1 }]
       : [
-        {
-          price_data: {
-            currency: "brl",
-            product_data: {
-              name:
-                interval === "month"
-                  ? "Assinatura Mensal - Anúncio"
-                  : "Assinatura Anual - Anúncio",
-              images: [`${process.env.FRONTEND_URL}/favicon.png`], // Add Logo
-              metadata: { space_id: spaceId },
+          {
+            price_data: {
+              currency: "brl",
+              product_data: {
+                name:
+                  interval === "month"
+                    ? "Assinatura Mensal - Anúncio"
+                    : "Assinatura Anual - Anúncio",
+                images: [`${process.env.FRONTEND_URL}/favicon.png`], // Add Logo
+                metadata: { space_id: spaceId },
+              },
+              unit_amount: interval === "month" ? this.MONTHLY_PRICE : this.YEARLY_PRICE,
+              recurring: { interval: interval },
             },
-            unit_amount: interval === "month" ? this.MONTHLY_PRICE : this.YEARLY_PRICE,
-            recurring: { interval: interval },
+            quantity: 1,
           },
-          quantity: 1,
-        },
-      ];
+        ];
 
     const session = await this.stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -153,7 +153,7 @@ export class StripeService implements IPaymentService {
       // Mock return for local dev without stripe key
       return {
         url: `${frontendUrl}/dashboard?payment_success=true&sponsor_id=${sponsorId}&mock=true`,
-        sessionId: "mock_session_id"
+        sessionId: "mock_session_id",
       };
     }
 
@@ -163,8 +163,8 @@ export class StripeService implements IPaymentService {
       line_items: [
         {
           price: priceId,
-          quantity: 1
-        }
+          quantity: 1,
+        },
       ],
       mode: "subscription",
       currency: "brl",
@@ -176,16 +176,16 @@ export class StripeService implements IPaymentService {
         sponsor_id: sponsorId,
         user_id: userId,
         tier: tier,
-        type: "sponsor"
+        type: "sponsor",
       },
       subscription_data: {
         metadata: {
           sponsor_id: sponsorId,
           user_id: userId,
           tier: tier,
-          type: "sponsor"
-        }
-      }
+          type: "sponsor",
+        },
+      },
     });
 
     return { url: session.url, sessionId: session.id };

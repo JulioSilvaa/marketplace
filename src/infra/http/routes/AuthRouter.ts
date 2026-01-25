@@ -36,4 +36,6 @@ router.post(
   ExpressAdapter.create(AuthController.changePassword)
 );
 
+router.get("/me", AuthMiddleware.auth, ExpressAdapter.create(AuthController.me));
+
 export default router;

@@ -26,7 +26,10 @@ export const getRedisClient = (): Redis => {
     });
 
     redisClient.on("error", err => {
-      console.error("❌ Redis Client Error:", err);
+      // Only log if we expect Redis to be available or if it's not a connection refused in dev
+      if (process.env.REDIS_URL || (err as any).code !== "ECONNREFUSED") {
+        console.error("❌ Redis Client Error:", err);
+      }
     });
 
     redisClient.on("connect", () => {
@@ -38,7 +41,10 @@ export const getRedisClient = (): Redis => {
     // Removed: redisClient.on("close") log to reduce noise
 
     redisClient.on("reconnecting", () => {
-      console.log("🔄 Redis reconnecting...");
+      // Only log if we expect Redis to be available
+      if (process.env.REDIS_URL) {
+        console.log("🔄 Redis reconnecting...");
+      }
     });
   }
 

@@ -68,8 +68,6 @@ class SpaceController {
 
       // Parsear dados do formulário
       let spaceData = req.body;
-      console.log("🛠️ SpaceController: req.body.type received:", spaceData.type);
-      console.log("🛠️ SpaceController: All body keys:", Object.keys(spaceData));
 
       // Se vier como string (multipart/form-data), fazer parse
       if (typeof spaceData.address === "string") {
@@ -330,8 +328,6 @@ class SpaceController {
       if (data.price_type) {
         data.price_unit = data.price_type;
       }
-
-      console.log("🔍 DEBUG Controller updateSpace body:", req.body);
 
       const updateSpace = SpaceUseCaseFactory.makeUpdateSpace();
       await updateSpace.execute({ id, owner_id, category_id: data.category_id, ...data });

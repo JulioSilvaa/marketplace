@@ -46,7 +46,6 @@ if (!process.env.STRIPE_WEBHOOK_SECRET) {
 
 // Middlewares globais
 // Middlewares globais
-console.log("🔒 CORS Setup - Env FRONTEND_URL:", process.env.FRONTEND_URL);
 
 app.use(
   cors({
