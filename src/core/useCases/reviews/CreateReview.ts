@@ -6,7 +6,7 @@ interface CreateReviewInput {
   user_id?: string;
   reviewer_name?: string;
   rating: number;
-  comment: string;
+  comment?: string;
 }
 
 export class CreateReview {

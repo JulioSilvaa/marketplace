@@ -177,7 +177,7 @@ model Review {
   user_id        String?
   reviewer_name  String?
   rating         Int
-  comment        String
+  comment        String?
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
   spaces         spaces   @relation(fields: [space_id], references: [id], onDelete: Cascade)

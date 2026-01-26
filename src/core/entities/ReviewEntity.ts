@@ -4,7 +4,7 @@ export interface IReviewProps {
   user_id?: string;
   reviewer_name?: string;
   rating: number;
-  comment: string;
+  comment?: string;
   created_at?: Date;
 }
 

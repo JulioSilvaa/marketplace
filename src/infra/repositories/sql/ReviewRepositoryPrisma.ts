@@ -21,7 +21,7 @@ export class ReviewRepositoryPrisma implements IReviewRepository {
       user_id: data.user_id,
       reviewer_name: data.reviewer_name,
       rating: data.rating,
-      comment: data.comment,
+      comment: data.comment ?? undefined,
       created_at: data.created_at,
     });
   }
@@ -41,7 +41,7 @@ export class ReviewRepositoryPrisma implements IReviewRepository {
         user_id: data.user_id,
         reviewer_name: data.reviewer_name,
         rating: data.rating,
-        comment: data.comment,
+        comment: data.comment ?? undefined,
         created_at: data.created_at,
       })
     );
