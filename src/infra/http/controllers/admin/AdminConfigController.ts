@@ -23,9 +23,14 @@ export default class AdminConfigController {
   static async createCategory(req: Request, res: Response) {
     try {
       const { name, type, allowed_pricing_models } = req.body;
-      // allowed_pricing_models expected to be an array of IDs
 
-      const connect = allowed_pricing_models?.map((id: string) => ({ id })) || [];
+      // Sanitizar allowed_pricing_models para garantir que temos apenas IDs
+      const sanitizedModels =
+        allowed_pricing_models?.map((item: any) => {
+          return typeof item === "string" ? item : item.id;
+        }) || [];
+
+      const connect = sanitizedModels.map((id: string) => ({ id }));
 
       const category = await prisma.categories.create({
         data: {
@@ -52,8 +57,13 @@ export default class AdminConfigController {
       // Prepare relation update if provided
       let relationUpdate = undefined;
       if (allowed_pricing_models) {
+        // Sanitizar allowed_pricing_models para garantir que temos apenas IDs
+        const sanitizedModels = allowed_pricing_models.map((item: any) => {
+          return typeof item === "string" ? item : item.id;
+        });
+
         relationUpdate = {
-          set: allowed_pricing_models.map((pid: string) => ({ id: pid })),
+          set: sanitizedModels.map((pid: string) => ({ id: pid })),
         };
       }
 
