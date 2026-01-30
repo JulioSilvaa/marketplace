@@ -89,7 +89,7 @@ describe("SpaceEntity", () => {
     it("deve lançar erro se o array de comfort for vazio", () => {
       const invalidProps = { ...mockValidSpaceProps, comfort: [] };
       expect(() => SpaceEntity.create(invalidProps)).toThrow(
-        "É necessário listar pelo menos um item de conforto para Espaços."
+        "É necessário listar pelo menos um item de conforto para Espaços ativos."
       );
     });
 
