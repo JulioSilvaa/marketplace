@@ -232,6 +232,11 @@ export class SpaceEntity {
   }
 
   private validatePrices(): void {
+    // Se o tipo for 'orcamento', não valida preços mínimos (permite 0 ou undefined)
+    if (this._price_unit === "orcamento" || this._price_unit === "a_combinar") {
+      return;
+    }
+
     const priceWeekend = this._price_per_weekend;
     const priceDay = this._price_per_day;
 
@@ -263,28 +268,43 @@ export class SpaceEntity {
       return;
     }
 
-    // Se for SPACE (ou undefined/default), exige pelo menos um item SE a lista for vazia?
-    // A validação original reclamava se tinha string vazia DENTRO do array, ou se o array era vazio?
-    // O código original: if (this._comfort.some(c => !c || c.trim() === "")) throw "Os itens... nao podem ser vazios" -> isso valida itens vazios.
-    // Mas o erro do usuário diz "É necessário listar pelo menos um item".
-    // Vou garantir que para ESPAÇO precise de pelo menos 1 item, E que não tenha strings vazias.
+    // Se o status não for 'active' (ex: rascunho/inactive), não exige items
+    if (this._status !== "active") {
+      return;
+    }
 
     // Validação original (mantida para itens vazios)
     if (this._comfort.some(c => !c || c.trim() === "")) {
       throw new Error("Os itens de conforto não podem ser vazios (strings vazias).");
     }
 
-    // Validação de obrigatoriedade (apenas para Espaços)
-    // Se o usuário reclama de "so cabe aos espaços", então espaços PRECISAM ter?
-    // Vou assumir que sim.
+    // Validação de obrigatoriedade (apenas para Espaços ATIVOS)
     if (this._comfort.length === 0) {
-      throw new Error("É necessário listar pelo menos um item de conforto para Espaços.");
+      throw new Error("É necessário listar pelo menos um item de conforto para Espaços ativos.");
     }
   }
 
   private validateImages(): void {
+    // Se o status não for 'active' (ex: rascunho/inactive), não exige imagens
+    if (this._status !== "active") {
+      // Mas se tiver imagens, valida formato
+      if (this._images && this._images.length > 0) {
+        const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
+        for (const imageUrl of this._images) {
+          if (typeof imageUrl !== "string" || !urlRegex.test(imageUrl)) {
+            throw new Error("Pelo menos um link de imagem fornecido não é um URL válido.");
+          }
+        }
+      }
+      // Se exceder 10 também valida
+      if (this._images && this._images.length > 10) {
+        throw new Error("Máximo de 10 imagens por espaço.");
+      }
+      return;
+    }
+
     if (!Array.isArray(this._images) || this._images.length === 0) {
-      throw new Error("É necessário fornecer pelo menos uma imagem.");
+      throw new Error("É necessário fornecer pelo menos uma imagem para publicar.");
     }
 
     if (this._images.length > 10) {
