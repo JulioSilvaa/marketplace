@@ -75,7 +75,8 @@ export class CreateCheckoutSession {
           "month", // Founder is monthly
           plan.priceId,
           user?.email,
-          `${process.env.FRONTEND_URL}/dashboard?payment_canceled=true` // Return to dashboard on cancel
+          `${process.env.FRONTEND_URL}/dashboard?payment_canceled=true`, // Return to dashboard on cancel
+          "promo_1SvFs54Z7GA7Kv8u7IrNgihF" // Apply 3 months free coupon automatically
         );
       }
 
@@ -104,7 +105,8 @@ export class CreateCheckoutSession {
       interval || "month",
       plan.priceId,
       user.email,
-      `${process.env.FRONTEND_URL}/dashboard?payment_canceled=true` // Always return to dashboard on cancel
+      `${process.env.FRONTEND_URL}/dashboard?payment_canceled=true`, // Always return to dashboard on cancel
+      "promo_1SvFs54Z7GA7Kv8u7IrNgihF" // Apply 3 months free coupon automatically
     );
   }
 }

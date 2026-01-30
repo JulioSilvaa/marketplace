@@ -86,7 +86,8 @@ export class StripeService implements IPaymentService {
     interval: "month" | "year" = "month",
     priceId?: string,
     customerEmail?: string,
-    cancelUrl?: string
+    cancelUrl?: string,
+    promoCode?: string
   ): Promise<{ url: string | null }> {
     if (!this.stripe) {
       const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
@@ -114,13 +115,12 @@ export class StripeService implements IPaymentService {
           },
         ];
 
-    const session = await this.stripe.checkout.sessions.create({
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ["card"],
       customer_email: customerEmail,
       line_items,
       mode: "subscription",
       currency: "brl", // Force default currency
-      allow_promotion_codes: true, // Habilitar cupons de desconto
       success_url: `${process.env.FRONTEND_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || `${process.env.FRONTEND_URL}/anuncio/${spaceId}`,
       client_reference_id: userId,
@@ -136,7 +136,15 @@ export class StripeService implements IPaymentService {
           plan_type: priceId === process.env.STRIPE_PRICE_ID_FOUNDER ? "founder" : "normal",
         },
       },
-    });
+    };
+
+    if (promoCode) {
+      sessionParams.discounts = [{ promotion_code: promoCode }];
+    } else {
+      sessionParams.allow_promotion_codes = true;
+    }
+
+    const session = await this.stripe.checkout.sessions.create(sessionParams);
 
     return { url: session.url };
   }

@@ -5,7 +5,8 @@ export interface IPaymentService {
     interval?: "month" | "year",
     priceId?: string,
     customerEmail?: string,
-    cancelUrl?: string
+    cancelUrl?: string,
+    promoCode?: string
   ): Promise<{ url: string | null }>;
 
   createActivationCheckoutSession(
