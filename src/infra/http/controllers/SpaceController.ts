@@ -87,7 +87,6 @@ class SpaceController {
       }
 
       // STRICT PARSING FOR CATEGORY_ID
-      // STRICT PARSING FOR CATEGORY_ID
       // Sometimes it comes as string "5", sometimes number 5.
       if (spaceData.category_id !== undefined && spaceData.category_id !== null) {
         const parsed = parseInt(String(spaceData.category_id));
