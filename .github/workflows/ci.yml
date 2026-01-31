@@ -2,10 +2,10 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main", "fix/*" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "fix/*" ]
-  
+    branches: [ "main" ]
+
 jobs:
   build_and_test: 
     runs-on: ubuntu-latest
@@ -65,7 +65,7 @@ jobs:
   # Job de Entrega Contínua para o seu projeto em São Carlos
   deploy:
     needs: build_and_test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/fix/'))
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to Easypanel via Webhook
