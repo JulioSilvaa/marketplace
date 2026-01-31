@@ -1,4 +1,5 @@
-name: CI Pipeline 
+name: CI/CD Pipeline 
+
 on:
   push:
     branches: [ "main" ]
@@ -8,6 +9,10 @@ on:
 jobs:
   build_and_test: 
     runs-on: ubuntu-latest
+    
+    # Variáveis de ambiente globais para este Job
+    env:
+      DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
 
     services:
       postgres:
@@ -26,7 +31,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.x, 22.x, 25.x] 
+        node-version: [20.x] 
 
     steps:
       - uses: actions/checkout@v4
@@ -35,38 +40,34 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
         
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
-        env:
-          DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
+        run: yarn install --frozen-lockfile      
       
-      - name: Apply Database Schema
-        run: npx prisma db push --accept-data-loss
-        env:
-          DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
+      - name: Apply Database Migrations
+        run: npx prisma migrate deploy
       
       - name: Generate Prisma Client
         run: npx prisma generate
-        env:
-          DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
 
       - name: Run Linting
         run: yarn lint 
       
-      - name: Run Tests (Coverage)
+      - name: Run Tests
         run: yarn test:coverage
         env:
           CI: true
-          DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
           JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
           JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
           SALT_CRYPTO: ${{ secrets.SALT_CRYPTO }}
-      
-      # - name: Run Tests (development)
-      #   run: |
-      #     npx prisma migrate deploy
-      #     yarn test:dev
-      #   env:
-      #     CI: true
-      #     DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public     
+
+  # Job de Entrega Contínua para o seu projeto em São Carlos
+  deploy:
+    needs: build_and_test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Easypanel via Webhook
+        run: |
+          curl -X POST "${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}"

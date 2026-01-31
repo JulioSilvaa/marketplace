@@ -1,9 +1,9 @@
 services:
+  # ---------- REDIS (Cache e Filas) ----------
   redis:
     image: redis:7-alpine
     container_name: lazer-redis
-    ports:
-      - "6379:6379"
+    restart: always
     networks:
       - app-network
     healthcheck:
@@ -11,128 +11,92 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-    profiles:
-      - dev
-      - dev
-      - prod
+    profiles: [dev, prod]
 
-  db-test:
+  # ---------- POSTGRES DEV ----------
+  db-dev:
     image: postgres:15-alpine
-    container_name: lazer-db-test
+    container_name: lazer-db-dev
     ports:
-      - "5433:5432"
+      - "5432:5432"
+    env_file: [.env]
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=marketplace_test
+      POSTGRES_USER: dev
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: marketplace_dev
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
     networks:
       - app-network
-    profiles:
-      - test
+    profiles: [dev]
 
+  # ---------- APP DEV (O QUE ESTAVA FALTANDO) ----------
   app-dev:
     image: node:20-alpine
     container_name: app-dev
     working_dir: /app
     ports:
-      - "${PORT:-3000}:${PORT:-3000}"
-    environment:
-      - NODE_ENV=development
-      - DATABASE_URL=${DATABASE_URL}
-      - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
-      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
-      - JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN:-30m}
-      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
-      - BCRYPT_SALT=${BCRYPT_SALT:-10}
-      - PORT=${PORT:-3000}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
-      - RESEND_API_KEY=${RESEND_API_KEY}
-      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
-      - EMAIL_FROM=${EMAIL_FROM:-onboarding@resend.dev}
-      - EMAIL_FROM_NAME=${EMAIL_FROM_NAME:-Lazer}
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - "3000:3000"
+    env_file: [.env]
     volumes:
-      - ./src:/app/src
-      - ./public:/app/public
-      - ./package.json:/app/package.json
-      - ./yarn.lock:/app/yarn.lock
-      - ./tsconfig.json:/app/tsconfig.json
-      - ./prisma:/app/prisma
-      - ./prisma.config.ts:/app/prisma.config.ts
+      - .:/app
       - node_modules_dev:/app/node_modules
-    command: sh -c "yarn install && yarn prisma generate && yarn prisma migrate deploy && yarn dev"
-    # depends_on:
-    #   postgres:
-    #     condition: service_healthy
+    # Comando para instalar, gerar prisma e rodar com hot-reload
+    command: sh -c "yarn install && npx prisma generate && yarn dev"
+    depends_on:
+      db-dev:
+        condition: service_started
+      redis:
+        condition: service_healthy
     networks:
       - app-network
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 512M
-        reservations:
-          cpus: '0.5'
-          memory: 256M
-    profiles:
-      - dev
+    profiles: [dev]
+    
+  # ---------- MONITORAMENTO (Uptime Kuma) ----------
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: always
+    ports:
+      - "3001:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+    networks:
+      - app-network
+    profiles: [prod]
 
+  # ---------- MIGRATE PROD ----------
+  migrate-prod:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: sh -c "yarn install --production && npx prisma migrate deploy"
+    env_file: [.env]
+    profiles: [prod]
+
+  # ---------- APP PROD ----------
   app-prod:
     build:
       context: .
       dockerfile: Dockerfile
       target: runner
     container_name: app-prod
+    restart: always
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET}
-      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
-      - JWT_ACCESS_EXPIRES_IN=${JWT_ACCESS_EXPIRES_IN:-30m}
-      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:-7d}
-      - BCRYPT_SALT=${BCRYPT_SALT:-10}
-      - PORT=${PORT:-3000}
-      - REDIS_URL=${REDIS_URL:-redis://redis:6379}
-      - RESEND_API_KEY=${RESEND_API_KEY}
-      - FRONTEND_URL=${FRONTEND_URL}
-      - EMAIL_FROM=${EMAIL_FROM}
-      - EMAIL_FROM_NAME=${EMAIL_FROM_NAME}
-      - SUPABASE_URL=${SUPABASE_URL}
-      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
-      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
-      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
-      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
-    networks:
-      - app-network
-    restart: always
+    env_file: [.env]
     depends_on:
       redis:
         condition: service_healthy
-    # depends_on:
-    #   postgres:
-    #     condition: service_healthy
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 512M
-        reservations:
-          cpus: '0.5'
-          memory: 256M
-    profiles:
-      - prod
+    networks:
+      - app-network
+    profiles: [prod]
 
 volumes:
-#   postgres_data:
-#     driver: local
-  node_modules_dev:
-    driver: local
+  postgres_dev_data:
+  uptime-kuma-data:
+  node_modules_dev: # Volume para não misturar node_modules do PC com o do Docker
 
 networks:
   app-network:
