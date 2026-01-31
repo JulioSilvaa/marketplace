@@ -51,11 +51,9 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Seed Database
-        run: npx prisma db seed
-
 
       - name: Run Linting
+
         run: yarn lint 
       
       - name: Run Tests
