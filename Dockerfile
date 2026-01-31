@@ -51,4 +51,4 @@ EXPOSE 3000
 
 # IMPORTANTE: Removido o prisma migrate deploy daqui. 
 # O deploy.sh agora cuida disso via container 'migrate-prod'.
-CMD ["node", "dist/src/infra/http/express/Express.js"]
+CMD ["npm", "run", "prod"]
