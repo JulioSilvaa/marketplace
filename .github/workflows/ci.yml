@@ -9,6 +9,11 @@ on:
 jobs:
   build_and_test: 
     runs-on: ubuntu-latest
+    
+    # Variáveis de ambiente globais para este Job
+    env:
+      DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
+
     services:
       postgres:
         image: postgres:16
@@ -38,20 +43,14 @@ jobs:
           cache: 'yarn'
         
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile      
       
-      # Alterado: Usando migrate deploy para validar as migrations existentes
       - name: Apply Database Migrations
         run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
       
       - name: Generate Prisma Client
         run: npx prisma generate
-        env:
-          # Adicione esta linha abaixo para o generate não quebrar
-          DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
-      
+
       - name: Run Linting
         run: yarn lint 
       
@@ -59,11 +58,11 @@ jobs:
         run: yarn test:coverage
         env:
           CI: true
-          DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
           JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
           JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
           SALT_CRYPTO: ${{ secrets.SALT_CRYPTO }}
 
+  # Job de Entrega Contínua para o seu projeto em São Carlos
   deploy:
     needs: build_and_test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
