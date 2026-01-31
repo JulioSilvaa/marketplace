@@ -40,8 +40,9 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
       
-      - name: Apply Database Schema
-        run: npx prisma db push --accept-data-loss
+      # Alterado: Usando migrate deploy para validar as migrations existentes
+      - name: Apply Database Migrations
+        run: npx prisma migrate deploy
         env:
           DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
       
@@ -60,7 +61,6 @@ jobs:
           JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
           SALT_CRYPTO: ${{ secrets.SALT_CRYPTO }}
 
-  # Job de CD para o Easypanel
   deploy:
     needs: build_and_test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
