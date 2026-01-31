@@ -48,7 +48,10 @@ jobs:
       
       - name: Generate Prisma Client
         run: npx prisma generate
-
+        env:
+          # Adicione esta linha abaixo para o generate não quebrar
+          DATABASE_URL: postgres://test_user:test_password@localhost:5432/test_db?schema=public
+      
       - name: Run Linting
         run: yarn lint 
       
