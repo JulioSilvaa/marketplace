@@ -69,5 +69,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Deploy to Easypanel via Webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}
         run: |
-          curl -X POST "${{ secrets.EASYPANEL_DEPLOY_WEBHOOK }}"
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "ERRO: A URL do Webhook está vazia! Verifique os Secrets do GitHub."
+            exit 1
+          fi
+          curl -X POST "$WEBHOOK_URL"
