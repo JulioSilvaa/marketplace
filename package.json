@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "dev": "tsx watch src/infra/http/express/Express.ts",
-    "prod": "node dist/src/infra/http/express/Express.js",
+    "prod": "npx prisma migrate deploy && node dist/src/infra/http/express/Express.js",
     "test:coverage": "vitest run --coverage",
     "test:up": "docker compose --profile test up -d db-test && sleep 3",
     "test:down": "docker compose --profile test stop db-test",
