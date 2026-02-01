@@ -44,7 +44,7 @@ class SubscriptionController {
       const { userId } = req.params;
 
       const findByUserId = SubscriptionUseCaseFactory.makeFindByUserIdSubscription();
-      const subscription = await findByUserId.execute(userId);
+      const subscription = await findByUserId.execute(userId as string);
 
       if (!subscription) {
         return res.status(404).json({ message: "Assinatura não encontrada" });
@@ -66,7 +66,7 @@ class SubscriptionController {
       const { userId } = req.params;
 
       const findAllByUserId = SubscriptionUseCaseFactory.makeFindAllByUserId();
-      const subscriptions = await findAllByUserId.execute(userId);
+      const subscriptions = await findAllByUserId.execute(userId as string);
 
       const output = SubscriptionAdapter.toListOutputDTO(subscriptions);
 
@@ -84,7 +84,7 @@ class SubscriptionController {
       const { id } = req.params;
 
       const updateSubscription = SubscriptionUseCaseFactory.makeUpdateSubscription();
-      await updateSubscription.execute({ id, ...req.body });
+      await updateSubscription.execute({ id: id as string, ...req.body });
 
       return res.status(200).json({ message: "Assinatura atualizada com sucesso" });
     } catch (error) {

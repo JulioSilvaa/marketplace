@@ -128,7 +128,7 @@ export default class AdminConfigController {
       const { id } = req.params;
       const { key, label, description, unit } = req.body;
       const model = await prisma.pricing_models.update({
-        where: { id },
+        where: { id: id as string },
         data: { key, label, description, unit },
       });
       return res.json(model);
@@ -142,7 +142,7 @@ export default class AdminConfigController {
     try {
       const { id } = req.params;
       await prisma.pricing_models.delete({
-        where: { id },
+        where: { id: id as string },
       });
       return res.status(204).send();
     } catch (error) {

@@ -29,14 +29,14 @@ export default class AdminCustomerController {
 
   static async delete(req: Request, res: Response) {
     const { id } = req.params;
-    await adminCustomerRepository.delete(id);
+    await adminCustomerRepository.delete(id as string);
     return res.status(204).send();
   }
 
   static async updateStatus(req: Request, res: Response) {
     const { id } = req.params;
     const { status } = req.body;
-    await adminCustomerRepository.updateStatus(id, status);
+    await adminCustomerRepository.updateStatus(id as string, status);
     return res.status(204).send();
   }
 }
