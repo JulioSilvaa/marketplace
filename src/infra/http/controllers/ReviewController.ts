@@ -61,7 +61,7 @@ export default class ReviewController {
 
       const getListingReviews = ReviewUseCaseFactory.makeGetListingReviews();
       const result = await getListingReviews.execute({
-        spaceId: id,
+        spaceId: id as string,
         limit: limit ? Number(limit) : undefined,
         offset: offset ? Number(offset) : undefined,
       });

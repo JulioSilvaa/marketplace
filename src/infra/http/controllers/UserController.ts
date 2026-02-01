@@ -36,7 +36,7 @@ export default class UserController {
       }
 
       const deleteUser = UserUseCaseFactory.makeDeleteUser();
-      await deleteUser.execute({ id });
+      await deleteUser.execute({ id: id as string });
 
       return res.status(200).json({ message: "Usuário excluído com sucesso!" });
     } catch (error) {
@@ -57,7 +57,7 @@ export default class UserController {
       }
 
       const updateUser = UserUseCaseFactory.makeUpdateUser();
-      await updateUser.execute({ id, ...req.body });
+      await updateUser.execute({ id: id as string, ...req.body });
       return res.status(200).json({ message: "Usuário atualizado com sucesso!" });
     } catch (error) {
       next(error);
@@ -68,7 +68,7 @@ export default class UserController {
     try {
       const { id } = req.params;
       const findByIdUser = UserUseCaseFactory.makeFindByIdUser();
-      const user = await findByIdUser.execute(id);
+      const user = await findByIdUser.execute(id as string);
 
       if (!user) {
         return res.status(404).json({ message: "Usuário não encontrado" });
@@ -117,7 +117,7 @@ export default class UserController {
     try {
       const { id } = req.params;
       const getMetrics = UserUseCaseFactory.makeGetUserMetrics();
-      const metrics = await getMetrics.execute(id);
+      const metrics = await getMetrics.execute(id as string);
 
       return res.status(200).json(metrics);
     } catch (error) {

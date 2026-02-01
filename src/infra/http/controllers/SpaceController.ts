@@ -240,7 +240,7 @@ class SpaceController {
       }
 
       const findByIdSpace = SpaceUseCaseFactory.makeFindByIdSpace();
-      const space = await findByIdSpace.execute(id);
+      const space = await findByIdSpace.execute(id as string);
 
       if (!space) {
         return res.status(404).json({ message: "Espaço não encontrado" });
@@ -265,7 +265,7 @@ class SpaceController {
       }
 
       const findByIdSpace = SpaceUseCaseFactory.makeFindByIdSpace();
-      const spaceWithRating = await findByIdSpace.executeWithRating(id);
+      const spaceWithRating = await findByIdSpace.executeWithRating(id as string);
 
       if (!spaceWithRating) {
         return res.status(404).json({ message: "Espaço não encontrado" });
@@ -352,7 +352,7 @@ class SpaceController {
       }
 
       const deleteSpace = SpaceUseCaseFactory.makeDeleteSpace();
-      await deleteSpace.execute({ id, owner_id });
+      await deleteSpace.execute({ id: id as string, owner_id });
 
       // Invalidate Cache
       await redisService.del(`space:${id}`);

@@ -62,7 +62,7 @@ export default class AdminSpaceController {
     try {
       const { id } = req.params;
       const { status } = req.body;
-      await adminSpaceRepository.updateStatus(id, status);
+      await adminSpaceRepository.updateStatus(id as string, status);
       return res.status(204).send();
     } catch (error) {
       console.error("Error in AdminSpaceController.updateStatus:", error);

@@ -51,7 +51,7 @@ export default class AdminSubscriptionController {
       const { immediate } = req.body; // option to cancel immediately
 
       const subscription = await prisma.subscriptions.findUnique({
-        where: { id },
+        where: { id: id as string },
       });
 
       if (!subscription) {
@@ -72,7 +72,7 @@ export default class AdminSubscriptionController {
       // But for admin feedback, we can update the flag.
 
       await prisma.subscriptions.update({
-        where: { id },
+        where: { id: id as string },
         data: {
           cancel_at_period_end: true,
         },
