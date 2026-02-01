@@ -6,8 +6,9 @@ COPY package.json yarn.lock ./
 
 # ---------- ESTÁGIO 1: DEPENDÊNCIAS DE DESENVOLVIMENTO ----------
 FROM base AS dependencies
-RUN apk add --no-cache python3 make g++
-RUN yarn install --frozen-lockfile --production=false
+# RUN apk add --no-cache python3 make g++ (Removido para economizar 300MB - Tentativa de Deploy)
+RUN yarn install --frozen-lockfile --production=false && \
+    yarn cache clean
 
 # ---------- ESTÁGIO 2: BUILD (Compilação e Prisma) ----------
 FROM dependencies AS build
