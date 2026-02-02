@@ -14,7 +14,7 @@ export default class AuthController {
   private static readonly COOKIE_OPTIONS = {
     httpOnly: true, // Não acessível via JavaScript
     secure: process.env.NODE_ENV === "production", // HTTPS apenas em produção
-    sameSite: "strict" as const, // Proteção CSRF
+    sameSite: process.env.NODE_ENV === "production" ? ("none" as const) : ("lax" as const), // "none" para cross-site em produção
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias em milissegundos
     path: "/", // Cookie disponível em todas as rotas
   };
@@ -22,7 +22,7 @@ export default class AuthController {
   private static readonly ACCESS_COOKIE_OPTIONS = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict" as const,
+    sameSite: process.env.NODE_ENV === "production" ? ("none" as const) : ("lax" as const),
     maxAge: 15 * 60 * 1000, // 15 minutos (mesma duração do token JWT padrão)
     path: "/",
   };
@@ -128,7 +128,7 @@ export default class AuthController {
       const clearOptions = {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "strict" as const,
+        sameSite: process.env.NODE_ENV === "production" ? ("none" as const) : ("lax" as const),
         path: "/",
       };
 
